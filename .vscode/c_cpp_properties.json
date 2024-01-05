@@ -1,0 +1,24 @@
+{
+    "configurations": [
+      {
+        "name": "Linux",
+        "includePath": ["${workspaceFolder}/**"],
+        "defines": [],
+        "compilerPath": "/usr/bin/gcc",
+        "cStandard": "c11",
+        "cppStandard": "c++17",
+        "intelliSenseMode": "clang-x64",
+        "browse": {
+            "path": [
+                "${workspaceRoot}",
+                "/usr/include",
+                "/usr/local/include",
+                "/usr/include/c++/13.2.1",
+                "/usr/include/c++/13.2.1/x86_64-pc-linux-gnu/32/bits"
+            ]
+        }
+      }
+    ],
+    "version": 4
+  }
+  
