@@ -16,14 +16,24 @@ namespace dvm {
   void DvmWindow::initWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferResizedCallback);
   }
 
-  void DvmWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) {
-    if(glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
+  void DvmWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *_surface) {
+    if(glfwCreateWindowSurface(instance, window, nullptr, _surface) != VK_SUCCESS) {
       throw std::runtime_error("failed to create window surface");
     }
+    surface = _surface;
+  }
+
+  void DvmWindow::framebufferResizedCallback(GLFWwindow *window, int width, int height) {
+    auto dvmWindow = reinterpret_cast<DvmWindow *> (glfwGetWindowUserPointer(window));
+    dvmWindow->framebufferResized = true;
+    dvmWindow->width = width;
+    dvmWindow->height = height;
   }
 } // namespace dvm

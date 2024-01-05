@@ -1,12 +1,14 @@
 #pragma once
 #include "dvm_device.hpp"
-#include "dvm_pipeline.hpp"
+#include "dvm_game_object.hpp"
+#include "dvm_renderer.hpp"
 #include "dvm_swap_chain.hpp"
 #include "dvm_window.hpp"
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <vector>
 #include <vulkan/vulkan_core.h>
+#include <glm/gtc/constants.hpp>
 
 namespace dvm {
 class DvmApp {
@@ -23,16 +25,12 @@ public:
   void run();
 
 private:
-  void createPipelineLayout();
-  void createPipeline();
-  void createCommandBuffers();
-  void drawFrame();
+  void loadGameObjects();
 
   DvmWindow dvmWindow{WIDTH, HEIGHT, "Hello vulkan!"};
   DvmDevice dvmDevice{dvmWindow};
-  DvmSwapChain dvmSwapChain{dvmDevice, dvmWindow.getExtent()};
-  std::unique_ptr<DvmPipeline> dvmPipeline;
-  VkPipelineLayout pipelineLayout;
-  std::vector<VkCommandBuffer> commandBuffers;
+  DvmRenderer dvmRenderer{dvmWindow, dvmDevice};
+
+  std::vector<DvmGameObject> gameObjects;
 };
 } // namespace dvm

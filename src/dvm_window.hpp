@@ -15,6 +15,8 @@ public:
   DvmWindow(const DvmWindow &) = delete;
   DvmWindow &operator=(const DvmWindow &) = delete;
 
+  bool wasWindowResized() { return framebufferResized; }
+  void resetWindowResized() { framebufferResized = false; }
   bool shouldClose() { return glfwWindowShouldClose(window); }
 
   VkExtent2D getExtent() {
@@ -22,13 +24,17 @@ public:
   }
   void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 
+
 private:
+  static void framebufferResizedCallback(GLFWwindow *window, int width, int height);
   void initWindow();
 
-  const int width;
-  const int height;
+  bool framebufferResized;
+  int width;
+  int height;
 
   std::string windowName;
   GLFWwindow *window;
+  VkSurfaceKHR *surface;
 };
 } // namespace dvm

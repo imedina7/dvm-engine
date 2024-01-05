@@ -5,109 +5,55 @@
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
+#include "simple_render_system.hpp"
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 namespace dvm {
+struct SimplePushConstantData {
+  glm::mat2 transform{1.0f};
+  glm::vec2 offset;
+  alignas(16) glm::vec3 color;
+};
+
 DvmApp::DvmApp() {
-  createPipelineLayout();
-  createPipeline();
-  createCommandBuffers();
+  loadGameObjects();
 }
-DvmApp::~DvmApp() {
-  vkDestroyPipelineLayout(dvmDevice.device(), pipelineLayout, nullptr);
-}
+DvmApp::~DvmApp() {}
 
 void DvmApp::run() {
+  SimpleRenderSystem simpleRenderSystem{dvmDevice, dvmRenderer.getSwapChainRenderPass()};
   while (!dvmWindow.shouldClose()) {
     glfwPollEvents();
-    drawFrame();
+
+    if(auto commandBuffer = dvmRenderer.beginFrame()) {
+      dvmRenderer.beginSwapChainRenderPass(commandBuffer);
+      simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
+      dvmRenderer.endSwapChainRenderPass(commandBuffer);
+      dvmRenderer.endFrame();
+    }
   }
   vkDeviceWaitIdle(dvmDevice.device());
 }
-void DvmApp::createPipelineLayout() {
-  VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-  pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipelineLayoutInfo.setLayoutCount = 0;
-  pipelineLayoutInfo.pSetLayouts = nullptr;
-  pipelineLayoutInfo.pushConstantRangeCount = 0;
-  pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(dvmDevice.device(), &pipelineLayoutInfo, nullptr,
-                             &pipelineLayout) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create pipeline layout!");
-  }
-}
+void DvmApp::loadGameObjects() {
+  std::vector<DvmModel::Vertex> vertices {
+    {{0.0, -0.5}, {1.0, 0.0, 0.0}},
+    {{0.5, 0.5}, {0.0, 1.0, 0.0}},
+    {{-0.5, 0}, {0.0, 0.0, 1.0}}
+  };
 
-void DvmApp::createPipeline() {
-  auto pipelineConfig = DvmPipeline::defaultPipelineConfigInfo(
-      dvmSwapChain.width(), dvmSwapChain.height());
-  pipelineConfig.renderPass = dvmSwapChain.getRenderPass();
-  pipelineConfig.pipelineLayout = pipelineLayout;
-  dvmPipeline = std::make_unique<DvmPipeline>(
-      dvmDevice, "shaders/simple_shader.vert.spv",
-      "shaders/simple_shader.frag.spv", pipelineConfig);
-}
+  auto model = std::make_shared<DvmModel>(dvmDevice, vertices);
 
-void DvmApp::createCommandBuffers() {
-  commandBuffers.resize(dvmSwapChain.imageCount());
+  auto triangle = DvmGameObject::createGameObject();
+  triangle.model = model;
+  triangle.color = { .1f, 1.f, .0f};
+  triangle.transform2d.translation.x = .2f;
+  triangle.transform2d.scale = {2.0f, 0.5f};
+  triangle.transform2d.rotation = .25f * glm::two_pi<float>();
 
-  VkCommandBufferAllocateInfo allocInfo{};
-  allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-  allocInfo.commandPool = dvmDevice.getCommandPool();
-  allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-
-  if (vkAllocateCommandBuffers(dvmDevice.device(), &allocInfo,
-                               commandBuffers.data()) != VK_SUCCESS) {
-    throw std::runtime_error("failed to allocate command buffers!");
-  }
-
-  for (int i = 0; i < commandBuffers.size(); i++) {
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-      throw std::runtime_error("failed to begin recording command buffer!");
-    }
-
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = dvmSwapChain.getRenderPass();
-    renderPassInfo.framebuffer = dvmSwapChain.getFrameBuffer(i);
-
-    renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = dvmSwapChain.getSwapChainExtent();
-
-    std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {0.1f, 0.1f, 0.1f, 0.1f};
-    clearValues[1].depthStencil = {0.1f, 0};
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassInfo.pClearValues = clearValues.data();
-
-    vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo,
-                         VK_SUBPASS_CONTENTS_INLINE);
-
-    dvmPipeline->bind(commandBuffers[i]);
-
-    vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-
-    vkCmdEndRenderPass(commandBuffers[i]);
-    if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-      throw std::runtime_error("failed to record command buffer!");
-    }
-  }
-}
-void DvmApp::drawFrame() {
-  uint32_t imageIndex;
-  auto result = dvmSwapChain.acquireNextImage(&imageIndex);
-
-  if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-    throw std::runtime_error("failed to acquire swap chain image!");
-  }
-
-  result = dvmSwapChain.submitCommandBuffers(&commandBuffers[imageIndex],
-                                             &imageIndex);
-  if (result != VK_SUCCESS) {
-    throw std::runtime_error("failed to acquire swap chain image!");
-  }
+  gameObjects.push_back(std::move(triangle));
 }
 } // namespace dvm

@@ -35,7 +35,7 @@ public:
 
   // Not copyable or movable
   DvmDevice(const DvmDevice &) = delete;
-  void operator=(const DvmDevice &) = delete;
+  DvmDevice &operator=(const DvmDevice &) = delete;
   DvmDevice(DvmDevice &&) = delete;
   DvmDevice &operator=(DvmDevice &&) = delete;
 

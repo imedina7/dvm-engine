@@ -8,6 +8,7 @@
 // std lib headers
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace dvm {
 
@@ -16,10 +17,13 @@ public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
   DvmSwapChain(DvmDevice &deviceRef, VkExtent2D windowExtent);
+  DvmSwapChain(DvmDevice& deviceRef,
+               VkExtent2D windowExtent,
+               std::shared_ptr<DvmSwapChain> previous);
   ~DvmSwapChain();
 
   DvmSwapChain(const DvmSwapChain &) = delete;
-  void operator=(const DvmSwapChain &) = delete;
+  DvmSwapChain &operator=(const DvmSwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) {
     return swapChainFramebuffers[index];
@@ -42,13 +46,21 @@ public:
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers,
                                 uint32_t *imageIndex);
 
+  bool compareSwapFormats(const DvmSwapChain& swapChain) const {
+    return swapChain.swapChainDepthFormat == swapChainDepthFormat &&
+           swapChain.swapChainImageFormat == swapChainImageFormat;
+  }
+
 private:
+  void init();
   void createSwapChain();
   void createImageViews();
   void createDepthResources();
   void createRenderPass();
   void createFramebuffers();
   void createSyncObjects();
+
+  std::shared_ptr <DvmSwapChain> oldSwapChain;
 
   // Helper functions
   VkSurfaceFormatKHR chooseSwapSurfaceFormat(
@@ -58,6 +70,7 @@ private:
   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
   VkFormat swapChainImageFormat;
+  VkFormat swapChainDepthFormat;
   VkExtent2D swapChainExtent;
 
   std::vector<VkFramebuffer> swapChainFramebuffers;
