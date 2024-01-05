@@ -27,6 +27,7 @@ void DvmApp::run()
   SimpleRenderSystem simpleRenderSystem {dvmDevice,
                                          dvmRenderer.getSwapChainRenderPass()};
   DvmCamera camera {};
+  GLFWwindow* window = dvmWindow.getGLFWwindow();
 
   camera.setViewTarget(glm::vec3(-5.f, -2.f, -7.f), glm::vec3(0.f, 0.f, 2.5f));
 
@@ -35,9 +36,20 @@ void DvmApp::run()
   auto viewerObject = DvmGameObject::createGameObject();
   KeyboardMovementController cameraController {};
 
-  while (!dvmWindow.shouldClose()) {
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  double mouseInitX, mouseInitY;
+  glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
+  if (glfwRawMouseMotionSupported())
+    glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+  while (!dvmWindow.shouldClose()
+         && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
+  {
     glfwPollEvents();
-
+    double mouseNewX, mouseNewY;
+    glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
+    glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
+    mouseInitX = mouseNewX;
+    mouseInitY = mouseNewY;
     auto newTime = std::chrono::high_resolution_clock::now();
 
     float frameTime =
@@ -46,8 +58,7 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    cameraController.moveInPlaneXZ(
-        dvmWindow.getGLFWwindow(), frameTime, viewerObject);
+    cameraController.moveInPlaneXZ(window, frameTime, viewerObject, mouseDelta, 0.1f);
     camera.setViewYXZ(viewerObject.transform.translation,
                       viewerObject.transform.rotation);
 
