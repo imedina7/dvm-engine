@@ -24,7 +24,10 @@
       "includePath": [
         "C:/Users/israel.medina/projects/personal/dvm-engine/**",
         "C:/VulkanSDK/Libraries/glfw-3.3.9.bin.WIN64/include",
-        "C:/VulkanSDK/1.3.268.0/Include"
+        "C:/VulkanSDK/1.3.268.0/Include",
+        "${workspaceFolder}/vendor/**",
+        "${workspaceFolder}/vendor/**/include",
+        "${workspaceFolder}/vendor/**/Include"
       ],
       "defines": [
         "_DEBUG",

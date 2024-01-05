@@ -54,12 +54,17 @@ else()
 	message(STATUS "Using glfw lib at: ${GLFW_LIB}")
 endif()
 
-include_directories(external)
+include_directories(vendor)
 
 # If TINYOBJ_PATH not specified in .env.cmake, try fetching from git repo
 if (NOT TINYOBJ_PATH)
-  message(STATUS "TINYOBJ_PATH not specified in .env.cmake, using external/tinyobjloader")
-  set(TINYOBJ_PATH external/tinyobjloader)
+  message(STATUS "TINYOBJ_PATH not specified in .env.cmake, using vendor/tinyobjloader")
+  set(TINYOBJ_PATH vendor/tinyobjloader)
+endif()
+
+if(NOT IMGUI_PATH)
+  message(STATUS "IMGUI_PATH not specified in .env.cmake, using vendor/imgui")
+  set(IMGUI_PATH vendor/imgui)
 endif()
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
@@ -88,6 +93,7 @@ if (WIN32)
     ${TINYOBJ_PATH}
     ${GLFW_INCLUDE_DIRS}
     ${GLM_PATH}
+    ${IMGUI_PATH}
     )
 
   target_link_directories(${PROJECT_NAME} PUBLIC

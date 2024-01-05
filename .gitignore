@@ -12,3 +12,6 @@ prefix/
 CMakeLists.txt.user
 CMakeUserPresets.json
 compile_commands.json
+
+vendor/**
+!vendor/tinyobjloader/
