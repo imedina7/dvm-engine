@@ -29,7 +29,7 @@ void DvmApp::run()
   DvmCamera camera {};
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
-  camera.setViewTarget(glm::vec3(-5.f, -2.f, -7.f), glm::vec3(0.f, 0.f, 2.5f));
+  camera.setViewDirection(glm::vec3(0.f, 3.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
 
   auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -37,16 +37,20 @@ void DvmApp::run()
   KeyboardMovementController cameraController {};
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
+
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
     glfwPollEvents();
     double mouseNewX, mouseNewY;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
+
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
@@ -58,7 +62,8 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    cameraController.moveInPlaneXZ(window, frameTime, viewerObject, mouseDelta, 0.1f);
+    cameraController.moveInPlaneXZ(
+        window, frameTime, viewerObject, mouseDelta, 0.1f);
     camera.setViewYXZ(viewerObject.transform.translation,
                       viewerObject.transform.rotation);
 
@@ -76,79 +81,37 @@ void DvmApp::run()
   vkDeviceWaitIdle(dvmDevice.device());
 }
 
-// temporary helper function, creates a 1x1x1 cube centered at offset
-std::unique_ptr<DvmModel> createCubeModel(DvmDevice& device, glm::vec3 offset)
-{
-  std::vector<DvmModel::Vertex> vertices {
-
-      // left face (white)
-      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-      {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-      {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-
-      // right face (yellow)
-      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-      {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-      {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-
-      // top face (orange, remember y axis points down)
-      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-      {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-      {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-
-      // bottom face (red)
-      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-      {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-      {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-
-      // nose face (blue)
-      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-      {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-
-      // tail face (green)
-      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-      {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-      {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-
-  };
-  for (auto& v : vertices) {
-    v.position += offset;
-  }
-  return std::make_unique<DvmModel>(device, vertices);
-}
-
 void DvmApp::loadGameObjects()
 {
-  std::shared_ptr<DvmModel> model =
-      createCubeModel(dvmDevice, glm::vec3 {0.f, 0.f, 0.f});
+  std::shared_ptr<DvmModel> model = DvmModel::createModelFromFile(
+      dvmDevice,
+      "C:\\Users\\israel.medina\\projects\\personal\\dvm-engine\\models\\flat_"
+      "vase.obj");
 
-  auto cube = DvmGameObject::createGameObject();
-  cube.model = model;
-  cube.transform.translation = {
+  auto vase = DvmGameObject::createGameObject();
+  vase.model = model;
+  vase.transform.translation = {
       0.f,
-      0.f,
-      2.5f,
+      .5f,
+      2.f,
   };
-  cube.transform.scale = {.5f, .5f, .5f};
-  gameObjects.push_back(std::move(cube));
+  vase.transform.scale = {1.5f, 1.5f, 1.5f};
+  gameObjects.push_back(std::move(vase));
+
+  std::shared_ptr<DvmModel> smoothVaseModel = DvmModel::createModelFromFile(
+      dvmDevice,
+      "C:\\Users\\israel.medina\\projects\\personal\\dvm-"
+      "engine\\models\\smooth_"
+      "vase.obj");
+
+  auto smoothVase = DvmGameObject::createGameObject();
+  smoothVase.model = smoothVaseModel;
+  smoothVase.transform.translation = {
+      1.f,
+      .5f,
+      2.f,
+  };
+  smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
+  gameObjects.push_back(std::move(smoothVase));
 }
 }  // namespace dvm

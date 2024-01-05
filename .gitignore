@@ -13,5 +13,5 @@ CMakeLists.txt.user
 CMakeUserPresets.json
 compile_commands.json
 
-vendor/**
-!vendor/tinyobjloader/
+vendor/imgui/**
+src/vc140.pdb
