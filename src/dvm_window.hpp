@@ -5,28 +5,33 @@
 
 #include <string>
 
-namespace dvm {
+namespace dvm
+{
 
-class DvmWindow {
+class DvmWindow
+{
 public:
   DvmWindow(int w, int h, std::string name);
   ~DvmWindow();
 
-  DvmWindow(const DvmWindow &) = delete;
-  DvmWindow &operator=(const DvmWindow &) = delete;
+  DvmWindow(const DvmWindow&) = delete;
+  DvmWindow& operator=(const DvmWindow&) = delete;
 
   bool wasWindowResized() { return framebufferResized; }
   void resetWindowResized() { framebufferResized = false; }
   bool shouldClose() { return glfwWindowShouldClose(window); }
 
-  VkExtent2D getExtent() {
+  GLFWwindow* getGLFWwindow() const { return window; };
+  VkExtent2D getExtent()
+  {
     return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
   }
-  void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
-
+  void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
 private:
-  static void framebufferResizedCallback(GLFWwindow *window, int width, int height);
+  static void framebufferResizedCallback(GLFWwindow* window,
+                                         int width,
+                                         int height);
   void initWindow();
 
   bool framebufferResized;
@@ -34,7 +39,7 @@ private:
   int height;
 
   std::string windowName;
-  GLFWwindow *window;
-  VkSurfaceKHR *surface;
+  GLFWwindow* window;
+  VkSurfaceKHR* surface;
 };
-} // namespace dvm
+}  // namespace dvm

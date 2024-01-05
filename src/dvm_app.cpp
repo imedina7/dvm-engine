@@ -1,8 +1,11 @@
 #include "dvm_app.hpp"
+#include "dvm_camera.hpp"
 #include "dvm_swap_chain.hpp"
+#include "keyboard_movement_controller.hpp"
 #include <array>
 #include <cstdint>
 #include <stdexcept>
+#include <chrono>
 #include <vulkan/vulkan_core.h>
 
 #include "simple_render_system.hpp"
@@ -11,26 +14,50 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-namespace dvm {
-struct SimplePushConstantData {
-  glm::mat2 transform{1.0f};
-  glm::vec2 offset;
-  alignas(16) glm::vec3 color;
-};
-
-DvmApp::DvmApp() {
+namespace dvm
+{
+DvmApp::DvmApp()
+{
   loadGameObjects();
 }
 DvmApp::~DvmApp() {}
 
-void DvmApp::run() {
-  SimpleRenderSystem simpleRenderSystem{dvmDevice, dvmRenderer.getSwapChainRenderPass()};
+void DvmApp::run()
+{
+  SimpleRenderSystem simpleRenderSystem {dvmDevice,
+                                         dvmRenderer.getSwapChainRenderPass()};
+  DvmCamera camera {};
+
+  camera.setViewTarget(glm::vec3(-5.f, -2.f, -7.f), glm::vec3(0.f, 0.f, 2.5f));
+
+  auto currentTime = std::chrono::high_resolution_clock::now();
+
+  auto viewerObject = DvmGameObject::createGameObject();
+  KeyboardMovementController cameraController {};
+
   while (!dvmWindow.shouldClose()) {
     glfwPollEvents();
 
-    if(auto commandBuffer = dvmRenderer.beginFrame()) {
+    auto newTime = std::chrono::high_resolution_clock::now();
+
+    float frameTime =
+        std::chrono::duration<float, std::chrono::seconds::period>(
+            newTime - currentTime)
+            .count();
+    currentTime = newTime;
+
+    cameraController.moveInPlaneXZ(
+        dvmWindow.getGLFWwindow(), frameTime, viewerObject);
+    camera.setViewYXZ(viewerObject.transform.translation,
+                      viewerObject.transform.rotation);
+
+    float aspect = dvmRenderer.getAspectRatio();
+
+    camera.setPerspectiveProjection(glm::radians(50.f), aspect, .06f, 100.f);
+
+    if (auto commandBuffer = dvmRenderer.beginFrame()) {
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
-      simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
+      simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }
@@ -38,22 +65,79 @@ void DvmApp::run() {
   vkDeviceWaitIdle(dvmDevice.device());
 }
 
-void DvmApp::loadGameObjects() {
+// temporary helper function, creates a 1x1x1 cube centered at offset
+std::unique_ptr<DvmModel> createCubeModel(DvmDevice& device, glm::vec3 offset)
+{
   std::vector<DvmModel::Vertex> vertices {
-    {{0.0, -0.5}, {1.0, 0.0, 0.0}},
-    {{0.5, 0.5}, {0.0, 1.0, 0.0}},
-    {{-0.5, 0}, {0.0, 0.0, 1.0}}
+
+      // left face (white)
+      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+      {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+      {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+
+      // right face (yellow)
+      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+      {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+      {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+
+      // top face (orange, remember y axis points down)
+      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+
+      // bottom face (red)
+      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+
+      // nose face (blue)
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+
+      // tail face (green)
+      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+
   };
-
-  auto model = std::make_shared<DvmModel>(dvmDevice, vertices);
-
-  auto triangle = DvmGameObject::createGameObject();
-  triangle.model = model;
-  triangle.color = { .1f, 1.f, .0f};
-  triangle.transform2d.translation.x = .2f;
-  triangle.transform2d.scale = {2.0f, 0.5f};
-  triangle.transform2d.rotation = .25f * glm::two_pi<float>();
-
-  gameObjects.push_back(std::move(triangle));
+  for (auto& v : vertices) {
+    v.position += offset;
+  }
+  return std::make_unique<DvmModel>(device, vertices);
 }
-} // namespace dvm
+
+void DvmApp::loadGameObjects()
+{
+  std::shared_ptr<DvmModel> model =
+      createCubeModel(dvmDevice, glm::vec3 {0.f, 0.f, 0.f});
+
+  auto cube = DvmGameObject::createGameObject();
+  cube.model = model;
+  cube.transform.translation = {
+      0.f,
+      0.f,
+      2.5f,
+  };
+  cube.transform.scale = {.5f, .5f, .5f};
+  gameObjects.push_back(std::move(cube));
+}
+}  // namespace dvm

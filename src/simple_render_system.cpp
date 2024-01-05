@@ -8,14 +8,15 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#include <iostream>
 
 namespace dvm
 {
 struct SimplePushConstantData
 {
-  glm::mat2 transform {1.0f};
-  glm::vec2 offset;
-  alignas(16) glm::vec3 color;
+  glm::mat4 transform {1.0f};
+  alignas(16) glm::vec3 color {};
 };
 
 SimpleRenderSystem::SimpleRenderSystem(DvmDevice& device,
@@ -65,15 +66,18 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass)
 }
 
 void SimpleRenderSystem::renderGameObjects(
-    VkCommandBuffer commandBuffer, std::vector<DvmGameObject>& gameObjects)
+    VkCommandBuffer commandBuffer,
+    std::vector<DvmGameObject>& gameObjects,
+    DvmCamera& camera)
 {
   dvmPipeline->bind(commandBuffer);
 
+  auto projectionView = camera.getProjection() * camera.getView();
+
   for (auto& obj : gameObjects) {
     SimplePushConstantData push {};
-    push.offset = obj.transform2d.translation;
     push.color = obj.color;
-    push.transform = obj.transform2d.mat2();
+    push.transform = projectionView * obj.transform.mat4();
 
     vkCmdPushConstants(
         commandBuffer,
@@ -82,6 +86,7 @@ void SimpleRenderSystem::renderGameObjects(
         0,
         sizeof(SimplePushConstantData),
         &push);
+
     obj.model->bind(commandBuffer);
     obj.model->draw(commandBuffer);
   }
