@@ -67,6 +67,26 @@ if(NOT IMGUI_PATH)
   set(IMGUI_PATH vendor/imgui)
 endif()
 
+
+add_library(imgui STATIC
+	${IMGUI_PATH}/imgui.cpp
+	${IMGUI_PATH}/imgui.h
+	${IMGUI_PATH}/imstb_rectpack.h
+	${IMGUI_PATH}/imstb_textedit.h
+	${IMGUI_PATH}/imstb_truetype.h
+    ${IMGUI_PATH}/imgui_demo.cpp
+    ${IMGUI_PATH}/imgui_draw.cpp
+    ${IMGUI_PATH}/imgui_internal.h
+    ${IMGUI_PATH}/imgui_tables.cpp
+    ${IMGUI_PATH}/imgui_widgets.cpp
+)
+target_include_directories(imgui PUBLIC
+    $<BUILD_INTERFACE:${ROOT}>
+    $<INSTALL_INTERFACE:include>)
+	
+set(INSTALL_TARGETS imgui)
+set(IMGUI_HEADERS ${IMGUI_PATH}/imgui.h ${IMGUI_PATH}/imconfig.h)
+
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -74,6 +94,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build")
+set(CMAKE_BUILD_TYPE Debug)
 
 if (WIN32)
   message(STATUS "CREATING BUILD FOR WINDOWS")
@@ -99,6 +120,7 @@ if (WIN32)
   target_link_directories(${PROJECT_NAME} PUBLIC
     ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
+    imgui
   )
 
   target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1)
@@ -107,6 +129,7 @@ elseif (UNIX)
     target_include_directories(${PROJECT_NAME} PUBLIC
       ${PROJECT_SOURCE_DIR}/src
       ${TINYOBJ_PATH}
+      ${IMGUI_HEADERS}
     )
     target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES})
 endif()
