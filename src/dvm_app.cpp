@@ -42,8 +42,8 @@ void DvmApp::createPipeline() {
   pipelineConfig.renderPass = dvmSwapChain.getRenderPass();
   pipelineConfig.pipelineLayout = pipelineLayout;
   dvmPipeline = std::make_unique<DvmPipeline>(
-      dvmDevice, "src/shaders/simple_shader.vert.spv",
-      "src/shaders/simple_shader.frag.spv", pipelineConfig);
+      dvmDevice, "shaders/simple_shader.vert.spv",
+      "shaders/simple_shader.frag.spv", pipelineConfig);
 }
 
 void DvmApp::createCommandBuffers() {

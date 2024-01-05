@@ -7,6 +7,10 @@
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
+#ifndef ENGINE_DIR
+#define ENGINE_DIR "../"
+#endif
+
 namespace dvm {
 
 DvmPipeline::DvmPipeline(DvmDevice &device, const std::string &vertFilepath,
@@ -23,10 +27,12 @@ DvmPipeline::~DvmPipeline() {
 }
 
 std::vector<char> DvmPipeline::readFile(const std::string &filepath) {
-  std::ifstream file{filepath, std::ios::ate | std::ios::binary};
+  std::string enginePath = ENGINE_DIR + filepath;
+
+  std::ifstream file{enginePath, std::ios::ate | std::ios::binary};
 
   if (!file.is_open()) {
-    throw std::runtime_error("failed to open file: " + filepath);
+    throw std::runtime_error("failed to open file: " + enginePath);
   }
 
   size_t fileSize = static_cast<size_t>(file.tellg());
