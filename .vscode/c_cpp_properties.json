@@ -1,24 +1,51 @@
 {
-    "configurations": [
-      {
-        "name": "Linux",
-        "includePath": ["${workspaceFolder}/**"],
-        "defines": [],
-        "compilerPath": "/usr/bin/gcc",
-        "cStandard": "c11",
-        "cppStandard": "c++17",
-        "intelliSenseMode": "clang-x64",
-        "browse": {
-            "path": [
-                "${workspaceRoot}",
-                "/usr/include",
-                "/usr/local/include",
-                "/usr/include/c++/13.2.1",
-                "/usr/include/c++/13.2.1/x86_64-pc-linux-gnu/32/bits"
-            ]
-        }
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [],
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "clang-x64",
+      "browse": {
+        "path": [
+          "${workspaceRoot}",
+          "/usr/include",
+          "/usr/local/include",
+          "/usr/include/c++/13.2.1",
+          "/usr/include/c++/13.2.1/x86_64-pc-linux-gnu/32/bits"
+        ]
       }
-    ],
-    "version": 4
-  }
-  
+    },
+    {
+      "name": "Win32",
+      "includePath": [
+        "C:/Users/israel.medina/projects/personal/dvm-engine/**",
+        "C:/VulkanSDK/Libraries/glfw-3.3.9.bin.WIN64/include",
+        "C:/VulkanSDK/1.3.268.0/Include"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "windowsSdkVersion": "10.0.18362.0",
+      "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/cl.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "msvc-x64",
+      "mergeConfigurations": false,
+      "browse": {
+        "path": [
+          "C:/Users/israel.medina/OneDrive - Perficient, Inc/Documents/Visual Studio 2022/glfw-3.3.9.bin.WIN64/include",
+          "${VULKAN_SDK}/Include",
+          "${workspaceFolder}"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      }
+    }
+  ],
+  "version": 4
+}
