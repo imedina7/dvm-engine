@@ -1,6 +1,7 @@
 #pragma once
 #include "dvm_device.hpp"
 #include "dvm_game_object.hpp"
+#include "dvm_frame_info.hpp"
 #include "dvm_camera.hpp"
 #include "dvm_pipeline.hpp"
 #include "dvm_swap_chain.hpp"
@@ -21,9 +22,8 @@ public:
   SimpleRenderSystem(const SimpleRenderSystem&) = delete;
   SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-  void renderGameObjects(VkCommandBuffer commandBuffer,
-                         std::vector<DvmGameObject>& gameObjects,
-                         DvmCamera& camera);
+  void renderGameObjects(FrameInfo& frameInfo,
+                         std::vector<DvmGameObject>& gameObjects);
 
 private:
   void createPipelineLayout();

@@ -9,9 +9,12 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <glm/gtc/constants.hpp>
+#include <thread>
 
-namespace dvm {
-class DvmApp {
+namespace dvm
+{
+class DvmApp
+{
 public:
   static constexpr int WIDTH = 800;
   static constexpr int HEIGHT = 600;
@@ -19,18 +22,19 @@ public:
   DvmApp();
   ~DvmApp();
 
-  DvmApp(const DvmApp &) = delete;
-  DvmApp &operator=(const DvmApp &) = delete;
+  DvmApp(const DvmApp&) = delete;
+  DvmApp& operator=(const DvmApp&) = delete;
 
   void run();
 
 private:
   void loadGameObjects();
 
-  DvmWindow dvmWindow{WIDTH, HEIGHT, "Hello vulkan!"};
-  DvmDevice dvmDevice{dvmWindow};
-  DvmRenderer dvmRenderer{dvmWindow, dvmDevice};
+  DvmWindow dvmWindow {WIDTH, HEIGHT, "Hello vulkan!"};
+  DvmDevice dvmDevice {dvmWindow};
+  DvmRenderer dvmRenderer {dvmWindow, dvmDevice};
+  std::thread audio;
 
   std::vector<DvmGameObject> gameObjects;
 };
-} // namespace dvm
+}  // namespace dvm

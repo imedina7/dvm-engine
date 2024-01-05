@@ -1,4 +1,5 @@
 #include "dvm_device.hpp"
+#include "dvm_buffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -55,13 +56,11 @@ private:
 
   DvmDevice& dvmDevice;
 
-  VkBuffer vertexBuffer;
-  VkDeviceMemory vertexBufferMemory;
+  std::unique_ptr<DvmBuffer> vertexBuffer;
   uint32_t vertexCount;
 
   bool hasIndexBuffer = false;
-  VkBuffer indexBuffer;
-  VkDeviceMemory indexBufferMemory;
+  std::unique_ptr<DvmBuffer> indexBuffer;
   uint32_t indexCount;
 };
 }  // namespace dvm

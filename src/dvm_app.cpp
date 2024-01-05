@@ -1,5 +1,8 @@
 #include "dvm_app.hpp"
+#include "dvm_audio.hpp"
+#include "dvm_buffer.hpp"
 #include "dvm_camera.hpp"
+#include "dvm_frame_info.hpp"
 #include "dvm_swap_chain.hpp"
 #include "keyboard_movement_controller.hpp"
 #include <array>
@@ -16,14 +19,32 @@
 
 namespace dvm
 {
+struct GlobalUbo
+{
+  glm::mat4 projectionView {1.0f};
+  glm::vec3 lightDirection = glm::normalize(glm::vec3 {1.f, -3.f, -1.f});
+};
+
 DvmApp::DvmApp()
 {
   loadGameObjects();
 }
-DvmApp::~DvmApp() {}
+DvmApp::~DvmApp()
+{
+  audio.join();
+}
 
 void DvmApp::run()
 {
+  DvmBuffer globalUboBuffer {
+      dvmDevice,
+      sizeof(GlobalUbo),
+      DvmSwapChain::MAX_FRAMES_IN_FLIGHT,
+      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+      dvmDevice.properties.limits.minUniformBufferOffsetAlignment};
+  globalUboBuffer.map();
+
   SimpleRenderSystem simpleRenderSystem {dvmDevice,
                                          dvmRenderer.getSwapChainRenderPass()};
   DvmCamera camera {};
@@ -43,6 +64,8 @@ void DvmApp::run()
 
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
+  audio = std::thread(DvmAudio());
 
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
@@ -72,8 +95,18 @@ void DvmApp::run()
     camera.setPerspectiveProjection(glm::radians(50.f), aspect, .06f, 100.f);
 
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
+      int frameIndex = dvmRenderer.getCurrentFrameIndex();
+
+      FrameInfo frameInfo {frameIndex, frameTime, commandBuffer, camera};
+      GlobalUbo ubo {};
+
+      ubo.projectionView = camera.getProjection() * camera.getView();
+      globalUboBuffer.writeToIndex(&ubo, frameIndex);
+      globalUboBuffer.flushIndex(frameIndex);
+
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
-      simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
+
+      simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }
