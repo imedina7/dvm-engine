@@ -2,6 +2,7 @@
 #include "dvm_device.hpp"
 #include "dvm_game_object.hpp"
 #include "dvm_renderer.hpp"
+#include "dvm_descriptors.hpp"
 #include "dvm_swap_chain.hpp"
 #include "dvm_window.hpp"
 #include <GLFW/glfw3.h>
@@ -35,6 +36,7 @@ private:
   DvmRenderer dvmRenderer {dvmWindow, dvmDevice};
   std::thread audio;
 
+  std::unique_ptr<DvmDescriptorPool> globalPool {};
   std::vector<DvmGameObject> gameObjects;
 };
 }  // namespace dvm

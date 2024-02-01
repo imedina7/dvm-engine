@@ -16,7 +16,9 @@ namespace dvm
 class SimpleRenderSystem
 {
 public:
-  SimpleRenderSystem(DvmDevice& dvmDevice, VkRenderPass renderPass);
+  SimpleRenderSystem(DvmDevice& dvmDevice,
+                     VkRenderPass renderPass,
+                     VkDescriptorSetLayout globalSetLayout);
   ~SimpleRenderSystem();
 
   SimpleRenderSystem(const SimpleRenderSystem&) = delete;
@@ -26,7 +28,7 @@ public:
                          std::vector<DvmGameObject>& gameObjects);
 
 private:
-  void createPipelineLayout();
+  void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
   void createPipeline(VkRenderPass renderPass);
 
   DvmDevice& dvmDevice;

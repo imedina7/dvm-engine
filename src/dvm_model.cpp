@@ -201,8 +201,8 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
                          attrib.normals[3 * index.normal_index + 2]};
       }
       if (index.texcoord_index >= 0) {
-        vertex.uv = {attrib.normals[2 * index.texcoord_index + 0],
-                     attrib.normals[2 * index.texcoord_index + 1]};
+        vertex.uv = {attrib.texcoords[2 * index.texcoord_index + 0],
+                     attrib.texcoords[2 * index.texcoord_index + 1]};
       }
 
       if (uniqueVertices.count(vertex) == 0) {

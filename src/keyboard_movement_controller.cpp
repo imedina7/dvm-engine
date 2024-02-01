@@ -9,7 +9,7 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window,
                                                float dt,
                                                DvmGameObject& gameObj,
                                                glm::vec2 deltaCursor,
-                                               float mouseSensibility)
+                                               float mouseSensitivity)
 {
   glm::vec3 rotate {0};
 
@@ -26,9 +26,9 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window,
     gameObj.transform.rotation += lookSpeed * dt * glm::normalize(rotate);
   }
 
-  gameObj.transform.rotation.x -= deltaCursor.y * dt * mouseSensibility;
+  gameObj.transform.rotation.x -= deltaCursor.y * dt * mouseSensitivity;
 
-  gameObj.transform.rotation.y += deltaCursor.x * dt * mouseSensibility;
+  gameObj.transform.rotation.y += deltaCursor.x * dt * mouseSensitivity;
 
   gameObj.transform.rotation.x =
       glm::clamp(gameObj.transform.rotation.x, -1.5f, 1.5f);

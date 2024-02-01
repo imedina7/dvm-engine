@@ -22,11 +22,19 @@ namespace dvm
 struct GlobalUbo
 {
   glm::mat4 projectionView {1.0f};
-  glm::vec3 lightDirection = glm::normalize(glm::vec3 {1.f, -3.f, -1.f});
+
+  glm::vec4 ambientLightColor {1.0f, 1.0f, 1.0f, .02f};  // w is intensity
+  glm::vec4 lightPosition {-1.0f};
+  glm::vec4 lightColor {1.0f};  // w is intensity
 };
 
 DvmApp::DvmApp()
 {
+  globalPool = DvmDescriptorPool::Builder(dvmDevice)
+                   .setMaxSets(DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                   .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                   .build();
   loadGameObjects();
 }
 DvmApp::~DvmApp()
@@ -36,17 +44,40 @@ DvmApp::~DvmApp()
 
 void DvmApp::run()
 {
-  DvmBuffer globalUboBuffer {
-      dvmDevice,
-      sizeof(GlobalUbo),
-      DvmSwapChain::MAX_FRAMES_IN_FLIGHT,
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-      dvmDevice.properties.limits.minUniformBufferOffsetAlignment};
-  globalUboBuffer.map();
+  std::vector<std::unique_ptr<DvmBuffer>> uboBuffers(
+      DvmSwapChain::MAX_FRAMES_IN_FLIGHT);
 
-  SimpleRenderSystem simpleRenderSystem {dvmDevice,
-                                         dvmRenderer.getSwapChainRenderPass()};
+  for (int i = 0; i < uboBuffers.size(); i++) {
+    uboBuffers[i] = std::make_unique<DvmBuffer>(
+        dvmDevice,
+        sizeof(GlobalUbo),
+        DvmSwapChain::MAX_FRAMES_IN_FLIGHT,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+        dvmDevice.properties.limits.minUniformBufferOffsetAlignment);
+    uboBuffers[i]->map();
+  }
+
+  auto globalSetLayout = DvmDescriptorSetLayout::Builder(dvmDevice)
+                             .addBinding(0,
+                                         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                         VK_SHADER_STAGE_ALL_GRAPHICS)
+                             .build();
+
+  std::vector<VkDescriptorSet> globalDescriptorSets(
+      DvmSwapChain::MAX_FRAMES_IN_FLIGHT);
+
+  for (int i = 0; i < globalDescriptorSets.size(); i++) {
+    auto bufferInfo = uboBuffers[i]->descriptorInfo();
+    DvmDescriptorWriter(*globalSetLayout, *globalPool)
+        .writeBuffer(0, &bufferInfo)
+        .build(globalDescriptorSets[i]);
+  }
+
+  SimpleRenderSystem simpleRenderSystem {
+      dvmDevice,
+      dvmRenderer.getSwapChainRenderPass(),
+      globalSetLayout->getDescriptorSetLayout()};
   DvmCamera camera {};
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
@@ -56,7 +87,7 @@ void DvmApp::run()
 
   auto viewerObject = DvmGameObject::createGameObject();
   KeyboardMovementController cameraController {};
-
+  viewerObject.transform.translation.z = -2.5f;
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   double mouseInitX, mouseInitY;
@@ -77,6 +108,7 @@ void DvmApp::run()
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
+
     auto newTime = std::chrono::high_resolution_clock::now();
 
     float frameTime =
@@ -97,12 +129,16 @@ void DvmApp::run()
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
       int frameIndex = dvmRenderer.getCurrentFrameIndex();
 
-      FrameInfo frameInfo {frameIndex, frameTime, commandBuffer, camera};
+      FrameInfo frameInfo {frameIndex,
+                           frameTime,
+                           commandBuffer,
+                           camera,
+                           globalDescriptorSets[frameIndex]};
       GlobalUbo ubo {};
 
       ubo.projectionView = camera.getProjection() * camera.getView();
-      globalUboBuffer.writeToIndex(&ubo, frameIndex);
-      globalUboBuffer.flushIndex(frameIndex);
+      uboBuffers[frameIndex]->writeToBuffer(&ubo);
+      uboBuffers[frameIndex]->flush();
 
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
 
@@ -126,7 +162,7 @@ void DvmApp::loadGameObjects()
   vase.transform.translation = {
       0.f,
       .5f,
-      2.f,
+      .0f,
   };
   vase.transform.scale = {1.5f, 1.5f, 1.5f};
   gameObjects.push_back(std::move(vase));
@@ -142,9 +178,24 @@ void DvmApp::loadGameObjects()
   smoothVase.transform.translation = {
       1.f,
       .5f,
-      2.f,
+      .0f,
   };
   smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
   gameObjects.push_back(std::move(smoothVase));
+
+  std::shared_ptr<DvmModel> floorModel = DvmModel::createModelFromFile(
+      dvmDevice,
+      "C:\\Users\\israel.medina\\projects\\personal\\dvm-"
+      "engine\\models\\quad.obj");
+
+  auto floorObject = DvmGameObject::createGameObject();
+  floorObject.model = floorModel;
+  floorObject.transform.translation = {
+      .0f,
+      .5f,
+      .0f,
+  };
+  floorObject.transform.scale = {5.f, 1.f, 5.f};
+  gameObjects.push_back(std::move(floorObject));
 }
 }  // namespace dvm
