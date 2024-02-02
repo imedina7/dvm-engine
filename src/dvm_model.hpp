@@ -17,6 +17,17 @@ namespace dvm
 {
 class DvmModel
 {
+  enum PrimitiveType
+  {
+    PLANE = 0,
+    CUBE,
+    SPHERE,
+    CIRCLE,
+    CYLINDER,
+    TORUS,
+    TOTAL_PRIMITIVES
+  };
+
 public:
   struct Vertex
   {
@@ -44,6 +55,11 @@ public:
     std::vector<tinyobj::material_t> materials {};
 
     void loadModel(const std::string& filepath);
+    void makePrimitive(PrimitiveType primitive,
+                       glm::vec3 resolution = glm::vec3(1),
+                       glm::vec3 position = glm::vec3(0.f),
+                       glm::vec3 scale = glm::vec3(1.f),
+                       glm::vec3 rotation = glm::vec3(0.f));
   };
 
   DvmModel(DvmDevice& device, const Builder& builder);
@@ -53,6 +69,15 @@ public:
 
   static std::unique_ptr<DvmModel> createModelFromFile(
       DvmDevice& device, const std::string& filepath);
+
+  static std::unique_ptr<DvmModel> createSphere(
+      DvmDevice& device,
+      int segments,
+      int rings,
+      float radius,
+      glm::vec3 position = glm::vec3(0.f),
+      glm::vec3 scale = glm::vec3(1.f),
+      glm::vec3 rotation = glm::vec3(0.f));
 
   void bind(VkCommandBuffer commandBuffer);
   void draw(VkCommandBuffer commandBuffer);
