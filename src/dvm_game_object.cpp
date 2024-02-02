@@ -50,4 +50,15 @@ glm::mat3 TransformComponent::normalMatrix()
        invScale.y * (c1 * c3 * s2 + s1 * s3)},
       {invScale.z * (c2 * s1), invScale.z * (-s2), invScale.z * (c1 * c2)}};
 }
+DvmGameObject DvmGameObject::createPointLight(float intensity,
+                                              float radius,
+                                              glm::vec3 color)
+{
+  DvmGameObject object = DvmGameObject::createGameObject();
+  object.color = color;
+  object.transform.scale.x = radius;
+  object.pointLight = std::make_unique<PointLightComponent>();
+  object.pointLight->lightIntensity = intensity;
+  return object;
+}
 }  // namespace dvm

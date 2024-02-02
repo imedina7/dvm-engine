@@ -1,4 +1,4 @@
-#include "simple_render_system.hpp"
+#include "point_light_system.hpp"
 #include "dvm_swap_chain.hpp"
 #include <array>
 #include <cstdint>
@@ -13,32 +13,34 @@
 
 namespace dvm
 {
-struct SimplePushConstantData
+
+struct PointLightPushConstants
 {
-  glm::mat4 modelMatrix {1.0f};
-  glm::mat4 normalMatrix {1.0f};
+  glm::vec4 position {};
+  glm::vec4 color {};
+  float radius;
 };
 
-SimpleRenderSystem::SimpleRenderSystem(DvmDevice& device,
-                                       VkRenderPass renderPass,
-                                       VkDescriptorSetLayout globalSetLayout)
+PointLightSystem::PointLightSystem(DvmDevice& device,
+                                   VkRenderPass renderPass,
+                                   VkDescriptorSetLayout globalSetLayout)
     : dvmDevice {device}
 {
   createPipelineLayout(globalSetLayout);
   createPipeline(renderPass);
 }
-SimpleRenderSystem::~SimpleRenderSystem()
+PointLightSystem::~PointLightSystem()
 {
   vkDestroyPipelineLayout(dvmDevice.device(), pipelineLayout, nullptr);
 }
 
-void SimpleRenderSystem::createPipelineLayout(
+void PointLightSystem::createPipelineLayout(
     VkDescriptorSetLayout globalSetLayout)
 {
   VkPushConstantRange pushConstantRange {
       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
       0,
-      sizeof(SimplePushConstantData)};
+      sizeof(PointLightPushConstants)};
 
   std::vector<VkDescriptorSetLayout> descriptorSetLayouts {globalSetLayout};
 
@@ -58,20 +60,46 @@ void SimpleRenderSystem::createPipelineLayout(
   }
 }
 
-void SimpleRenderSystem::createPipeline(VkRenderPass renderPass)
+void PointLightSystem::createPipeline(VkRenderPass renderPass)
 {
   PipelineConfigInfo pipelineConfig {};
   DvmPipeline::defaultPipelineConfigInfo(pipelineConfig);
+  pipelineConfig.bindingDescriptions.clear();
+  pipelineConfig.attributeDescriptions.clear();
   pipelineConfig.renderPass = renderPass;
   pipelineConfig.pipelineLayout = pipelineLayout;
   dvmPipeline = std::make_unique<DvmPipeline>(dvmDevice,
-                                              "shaders/simple_shader.vert.spv",
-                                              "shaders/simple_shader.frag.spv",
+                                              "shaders/point_light.vert.spv",
+                                              "shaders/point_light.frag.spv",
                                               pipelineConfig);
 }
 
-void SimpleRenderSystem::renderGameObjects(
-    FrameInfo& frameInfo, std::vector<DvmGameObject>& gameObjects)
+void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
+{
+  auto rotateLight =
+      glm::rotate(glm::mat4(1.f), frameInfo.frameTime, {0.f, -1.f, 0.f});
+  int lightIndex = 0;
+  for (auto& kv : frameInfo.gameObjects) {
+    auto& obj = kv.second;
+    if (obj.pointLight == nullptr) {
+      continue;
+    }
+
+    assert(lightIndex < MAX_LIGHTS && "Max point lights exceeded");
+
+    obj.transform.translation =
+        glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
+
+    ubo.pointLights[lightIndex].position =
+        glm::vec4(obj.transform.translation, 1.f);
+    ubo.pointLights[lightIndex].color =
+        glm::vec4(obj.color, obj.pointLight->lightIntensity);
+    lightIndex++;
+  }
+  ubo.numLights = lightIndex;
+}
+
+void PointLightSystem::render(FrameInfo& frameInfo)
 {
   dvmPipeline->bind(frameInfo.commandBuffer);
 
@@ -83,23 +111,25 @@ void SimpleRenderSystem::renderGameObjects(
                           &frameInfo.globalDescriptorSet,
                           0,
                           nullptr);
+  for (auto& kv : frameInfo.gameObjects) {
+    auto& obj = kv.second;
+    if (obj.pointLight == nullptr) {
+      continue;
+    }
 
-  for (auto& obj : gameObjects) {
-    SimplePushConstantData push {};
-
-    push.normalMatrix = obj.transform.normalMatrix();
-    push.modelMatrix = obj.transform.mat4();
+    PointLightPushConstants push {};
+    push.position = glm::vec4(obj.transform.translation, 1.f);
+    push.color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
+    push.radius = obj.transform.scale.x;
 
     vkCmdPushConstants(
         frameInfo.commandBuffer,
         pipelineLayout,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         0,
-        sizeof(SimplePushConstantData),
+        sizeof(PointLightPushConstants),
         &push);
-
-    obj.model->bind(frameInfo.commandBuffer);
-    obj.model->draw(frameInfo.commandBuffer);
+    vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
   }
 }
 }  // namespace dvm

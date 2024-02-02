@@ -8,29 +8,34 @@
 #include <vulkan/vulkan_core.h>
 
 #ifndef ENGINE_DIR
-#define ENGINE_DIR "../"
+#  define ENGINE_DIR "../"
 #endif
 #include "dvm_model.hpp"
 
-namespace dvm {
+namespace dvm
+{
 
-DvmPipeline::DvmPipeline(DvmDevice &device, const std::string &vertFilepath,
-                         const std::string &fragFilepath,
-                         const PipelineConfigInfo &configInfo)
-    : dvmDevice{device} {
+DvmPipeline::DvmPipeline(DvmDevice& device,
+                         const std::string& vertFilepath,
+                         const std::string& fragFilepath,
+                         const PipelineConfigInfo& configInfo)
+    : dvmDevice {device}
+{
   createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
 }
 
-DvmPipeline::~DvmPipeline() {
+DvmPipeline::~DvmPipeline()
+{
   vkDestroyShaderModule(dvmDevice.device(), vertShaderModule, nullptr);
   vkDestroyShaderModule(dvmDevice.device(), fragShaderModule, nullptr);
   vkDestroyPipeline(dvmDevice.device(), graphicsPipeline, nullptr);
 }
 
-std::vector<char> DvmPipeline::readFile(const std::string &filepath) {
+std::vector<char> DvmPipeline::readFile(const std::string& filepath)
+{
   std::string enginePath = ENGINE_DIR + filepath;
 
-  std::ifstream file{enginePath, std::ios::ate | std::ios::binary};
+  std::ifstream file {enginePath, std::ios::ate | std::ios::binary};
 
   if (!file.is_open()) {
     throw std::runtime_error("failed to open file: " + enginePath);
@@ -48,9 +53,10 @@ std::vector<char> DvmPipeline::readFile(const std::string &filepath) {
   return buffer;
 }
 
-void DvmPipeline::createGraphicsPipeline(const std::string &vertFilepath,
-                                         const std::string &fragFilepath,
-                                         const PipelineConfigInfo &configInfo) {
+void DvmPipeline::createGraphicsPipeline(const std::string& vertFilepath,
+                                         const std::string& fragFilepath,
+                                         const PipelineConfigInfo& configInfo)
+{
   assert(configInfo.pipelineLayout != VK_NULL_HANDLE &&
          "Cannot create graphics pipeline: no pipelineLayout provided in "
          "configInfo");
@@ -81,18 +87,20 @@ void DvmPipeline::createGraphicsPipeline(const std::string &vertFilepath,
   shaderStages[1].pNext = nullptr;
   shaderStages[1].pSpecializationInfo = nullptr;
 
-  auto bindingDescriptions = DvmModel::Vertex::getBindingDescriptions();
-  auto attributeDescriptions = DvmModel::Vertex::getAttributeDescriptions();
+  auto& bindingDescriptions = configInfo.bindingDescriptions;
+  auto& attributeDescriptions = configInfo.attributeDescriptions;
 
-  VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+  VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
   vertexInputInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-  vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+  vertexInputInfo.vertexAttributeDescriptionCount =
+      static_cast<uint32_t>(attributeDescriptions.size());
+  vertexInputInfo.vertexBindingDescriptionCount =
+      static_cast<uint32_t>(bindingDescriptions.size());
   vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
   vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 
-  VkGraphicsPipelineCreateInfo pipelineInfo{};
+  VkGraphicsPipelineCreateInfo pipelineInfo {};
   pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipelineInfo.stageCount = 2;
   pipelineInfo.pStages = shaderStages;
@@ -112,36 +120,42 @@ void DvmPipeline::createGraphicsPipeline(const std::string &vertFilepath,
   pipelineInfo.basePipelineIndex = -1;
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-  if (vkCreateGraphicsPipelines(dvmDevice.device(), VK_NULL_HANDLE, 1,
-                                &pipelineInfo, nullptr,
-                                &graphicsPipeline) != VK_SUCCESS) {
+  if (vkCreateGraphicsPipelines(dvmDevice.device(),
+                                VK_NULL_HANDLE,
+                                1,
+                                &pipelineInfo,
+                                nullptr,
+                                &graphicsPipeline)
+      != VK_SUCCESS)
+  {
     throw std::runtime_error("failed to create graphics pipeline");
   }
 }
 
-void DvmPipeline::createShaderModule(const std::vector<char> &code,
-                                     VkShaderModule *shaderModule) {
-  VkShaderModuleCreateInfo createInfo{};
+void DvmPipeline::createShaderModule(const std::vector<char>& code,
+                                     VkShaderModule* shaderModule)
+{
+  VkShaderModuleCreateInfo createInfo {};
   createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   createInfo.codeSize = code.size();
-  createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+  createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-  if (vkCreateShaderModule(dvmDevice.device(), &createInfo, nullptr,
-                           shaderModule) != VK_SUCCESS) {
+  if (vkCreateShaderModule(
+          dvmDevice.device(), &createInfo, nullptr, shaderModule)
+      != VK_SUCCESS)
+  {
     throw std::runtime_error("failed to create shader module");
   }
 }
 
-void DvmPipeline::bind(VkCommandBuffer commandBuffer) {
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    graphicsPipeline);
+void DvmPipeline::bind(VkCommandBuffer commandBuffer)
+{
+  vkCmdBindPipeline(
+      commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 }
 
-void DvmPipeline::defaultPipelineConfigInfo(
-    PipelineConfigInfo& configInfo)
+void DvmPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 {
-
-
   configInfo.inputAssemblyInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -163,44 +177,44 @@ void DvmPipeline::defaultPipelineConfigInfo(
   configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
   configInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
   configInfo.rasterizationInfo.depthBiasEnable = VK_FALSE;
-  configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f; // Optional
-  configInfo.rasterizationInfo.depthBiasClamp = 0.0f;          // Optional
-  configInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;    // Optional
+  configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f;  // Optional
+  configInfo.rasterizationInfo.depthBiasClamp = 0.0f;  // Optional
+  configInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;  // Optional
 
   configInfo.multisampleInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   configInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
   configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-  configInfo.multisampleInfo.minSampleShading = 1.0f;          // Optional
-  configInfo.multisampleInfo.pSampleMask = nullptr;            // Optional
-  configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE; // Optional
-  configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;      // Optional
+  configInfo.multisampleInfo.minSampleShading = 1.0f;  // Optional
+  configInfo.multisampleInfo.pSampleMask = nullptr;  // Optional
+  configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
+  configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;  // Optional
 
-  configInfo.colorBlendAttachment.colorWriteMask =
-      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  configInfo.colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT
+      | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT
+      | VK_COLOR_COMPONENT_A_BIT;
   configInfo.colorBlendAttachment.blendEnable = VK_FALSE;
   configInfo.colorBlendAttachment.srcColorBlendFactor =
-      VK_BLEND_FACTOR_ONE; // Optional
+      VK_BLEND_FACTOR_ONE;  // Optional
   configInfo.colorBlendAttachment.dstColorBlendFactor =
-      VK_BLEND_FACTOR_ZERO;                                       // Optional
-  configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
+      VK_BLEND_FACTOR_ZERO;  // Optional
+  configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;  // Optional
   configInfo.colorBlendAttachment.srcAlphaBlendFactor =
-      VK_BLEND_FACTOR_ONE; // Optional
+      VK_BLEND_FACTOR_ONE;  // Optional
   configInfo.colorBlendAttachment.dstAlphaBlendFactor =
-      VK_BLEND_FACTOR_ZERO;                                       // Optional
-  configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+      VK_BLEND_FACTOR_ZERO;  // Optional
+  configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;  // Optional
 
   configInfo.colorBlendInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
-  configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
+  configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
   configInfo.colorBlendInfo.attachmentCount = 1;
   configInfo.colorBlendInfo.pAttachments = &configInfo.colorBlendAttachment;
-  configInfo.colorBlendInfo.blendConstants[0] = 0.0f; // Optional
-  configInfo.colorBlendInfo.blendConstants[1] = 0.0f; // Optional
-  configInfo.colorBlendInfo.blendConstants[2] = 0.0f; // Optional
-  configInfo.colorBlendInfo.blendConstants[3] = 0.0f; // Optional
+  configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
+  configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
+  configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
+  configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
 
   configInfo.depthStencilInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -208,10 +222,10 @@ void DvmPipeline::defaultPipelineConfigInfo(
   configInfo.depthStencilInfo.depthWriteEnable = VK_TRUE;
   configInfo.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
   configInfo.depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
-  configInfo.depthStencilInfo.minDepthBounds = 0.0f; // Optional
-  configInfo.depthStencilInfo.maxDepthBounds = 1.0f; // Optional
+  configInfo.depthStencilInfo.minDepthBounds = 0.0f;  // Optional
+  configInfo.depthStencilInfo.maxDepthBounds = 1.0f;  // Optional
   configInfo.depthStencilInfo.stencilTestEnable = VK_FALSE;
-  configInfo.depthStencilInfo.front = {}; // Optional
+  configInfo.depthStencilInfo.front = {};  // Optional
   configInfo.depthStencilInfo.back = {};  // Optional
 
   configInfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT,
@@ -219,8 +233,13 @@ void DvmPipeline::defaultPipelineConfigInfo(
   configInfo.dynamicStateInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   configInfo.dynamicStateInfo.pDynamicStates =
-  configInfo.dynamicStateEnables.data();
-  configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
+      configInfo.dynamicStateEnables.data();
+  configInfo.dynamicStateInfo.dynamicStateCount =
+      static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
   configInfo.dynamicStateInfo.flags = 0;
+
+  configInfo.bindingDescriptions = DvmModel::Vertex::getBindingDescriptions();
+  configInfo.attributeDescriptions =
+      DvmModel::Vertex::getAttributeDescriptions();
 }
-} // namespace dvm
+}  // namespace dvm

@@ -37,6 +37,6 @@ private:
   std::thread audio;
 
   std::unique_ptr<DvmDescriptorPool> globalPool {};
-  std::vector<DvmGameObject> gameObjects;
+  DvmGameObject::Map gameObjects;
 };
 }  // namespace dvm

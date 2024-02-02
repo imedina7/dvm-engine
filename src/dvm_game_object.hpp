@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include <unordered_map>
 
 #include "dvm_model.hpp"
 
@@ -35,14 +36,26 @@ struct TransformComponent
   glm::mat3 normalMatrix();
 };
 
+struct PointLightComponent
+{
+  float lightIntensity = 1.0f;
+};
+
 class DvmGameObject
 {
 public:
+  using id_t = unsigned int;
+  using Map = std::unordered_map<id_t, DvmGameObject>;
+
   static DvmGameObject createGameObject()
   {
     static id_t currentId = 0;
     return DvmGameObject(currentId++);
   }
+
+  static DvmGameObject createPointLight(float intensity = 10.f,
+                                        float radius = 0.1f,
+                                        glm::vec3 color = glm::vec3(1.f));
 
   DvmGameObject(const DvmGameObject&) = delete;
   DvmGameObject& operator=(const DvmGameObject&) = delete;
@@ -52,6 +65,10 @@ public:
   std::shared_ptr<DvmModel> model {};
   glm::vec3 color {};
   TransformComponent transform {};
+
+  id_t getId() { return id; }
+
+  std::unique_ptr<PointLightComponent> pointLight = nullptr;
 
 private:
   DvmGameObject(id_t objId)

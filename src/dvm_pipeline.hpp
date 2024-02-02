@@ -1,13 +1,18 @@
+#pragma once
 #include "dvm_device.hpp"
 #include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-namespace dvm {
-struct PipelineConfigInfo {
+namespace dvm
+{
+struct PipelineConfigInfo
+{
   PipelineConfigInfo(const PipelineConfigInfo&) = delete;
   PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
+  std::vector<VkVertexInputBindingDescription> bindingDescriptions {};
+  std::vector<VkVertexInputAttributeDescription> attributeDescriptions {};
   VkPipelineViewportStateCreateInfo viewportInfo;
   VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
   VkPipelineRasterizationStateCreateInfo rasterizationInfo;
@@ -24,33 +29,35 @@ struct PipelineConfigInfo {
   uint32_t subpass = 0;
 };
 
-class DvmPipeline {
+class DvmPipeline
+{
 public:
-  DvmPipeline(DvmDevice &device, const std::string &vertFilepath,
-              const std::string &fragFilepath,
-              const PipelineConfigInfo &configInfo);
+  DvmPipeline(DvmDevice& device,
+              const std::string& vertFilepath,
+              const std::string& fragFilepath,
+              const PipelineConfigInfo& configInfo);
   ~DvmPipeline();
 
-  DvmPipeline(const DvmPipeline &) = delete;
-  DvmPipeline &operator=(const DvmPipeline &) = delete;
+  DvmPipeline(const DvmPipeline&) = delete;
+  DvmPipeline& operator=(const DvmPipeline&) = delete;
 
   void bind(VkCommandBuffer commandBuffer);
 
   static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
 private:
-  static std::vector<char> readFile(const std::string &filepath);
+  static std::vector<char> readFile(const std::string& filepath);
 
-  void createGraphicsPipeline(const std::string &vertFilepath,
-                              const std::string &fragFilepath,
-                              const PipelineConfigInfo &configInfo);
+  void createGraphicsPipeline(const std::string& vertFilepath,
+                              const std::string& fragFilepath,
+                              const PipelineConfigInfo& configInfo);
 
-  void createShaderModule(const std::vector<char> &code,
-                          VkShaderModule *shaderModule);
+  void createShaderModule(const std::vector<char>& code,
+                          VkShaderModule* shaderModule);
 
-  DvmDevice &dvmDevice;
+  DvmDevice& dvmDevice;
   VkPipeline graphicsPipeline;
   VkShaderModule vertShaderModule;
   VkShaderModule fragShaderModule;
 };
-} // namespace dvm
+}  // namespace dvm

@@ -11,7 +11,8 @@
 #include <chrono>
 #include <vulkan/vulkan_core.h>
 
-#include "simple_render_system.hpp"
+#include "systems/simple_render_system.hpp"
+#include "systems/point_light_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -19,14 +20,6 @@
 
 namespace dvm
 {
-struct GlobalUbo
-{
-  glm::mat4 projectionView {1.0f};
-
-  glm::vec4 ambientLightColor {1.0f, 1.0f, 1.0f, .02f};  // w is intensity
-  glm::vec4 lightPosition {-1.0f};
-  glm::vec4 lightColor {1.0f};  // w is intensity
-};
 
 DvmApp::DvmApp()
 {
@@ -78,6 +71,11 @@ void DvmApp::run()
       dvmDevice,
       dvmRenderer.getSwapChainRenderPass(),
       globalSetLayout->getDescriptorSetLayout()};
+
+  PointLightSystem pointLightSystem {dvmDevice,
+                                     dvmRenderer.getSwapChainRenderPass(),
+                                     globalSetLayout->getDescriptorSetLayout()};
+
   DvmCamera camera {};
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
@@ -133,16 +131,21 @@ void DvmApp::run()
                            frameTime,
                            commandBuffer,
                            camera,
-                           globalDescriptorSets[frameIndex]};
+                           globalDescriptorSets[frameIndex],
+                           gameObjects};
       GlobalUbo ubo {};
 
-      ubo.projectionView = camera.getProjection() * camera.getView();
+      ubo.projection = camera.getProjection();
+      ubo.view = camera.getView();
+      pointLightSystem.update(frameInfo, ubo);
+
       uboBuffers[frameIndex]->writeToBuffer(&ubo);
       uboBuffers[frameIndex]->flush();
 
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
 
-      simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+      simpleRenderSystem.renderGameObjects(frameInfo);
+      pointLightSystem.render(frameInfo);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }
@@ -165,7 +168,7 @@ void DvmApp::loadGameObjects()
       .0f,
   };
   vase.transform.scale = {1.5f, 1.5f, 1.5f};
-  gameObjects.push_back(std::move(vase));
+  gameObjects.emplace(vase.getId(), std::move(vase));
 
   std::shared_ptr<DvmModel> smoothVaseModel = DvmModel::createModelFromFile(
       dvmDevice,
@@ -181,7 +184,7 @@ void DvmApp::loadGameObjects()
       .0f,
   };
   smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
-  gameObjects.push_back(std::move(smoothVase));
+  gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
   std::shared_ptr<DvmModel> floorModel = DvmModel::createModelFromFile(
       dvmDevice,
@@ -196,6 +199,26 @@ void DvmApp::loadGameObjects()
       .0f,
   };
   floorObject.transform.scale = {5.f, 1.f, 5.f};
-  gameObjects.push_back(std::move(floorObject));
+  gameObjects.emplace(floorObject.getId(), std::move(floorObject));
+  std::vector<glm::vec3> lightColors {
+      {1.f, .1f, .1f},
+      {.1f, .1f, 1.f},
+      {.1f, 1.f, .1f},
+      {1.f, 1.f, .1f},
+      {.1f, 1.f, 1.f},
+      {1.f, 1.f, 1.f},
+  };
+
+  for (int i = 0; i < lightColors.size(); i++) {
+    auto pointLight = DvmGameObject::createPointLight(0.2f);
+    pointLight.color = lightColors[i];
+    auto rotateLight =
+        glm::rotate(glm::mat4(1.f),
+                    (i * glm::two_pi<float>()) / lightColors.size(),
+                    {0.f, -1.f, 0.f});
+    pointLight.transform.translation =
+        glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+    gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+  }
 }
 }  // namespace dvm
