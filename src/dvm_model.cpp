@@ -29,6 +29,7 @@ struct hash<dvm::DvmModel::Vertex>
 
 namespace dvm
 {
+
 DvmModel::DvmModel(DvmDevice& device, const DvmModel::Builder& builder)
     : dvmDevice {device}
 {
@@ -212,6 +213,73 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
       indices.push_back(uniqueVertices[vertex]);
     }
   }
+}
+
+void DvmModel::Builder::makePrimitive(PrimitiveType primitive,
+                                      glm::vec3 resolution,
+                                      glm::vec3 position,
+                                      glm::vec3 scale,
+                                      glm::vec3 rotation)
+{
+  vertices.clear();
+  indices.clear();
+  float twoPI = glm::two_pi<float>();
+  float incrementX, incrementY;
+
+  switch (primitive) {
+    case PLANE:
+      loadModel("./models/quad.obj");
+      break;
+    case CUBE:
+      loadModel("./models/cube.obj");
+      break;
+    case SPHERE: {
+      incrementX = (scale.x * 2) / (twoPI / 2.0f) / resolution.x;
+      incrementY = (scale.y * 2) / twoPI / resolution.y;
+      Vertex topVertex {};
+      Vertex bottomVertex {};
+      topVertex.position = {0.f, -scale.y, 0.f};
+      bottomVertex.position = {0.f, scale.y, 0.f};
+
+      vertices.emplace_back(bottomVertex);
+      for (float i = incrementX; i < glm::pi<float>() - incrementX;
+           i += incrementX)
+      {
+        for (float j = 0; j < twoPI; i += incrementY) {
+          Vertex currentVertex {};
+          currentVertex.position =
+              glm::vec3(cos(j), cos(i / 2.0f), sin(j));
+          vertices.emplace_back(currentVertex);
+        }
+      }
+      vertices.emplace_back(topVertex);
+    } break;
+    case CIRCLE:
+
+      break;
+    case CYLINDER:
+
+      break;
+    case TORUS:
+
+      break;
+
+    default:
+      throw std::runtime_error("unknown primitive");
+  }
+}
+std::unique_ptr<DvmModel> DvmModel::createSphere(DvmDevice& device,
+                                                 int segments,
+                                                 int rings,
+                                                 float radius,
+                                                 glm::vec3 position,
+                                                 glm::vec3 scale,
+                                                 glm::vec3 rotation)
+{
+  Builder builder {};
+  builder.makePrimitive(
+      SPHERE, glm::vec3(segments, rings, 0.f), position, glm::vec3(radius));
+  return std::make_unique<DvmModel>(device, builder);
 }
 
 }  // namespace dvm
