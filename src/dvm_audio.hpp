@@ -3,6 +3,8 @@
 
 #define SAMPLE_RATE 44100
 
+#define MASTER_VOLUME 0.0f
+
 #define PA_CHECK(err) \
   if (err != paNoError) { \
     printf("PortAudio error: %s\n", Pa_GetErrorText(err)); \
@@ -32,8 +34,8 @@ static int patestCallback(const void* inputBuffer,
   (void)inputBuffer; /* Prevent unused variable warning. */
 
   for (i = 0; i < framesPerBuffer; i++) {
-    *out++ = data->left_phase * 0.05f; /* left */
-    *out++ = data->right_phase * 0.05f; /* right */
+    *out++ = data->left_phase * MASTER_VOLUME; /* left */
+    *out++ = data->right_phase * MASTER_VOLUME; /* right */
     /* Generate simple sawtooth phaser that ranges between -1.0 and 1.0. */
     data->left_phase += 0.006f;
     /* When signal reaches top, drop back down. */
