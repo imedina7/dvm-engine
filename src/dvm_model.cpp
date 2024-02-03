@@ -112,7 +112,7 @@ std::unique_ptr<DvmModel> DvmModel::createModelFromFile(
     DvmDevice& device, const std::string& filepath)
 {
   Builder builder {};
-  builder.loadModel(filepath);
+  builder.loadModel(ENGINE_DIR + filepath);
   std::cout << "Vertex count: " << builder.vertices.size() << std::endl;
   return std::make_unique<DvmModel>(device, builder);
 }

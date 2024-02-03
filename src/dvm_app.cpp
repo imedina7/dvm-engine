@@ -137,6 +137,7 @@ void DvmApp::run()
 
       ubo.projection = camera.getProjection();
       ubo.view = camera.getView();
+      ubo.inverseView = camera.getInverseView();
       pointLightSystem.update(frameInfo, ubo);
 
       uboBuffers[frameIndex]->writeToBuffer(&ubo);
@@ -157,13 +158,12 @@ void DvmApp::loadGameObjects()
 {
   std::shared_ptr<DvmModel> model = DvmModel::createModelFromFile(
       dvmDevice,
-      "C:\\Users\\israel.medina\\projects\\personal\\dvm-engine\\models\\flat_"
-      "vase.obj");
+      "models/flat_vase.obj");
 
   auto vase = DvmGameObject::createGameObject();
   vase.model = model;
   vase.transform.translation = {
-      0.f,
+      -0.5f,
       .5f,
       .0f,
   };
@@ -172,24 +172,35 @@ void DvmApp::loadGameObjects()
 
   std::shared_ptr<DvmModel> smoothVaseModel = DvmModel::createModelFromFile(
       dvmDevice,
-      "C:\\Users\\israel.medina\\projects\\personal\\dvm-"
-      "engine\\models\\smooth_"
-      "vase.obj");
+      "models/smooth_vase.obj");
 
   auto smoothVase = DvmGameObject::createGameObject();
   smoothVase.model = smoothVaseModel;
   smoothVase.transform.translation = {
-      1.f,
+      0.5f,
       .5f,
       .0f,
   };
   smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
   gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+  
+  std::shared_ptr<DvmModel> suzanneModel = DvmModel::createModelFromFile(
+      dvmDevice,
+      "models/suzanne.obj");
+
+  auto suzanne = DvmGameObject::createGameObject();
+  suzanne.model = suzanneModel;
+  suzanne.transform.translation = {
+      0.f,
+      -1.5f,
+      .0f,
+  };
+  suzanne.transform.scale = {0.5f, 0.5f, 0.5f};
+  gameObjects.emplace(suzanne.getId(), std::move(suzanne));
 
   std::shared_ptr<DvmModel> floorModel = DvmModel::createModelFromFile(
       dvmDevice,
-      "C:\\Users\\israel.medina\\projects\\personal\\dvm-"
-      "engine\\models\\quad.obj");
+      "models/quad.obj");
 
   auto floorObject = DvmGameObject::createGameObject();
   floorObject.model = floorModel;

@@ -7,6 +7,10 @@
 
 #include <memory>
 
+#ifndef ENGINE_DIR
+#  define ENGINE_DIR "../"
+#endif
+
 namespace dvm
 {
 class DvmModel
