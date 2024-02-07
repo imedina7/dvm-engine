@@ -8,6 +8,7 @@ namespace dvm
 {
 struct PipelineConfigInfo
 {
+  PipelineConfigInfo() = default;
   PipelineConfigInfo(const PipelineConfigInfo&) = delete;
   PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
@@ -44,6 +45,7 @@ public:
   void bind(VkCommandBuffer commandBuffer);
 
   static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+  static void enableAlphaBlending(PipelineConfigInfo& configInfo);
 
 private:
   static std::vector<char> readFile(const std::string& filepath);

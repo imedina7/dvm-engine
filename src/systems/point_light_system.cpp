@@ -9,6 +9,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <map>
 #include <iostream>
 
 namespace dvm
@@ -64,6 +65,7 @@ void PointLightSystem::createPipeline(VkRenderPass renderPass)
 {
   PipelineConfigInfo pipelineConfig {};
   DvmPipeline::defaultPipelineConfigInfo(pipelineConfig);
+  DvmPipeline::enableAlphaBlending(pipelineConfig);
   pipelineConfig.bindingDescriptions.clear();
   pipelineConfig.attributeDescriptions.clear();
   pipelineConfig.renderPass = renderPass;
@@ -101,6 +103,20 @@ void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
 
 void PointLightSystem::render(FrameInfo& frameInfo)
 {
+  std::map<float, DvmGameObject::id_t> sorted;
+  for (auto& kv : frameInfo.gameObjects) {
+    DvmGameObject& obj = kv.second;
+    if (obj.pointLight == nullptr)
+      continue;
+
+    glm::vec3 offset =
+        frameInfo.camera.getPosition() - obj.transform.translation;
+
+    float disSquared = glm::dot(offset, offset);
+
+    sorted[disSquared] = obj.getId();
+  }
+
   dvmPipeline->bind(frameInfo.commandBuffer);
 
   vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -111,8 +127,8 @@ void PointLightSystem::render(FrameInfo& frameInfo)
                           &frameInfo.globalDescriptorSet,
                           0,
                           nullptr);
-  for (auto& kv : frameInfo.gameObjects) {
-    auto& obj = kv.second;
+  for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
+    auto& obj = frameInfo.gameObjects.at(it->second);
     if (obj.pointLight == nullptr) {
       continue;
     }
