@@ -14,6 +14,8 @@
 #include "systems/simple_render_system.hpp"
 #include "systems/point_light_system.hpp"
 
+#include "dvm_texture.hpp"
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -26,6 +28,8 @@ DvmApp::DvmApp()
   globalPool = DvmDescriptorPool::Builder(dvmDevice)
                    .setMaxSets(DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
                    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                   .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                 DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
                    .build();
   loadGameObjects();
@@ -51,11 +55,21 @@ void DvmApp::run()
     uboBuffers[i]->map();
   }
 
-  auto globalSetLayout = DvmDescriptorSetLayout::Builder(dvmDevice)
-                             .addBinding(0,
-                                         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                         VK_SHADER_STAGE_ALL_GRAPHICS)
-                             .build();
+  auto globalSetLayout =
+      DvmDescriptorSetLayout::Builder(dvmDevice)
+          .addBinding(0,
+                      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                      VK_SHADER_STAGE_ALL_GRAPHICS)
+          .addBinding(1,
+                      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                      VK_SHADER_STAGE_ALL_GRAPHICS)
+          .build();
+
+  Texture texture = Texture(dvmDevice, "../textures/image.png");
+  VkDescriptorImageInfo imageInfo {};
+  imageInfo.sampler = texture.getSampler();
+  imageInfo.imageLayout = texture.getImageLayout();
+  imageInfo.imageView = texture.getImageView();
 
   std::vector<VkDescriptorSet> globalDescriptorSets(
       DvmSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -64,6 +78,7 @@ void DvmApp::run()
     auto bufferInfo = uboBuffers[i]->descriptorInfo();
     DvmDescriptorWriter(*globalSetLayout, *globalPool)
         .writeBuffer(0, &bufferInfo)
+        .writeImage(1, &imageInfo)
         .build(globalDescriptorSets[i]);
   }
 
@@ -156,9 +171,8 @@ void DvmApp::run()
 
 void DvmApp::loadGameObjects()
 {
-  std::shared_ptr<DvmModel> model = DvmModel::createModelFromFile(
-      dvmDevice,
-      "models/flat_vase.obj");
+  std::shared_ptr<DvmModel> model =
+      DvmModel::createModelFromFile(dvmDevice, "models/flat_vase.obj");
 
   auto vase = DvmGameObject::createGameObject();
   vase.model = model;
@@ -170,9 +184,8 @@ void DvmApp::loadGameObjects()
   vase.transform.scale = {1.5f, 1.5f, 1.5f};
   gameObjects.emplace(vase.getId(), std::move(vase));
 
-  std::shared_ptr<DvmModel> smoothVaseModel = DvmModel::createModelFromFile(
-      dvmDevice,
-      "models/smooth_vase.obj");
+  std::shared_ptr<DvmModel> smoothVaseModel =
+      DvmModel::createModelFromFile(dvmDevice, "models/smooth_vase.obj");
 
   auto smoothVase = DvmGameObject::createGameObject();
   smoothVase.model = smoothVaseModel;
@@ -183,10 +196,9 @@ void DvmApp::loadGameObjects()
   };
   smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
   gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
-  
-  std::shared_ptr<DvmModel> suzanneModel = DvmModel::createModelFromFile(
-      dvmDevice,
-      "models/suzanne.obj");
+
+  std::shared_ptr<DvmModel> suzanneModel =
+      DvmModel::createModelFromFile(dvmDevice, "models/suzanne.obj");
 
   auto suzanne = DvmGameObject::createGameObject();
   suzanne.model = suzanneModel;
@@ -198,9 +210,8 @@ void DvmApp::loadGameObjects()
   suzanne.transform.scale = {0.5f, 0.5f, 0.5f};
   gameObjects.emplace(suzanne.getId(), std::move(suzanne));
 
-  std::shared_ptr<DvmModel> floorModel = DvmModel::createModelFromFile(
-      dvmDevice,
-      "models/quad.obj");
+  std::shared_ptr<DvmModel> floorModel =
+      DvmModel::createModelFromFile(dvmDevice, "models/quad.obj");
 
   auto floorObject = DvmGameObject::createGameObject();
   floorObject.model = floorModel;
