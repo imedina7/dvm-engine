@@ -111,6 +111,11 @@ void DvmApp::run()
 
   audio = std::thread(DvmAudio());
 
+  DvmGUI gui {dvmWindow.getGLFWwindow(),
+              globalPool->getDescriptorPool(),
+              dvmDevice,
+              dvmRenderer.getSwapChainRenderPass()};
+
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
