@@ -1,5 +1,6 @@
 #pragma once
 #include "dvm_device.hpp"
+#include "dvm_gui.hpp"
 #include "dvm_game_object.hpp"
 #include "dvm_renderer.hpp"
 #include "dvm_descriptors.hpp"
