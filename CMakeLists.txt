@@ -413,7 +413,9 @@ if(WIN32)
   target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio)
 elseif(UNIX)
   message(STATUS "CREATING BUILD FOR UNIX")
+  
   target_include_directories(${PROJECT_NAME} PUBLIC
+    /usr/include
     ${PROJECT_SOURCE_DIR}/src
     ${TINYOBJ_PATH}
     ${IMGUI_PATH}
@@ -421,7 +423,7 @@ elseif(UNIX)
     ${PORTAUDIO_PATH}/src/common
   )
 
-  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio)
+  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} imgui portaudio)
 endif()
 
 
