@@ -22,18 +22,6 @@
 
 namespace dvm
 {
-
-DvmApp::DvmApp()
-{
-  globalPool = DvmDescriptorPool::Builder(dvmDevice)
-                   .setMaxSets(DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
-                   .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
-                   .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
-                   .build();
-  loadGameObjects();
-}
 DvmApp::~DvmApp()
 {
   audio.join();
@@ -101,7 +89,7 @@ void DvmApp::run()
   auto viewerObject = DvmGameObject::createGameObject();
   KeyboardMovementController cameraController {};
   viewerObject.transform.translation.z = -2.5f;
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  //   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
@@ -111,10 +99,7 @@ void DvmApp::run()
 
   audio = std::thread(DvmAudio());
 
-  DvmGUI gui {dvmWindow.getGLFWwindow(),
-              globalPool->getDescriptorPool(),
-              dvmDevice,
-              dvmRenderer.getSwapChainRenderPass()};
+  DvmGUI gui {};
 
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
@@ -134,7 +119,6 @@ void DvmApp::run()
             newTime - currentTime)
             .count();
     currentTime = newTime;
-
     cameraController.moveInPlaneXZ(
         window, frameTime, viewerObject, mouseDelta, 0.1f);
     camera.setViewYXZ(viewerObject.transform.translation,
@@ -164,9 +148,9 @@ void DvmApp::run()
       uboBuffers[frameIndex]->flush();
 
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
-
       simpleRenderSystem.renderGameObjects(frameInfo);
       pointLightSystem.render(frameInfo);
+      gui.update(frameTime, commandBuffer);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }

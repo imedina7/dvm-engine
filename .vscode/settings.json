@@ -8,6 +8,7 @@
   "C_Cpp.clang_format_sortIncludes": false,
   "cmake.configureOnOpen": true,
   "files.associations": {
+    "*.map": "xml",
     "memory": "cpp",
     "cstdint": "cpp",
     "unordered_map": "cpp",
@@ -76,7 +77,10 @@
     "xstring": "cpp",
     "xtr1common": "cpp",
     "xtree": "cpp",
-    "xutility": "cpp"
+    "xutility": "cpp",
+    "*.ipp": "cpp",
+    "*.inc": "cpp",
+    "stream_ref": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

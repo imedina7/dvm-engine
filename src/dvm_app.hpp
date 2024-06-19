@@ -21,7 +21,21 @@ public:
   static constexpr int WIDTH = 800;
   static constexpr int HEIGHT = 600;
 
-  DvmApp();
+  DvmDevice& getDevice() { return dvmDevice; }
+  DvmWindow& getWindow() { return dvmWindow; }
+  DvmRenderer& getRenderer() { return dvmRenderer; }
+
+  const DvmDescriptorPool& getGlobalDescriptorPool() const
+  {
+    return *globalPool;
+  }
+
+  static DvmApp& getInstance()
+  {
+    static DvmApp m_instance;
+    return m_instance;
+  }
+
   ~DvmApp();
 
   DvmApp(const DvmApp&) = delete;
@@ -30,6 +44,17 @@ public:
   void run();
 
 private:
+  DvmApp()
+  {
+    globalPool = DvmDescriptorPool::Builder(dvmDevice)
+                     .setMaxSets(DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                  DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                     .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                  DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                     .build();
+    loadGameObjects();
+  };
   void loadGameObjects();
 
   DvmWindow dvmWindow {WIDTH, HEIGHT, "Hello vulkan!"};

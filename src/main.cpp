@@ -8,7 +8,7 @@
 
 int main()
 {
-  dvm::DvmApp app {};
+  dvm::DvmApp& app = dvm::DvmApp::getInstance();
   try {
     app.run();
   } catch (const std::exception& e) {

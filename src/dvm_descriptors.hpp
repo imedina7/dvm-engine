@@ -80,7 +80,6 @@ public:
                     VkDescriptorPoolCreateFlags poolFlags,
                     const std::vector<VkDescriptorPoolSize>& poolSizes);
   ~DvmDescriptorPool();
-  DvmDescriptorPool(const DvmDescriptorPool&) = delete;
   DvmDescriptorPool& operator=(const DvmDescriptorPool&) = delete;
 
   VkDescriptorPool getDescriptorPool() { return descriptorPool; }
