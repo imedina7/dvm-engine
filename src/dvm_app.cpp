@@ -1,5 +1,4 @@
 #include "dvm_app.hpp"
-#include "dvm_audio.hpp"
 #include "dvm_buffer.hpp"
 #include "dvm_camera.hpp"
 #include "dvm_frame_info.hpp"
@@ -22,11 +21,6 @@
 
 namespace dvm
 {
-DvmApp::~DvmApp()
-{
-  audio.join();
-}
-
 void DvmApp::run()
 {
   std::vector<std::unique_ptr<DvmBuffer>> uboBuffers(
@@ -97,9 +91,8 @@ void DvmApp::run()
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-  audio = std::thread(DvmAudio());
-
-  DvmGUI gui {};
+  //   DvmGUI gui {};
+  DvmAudio& audio = DvmAudio::Get();
 
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
@@ -107,6 +100,10 @@ void DvmApp::run()
     glfwPollEvents();
     double mouseNewX, mouseNewY;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
+
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+      audio.playFromFile, AUDIO_FILE_PATH
+    }
 
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
@@ -150,7 +147,7 @@ void DvmApp::run()
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(frameInfo);
       pointLightSystem.render(frameInfo);
-      gui.update(frameTime, commandBuffer);
+      //   gui.update(frameTime, commandBuffer);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }

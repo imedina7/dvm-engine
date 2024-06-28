@@ -423,7 +423,7 @@ elseif(UNIX)
     ${PORTAUDIO_PATH}/src/common
   )
 
-  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} imgui portaudio)
+  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} imgui portaudio sndfile)
 endif()
 
 

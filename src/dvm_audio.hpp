@@ -1,9 +1,16 @@
+#pragma once
 #include <portaudio.h>
+#include <sndfile.h>
 #include <iostream>
+#include <thread>
+#include <string>
+#include <vector>
 
 #define SAMPLE_RATE 44100
+#define AUDIO_FILE_PATH "../audio/test.wav"
+#define MASTER_VOLUME 0.1f
 
-#define MASTER_VOLUME 0.0f
+#define BUFFER_SIZE 1024
 
 #define PA_CHECK(err) \
   if (err != paNoError) { \
@@ -12,85 +19,30 @@
 
 typedef struct
 {
-  float left_phase;
-  float right_phase;
-} paTestData;
+  float volume;
+  uint32_t maxFrames;
+  uint32_t frameIndex;
+  SNDFILE* sfHandle;
+  SF_INFO* sfInfo;
+} StreamData;
 
-static paTestData data;
+enum SoundFX
+{
+  SWOOSH = 0,
+  NUM_SOUND_FX
+};
 
 namespace dvm
 {
-static int patestCallback(const void* inputBuffer,
-                          void* outputBuffer,
-                          unsigned long framesPerBuffer,
-                          const PaStreamCallbackTimeInfo* timeInfo,
-                          PaStreamCallbackFlags statusFlags,
-                          void* userData)
-{
-  /* Cast data passed through stream to our structure. */
-  paTestData* data = (paTestData*)userData;
-  float* out = (float*)outputBuffer;
-  unsigned int i;
-  (void)inputBuffer; /* Prevent unused variable warning. */
-
-  for (i = 0; i < framesPerBuffer; i++) {
-    *out++ = data->left_phase * MASTER_VOLUME; /* left */
-    *out++ = data->right_phase * MASTER_VOLUME; /* right */
-    /* Generate simple sawtooth phaser that ranges between -1.0 and 1.0. */
-    data->left_phase += 0.006f;
-    /* When signal reaches top, drop back down. */
-    if (data->left_phase >= 1.0f)
-      data->left_phase -= 2.0f;
-    /* higher pitch so we can distinguish left and right. */
-    data->right_phase += 0.01f;
-    if (data->right_phase >= 1.0f)
-      data->right_phase -= 2.0f;
-  }
-  return 0;
-}
 class DvmAudio
 {
 public:
-  static DvmAudio* getInstance()
-  {
-    if (s_instance == nullptr) {
-      s_instance = new DvmAudio();
-    }
-    return s_instance;
-  }
+  DvmAudio(const DvmAudio&) = delete;
 
-  void operator()()
-  {
-    printf("Initializing audio..");
-    PaError err;
-    err = Pa_Initialize();
-    PA_CHECK(err);
+  static DvmAudio& Get() { return s_instance; }
 
-    PaStream* stream;
-    /* Open an audio I/O stream. */
-    err = Pa_OpenDefaultStream(
-        &stream,
-        0, /* no input channels */
-        2, /* stereo output */
-        paFloat32, /* 32 bit floating point output */
-        SAMPLE_RATE,
-        paFramesPerBufferUnspecified, /* frames per buffer, i.e. the number
-                    of sample frames that PortAudio will
-                    request from the callback. Many apps
-                    may want to use
-                    paFramesPerBufferUnspecified, which
-                    tells PortAudio to pick the best,
-                    possibly changing, buffer size.*/
-        patestCallback, /* this is your callback function */
-        &data); /*This is a pointer that will be passed to
-                          your callback*/
-    PA_CHECK(err);
-
-    err = Pa_StartStream(stream);
-    PA_CHECK(err);
-    Pa_Sleep(6000);
-    Pa_StopStream(stream);
-  }
+  // void playSoundFX(SoundFX fx);
+  void playFromFile(const std::string filename);
   ~DvmAudio()
   {
     PaError err = Pa_Terminate();
@@ -98,6 +50,14 @@ public:
   }
 
 private:
-  static DvmAudio* s_instance;
+  DvmAudio()
+  {
+    PaError err;
+    err = Pa_Initialize();
+    PA_CHECK(err);
+  }
+  static DvmAudio s_instance;
+  std::thread audioThread;
+  StreamData streamData;
 };
 }  // namespace dvm

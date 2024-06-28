@@ -1,5 +1,6 @@
 #pragma once
 #include "dvm_device.hpp"
+#include "dvm_audio.hpp"
 #include "dvm_gui.hpp"
 #include "dvm_game_object.hpp"
 #include "dvm_renderer.hpp"
@@ -11,7 +12,6 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <glm/gtc/constants.hpp>
-#include <thread>
 
 namespace dvm
 {
@@ -36,8 +36,6 @@ public:
     return m_instance;
   }
 
-  ~DvmApp();
-
   DvmApp(const DvmApp&) = delete;
   DvmApp& operator=(const DvmApp&) = delete;
 
@@ -55,13 +53,12 @@ private:
                      .build();
     loadGameObjects();
   };
+  ~DvmApp() {}
   void loadGameObjects();
 
   DvmWindow dvmWindow {WIDTH, HEIGHT, "Hello vulkan!"};
   DvmDevice dvmDevice {dvmWindow};
   DvmRenderer dvmRenderer {dvmWindow, dvmDevice};
-  std::thread audio;
-
   std::unique_ptr<DvmDescriptorPool> globalPool {};
   DvmGameObject::Map gameObjects;
 };
