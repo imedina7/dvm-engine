@@ -102,7 +102,7 @@ void DvmApp::run()
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
 
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-      audio.playFromFile, AUDIO_FILE_PATH
+      audio.playFromFile(AUDIO_FILE_PATH);
     }
 
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
