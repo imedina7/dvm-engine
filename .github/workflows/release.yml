@@ -41,8 +41,9 @@ jobs:
     - name: Build GLSL Shaders
       run: |
         mkdir -p build/shaders
-        Get-ChildItem -Path shaders -Filter *.vert,*.frag | ForEach-Object {
-          glslc $_.FullName -o build/shaders/$($_.Name).spv
+        $shaderFiles = Get-ChildItem -Path shaders -Include *.vert,*.frag -Recurse
+        foreach ($file in $shaderFiles) {
+          glslc $file.FullName -o build/shaders/$($file.Name).spv
         }
         echo "GLSL shaders compiled to SPIR-V"
 
