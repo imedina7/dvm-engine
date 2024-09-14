@@ -9,12 +9,41 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1.0.0
+      with:
+        vulkan_version: '1.3.231.1'  # Specify the version you need
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+    - name: Verify Vulkan installation
+      run: |
+        echo "Vulkan SDK installed at ${{ env.VULKAN_SDK }}"
+        dir ${{ env.VULKAN_SDK }}
+
+    - name: Download prebuilt GLFW binaries
+      run: |
+        curl -L https://github.com/glfw/glfw/releases/download/3.3.8/glfw-3.3.8.bin.WIN64.zip -o glfw.zip
+        tar -xf glfw.zip -C vendor
+    - name: Install GLM
+      run: |
+        curl -L -o glm.zip https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip
+        unzip glm.zip -d C:/glm
+        echo "GLM installed at C:/glm"
+
+    - name: List vendor directory
+      run: ls -l vendor
+
     - name: Configure CMake
-      run: cmake -S . -B build
+      run: |
+        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DPORTAUDIO_ENABLE=true
 
     - name: Build
       run: cmake --build build --config Release
