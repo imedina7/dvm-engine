@@ -19,7 +19,7 @@ jobs:
         setx VULKAN_SDK "C:\Program Files (x86)\VulkanSDK\1.2.182.0"
 
     - name: Install GLFW
-      run: choco install glfw
+      run: choco install glfw3
 
     - name: Configure CMake
       run: |
