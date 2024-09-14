@@ -13,6 +13,21 @@ jobs:
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
+    - name: Install Vulkan SDK
+      run: |
+        choco install vulkan-sdk
+        setx VULKAN_SDK "C:\Program Files (x86)\VulkanSDK\1.2.182.0"
+
+    - name: Install GLM
+      run: choco install glm
+
+    - name: Install GLFW
+      run: choco install glfw
+
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build -DVULKAN_SDK_PATH="%VULKAN_SDK%" -DGLM_PATH="C:\ProgramData\chocolatey\lib\glm" -DGLFW_PATH="C:\ProgramData\chocolatey\lib\glfw" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib"
+
     - name: Configure CMake
       run: cmake -S . -B build
 
