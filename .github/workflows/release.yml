@@ -9,12 +9,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Initialize submodules
-      run: git submodule init
-
-    - name: Update submodules
-      run: git submodule update --recursive --remote --verbose
+      with:
+        submodules: recursive
 
     - name: Set up CMake
       uses: lukka/get-cmake@latest
