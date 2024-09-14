@@ -15,11 +15,18 @@ jobs:
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
-    - name: Download Vulkan SDK
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1.0.0
+      with:
+        vulkan_version: '1.3.231.1'  # Specify the version you need
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+    - name: Verify Vulkan installation
       run: |
-        curl -L https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe -o vulkan-sdk.exe
-        vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
-        setx VULKAN_SDK "C:/VulkanSDK/1.2.198.1/"
+        echo "Vulkan SDK installed at ${{ env.VULKAN_SDK }}"
+        dir ${{ env.VULKAN_SDK }}
 
     - name: Download prebuilt GLFW binaries
       run: |
