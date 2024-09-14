@@ -38,6 +38,15 @@ jobs:
         unzip glm.zip -d C:/glm
         echo "GLM installed at C:/glm"
 
+    - name: Build GLSL Shaders
+      run: |
+        mkdir -p build/shaders
+        $shaderFiles = Get-ChildItem -Path shaders -Include *.vert,*.frag -Recurse
+        foreach ($file in $shaderFiles) {
+          ${{ env.VULKAN_SDK }}/Bin/glslc.exe $file.FullName -o build/shaders/$($file.Name).spv
+        }
+        echo "GLSL shaders compiled to SPIR-V"
+
     - name: List vendor directory
       run: ls -l vendor
 
