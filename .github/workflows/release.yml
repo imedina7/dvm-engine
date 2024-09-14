@@ -20,8 +20,10 @@ jobs:
         choco install vulkan-sdk
         setx VULKAN_SDK "C:\Program Files (x86)\VulkanSDK\1.2.182.0"
 
-    - name: Install GLFW
-      run: choco install glfw3
+    - name: Download prebuilt GLFW binaries
+      run: |
+        curl -L https://github.com/glfw/glfw/releases/download/3.3.8/glfw-3.3.8.bin.WIN64.zip -o glfw.zip
+        tar -xf glfw.zip -C vendor
 
     - name: List vendor directory
       run: ls -l vendor
@@ -31,7 +33,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DVULKAN_SDK_PATH="%VULKAN_SDK%" -DGLM_PATH="%VULKAN_SDK%\Include\glm" -DGLFW_PATH="C:\ProgramData\chocolatey\lib\glfw3" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib"
+        cmake -S . -B build -DVULKAN_SDK_PATH="%VULKAN_SDK%" -DGLM_PATH="%VULKAN_SDK%\Include\glm" -DGLFW_PATH="vendor\glfw" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib"
 
     - name: Build
       run: cmake --build build --config Release
