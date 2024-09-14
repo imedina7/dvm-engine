@@ -41,7 +41,7 @@ jobs:
     - name: Build GLSL Shaders
       run: |
         mkdir -p build/shaders
-        for file in shaders/*.vert shaders/*.frag; do
+        for (file in shaders/*.vert shaders/*.frag); do
           glslc $file -o build/shaders/$(basename $file).spv
         done
         echo "GLSL shaders compiled to SPIR-V"
