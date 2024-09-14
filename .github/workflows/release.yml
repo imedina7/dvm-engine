@@ -43,12 +43,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build\
-        -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}"\
-        -DGLM_PATH="C:\glm\glm"\
-        -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64"\
-        -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib"\
-        -DPORTAUDIO_ENABLE=true
+        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DPORTAUDIO_ENABLE=true
 
     - name: Build
       run: cmake --build build --config Release
