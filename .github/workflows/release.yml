@@ -15,10 +15,11 @@ jobs:
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
-    - name: Install Vulkan SDK
+    - name: Download Vulkan SDK
       run: |
-        choco install vulkan-sdk
-        setx VULKAN_SDK "C:\Program Files (x86)\VulkanSDK\1.2.182.0"
+        curl -L https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe -o vulkan-sdk.exe
+        vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
+        setx VULKAN_SDK "C:/VulkanSDK/1.2.198.1/"
 
     - name: Download prebuilt GLFW binaries
       run: |
