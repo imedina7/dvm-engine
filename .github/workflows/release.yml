@@ -43,7 +43,7 @@ jobs:
         mkdir -p build/shaders
         $shaderFiles = Get-ChildItem -Path shaders -Include *.vert,*.frag -Recurse
         foreach ($file in $shaderFiles) {
-          glslc $file.FullName -o build/shaders/$($file.Name).spv
+          ${{ env.VULKAN_SDK }}/Bin/glslc.exe $file.FullName -o build/shaders/$($file.Name).spv
         }
         echo "GLSL shaders compiled to SPIR-V"
 
