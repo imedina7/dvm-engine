@@ -58,7 +58,7 @@ jobs:
     - name: Apply Git Diff to Submodule
       run: |
         cd vendor/imgui
-        git apply include.diff
+        git apply ../include.diff
 
     - name: Configure CMake
       run: |
