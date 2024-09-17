@@ -1,0 +1,52 @@
+diff --git a/backends/imgui_impl_glfw.cpp b/backends/imgui_impl_glfw.cpp
+index 30afaf4f..a1937a4d 100644
+--- a/backends/imgui_impl_glfw.cpp
++++ b/backends/imgui_impl_glfw.cpp
+@@ -82,7 +82,7 @@
+ //  2017-08-25: Inputs: MousePos set to -FLT_MAX,-FLT_MAX when mouse is unavailable/missing (instead of -1,-1).
+ //  2016-10-15: Misc: Added a void* user_data parameter to Clipboard function handlers.
+ 
+-#include "imgui.h"
++#include "../imgui.h"
+ #ifndef IMGUI_DISABLE
+ #include "imgui_impl_glfw.h"
+ 
+diff --git a/backends/imgui_impl_glfw.h b/backends/imgui_impl_glfw.h
+index 60b95bd9..43a652a0 100644
+--- a/backends/imgui_impl_glfw.h
++++ b/backends/imgui_impl_glfw.h
+@@ -18,7 +18,7 @@
+ // - Introduction, links and more at the top of imgui.cpp
+ 
+ #pragma once
+-#include "imgui.h"      // IMGUI_IMPL_API
++#include "../imgui.h"      // IMGUI_IMPL_API
+ #ifndef IMGUI_DISABLE
+ 
+ struct GLFWwindow;
+diff --git a/backends/imgui_impl_vulkan.cpp b/backends/imgui_impl_vulkan.cpp
+index 3b757eb6..b0e57061 100644
+--- a/backends/imgui_impl_vulkan.cpp
++++ b/backends/imgui_impl_vulkan.cpp
+@@ -82,7 +82,7 @@
+ //  2016-10-18: Vulkan: Add location decorators & change to use structs as in/out in glsl, update embedded spv (produced with glslangValidator -x). Null the released resources.
+ //  2016-08-27: Vulkan: Fix Vulkan example for use when a depth buffer is active.
+ 
+-#include "imgui.h"
++#include "../imgui.h"
+ #ifndef IMGUI_DISABLE
+ #include "imgui_impl_vulkan.h"
+ #include <stdio.h>
+diff --git a/backends/imgui_impl_vulkan.h b/backends/imgui_impl_vulkan.h
+index 1c7f7695..8777fc65 100644
+--- a/backends/imgui_impl_vulkan.h
++++ b/backends/imgui_impl_vulkan.h
+@@ -28,7 +28,7 @@
+ 
+ #pragma once
+ #ifndef IMGUI_DISABLE
+-#include "imgui.h"      // IMGUI_IMPL_API
++#include "../imgui.h"      // IMGUI_IMPL_API
+ 
+ // [Configuration] in order to use a custom Vulkan function loader:
+ // (1) You'll need to disable default Vulkan function prototypes.

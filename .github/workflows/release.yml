@@ -50,6 +50,10 @@ jobs:
     - name: List vendor directory
       run: ls -l vendor
 
+    - name: Apply patch to imgui
+      working-directory: vendor/imgui
+      run: git apply include.diff
+
     - name: Configure CMake
       run: |
         cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DPORTAUDIO_ENABLE=true
