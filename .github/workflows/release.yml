@@ -42,12 +42,12 @@ jobs:
     - name: Download libsndfile
       run: |
         curl -L -o libsndfile.zip https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2-win64.zip
-        unzip libsndfile.zip -d vendor/libsndfile
+        unzip libsndfile.zip -d vendor
 
     - name: Set up environment variables
       run: |
-        echo "LIBSNDFILE_DIR=$(pwd)/vendor/libsndfile" >> $GITHUB_ENV
-        echo "PATH=$(pwd)/vendor/libsndfile/bin:$PATH" >> $GITHUB_ENV
+        echo "LIBSNDFILE_DIR=$(pwd)/vendor/libsndfile-1.2.2-win64" >> $GITHUB_ENV
+        echo "PATH=$(pwd)/vendor/libsndfile-1.2.2-win64/bin:$PATH" >> $GITHUB_ENV
 
     - name: Build GLSL Shaders
       run: |
