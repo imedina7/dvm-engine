@@ -50,9 +50,15 @@ jobs:
     - name: List vendor directory
       run: ls -l vendor
 
-    - name: Apply patch to imgui
-      working-directory: vendor/imgui
-      run: git apply include.diff
+    - name: Set up Git
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+
+    - name: Apply Git Diff to Submodule
+      run: |
+        cd vendor/imgui
+        git apply include.diff
 
     - name: Configure CMake
       run: |
