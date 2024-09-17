@@ -84,7 +84,8 @@ add_library(imgui STATIC
 
 target_include_directories(imgui PUBLIC
   $<BUILD_INTERFACE:${ROOT}>
-  $<INSTALL_INTERFACE:include>)
+  ${GLFW_INCLUDE_DIRS}
+  $<INSTALL_INTERFACE:${ROOT}>)
 
 
 if(PORTAUDIO_ENABLE)
