@@ -78,7 +78,10 @@ add_library(imgui STATIC
   ${IMGUI_PATH}/imgui_internal.h
   ${IMGUI_PATH}/imgui_tables.cpp
   ${IMGUI_PATH}/imgui_widgets.cpp
+  ${IMGUI_PATH}/backends/imgui_impl_vulkan.cpp
+  ${IMGUI_PATH}/backends/imgui_impl_glfw.cpp
 )
+
 target_include_directories(imgui PUBLIC
   $<BUILD_INTERFACE:${ROOT}>
   $<INSTALL_INTERFACE:include>)
@@ -379,6 +382,9 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
+target_include_directories(imgui PUBLIC )
+target_link_libraries(${PROJECT_NAME} imgui)
+
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build")
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -422,8 +428,12 @@ elseif(UNIX)
     ${PORTAUDIO_PATH}/include
     ${PORTAUDIO_PATH}/src/common
   )
+  target_link_directories(${PROJECT_NAME} PUBLIC
+    ${Vulkan_LIBRARIES}
+    ${GLFW_LIB}
+    lib/cmake/imgui)
 
-  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} imgui portaudio sndfile)
+  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
 endif()
 
 

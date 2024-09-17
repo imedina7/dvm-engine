@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gui/imgui_vulkan_renderer.h"
-#include "gui/imgui_glfw.h"
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_vulkan.h>
 
 #include "dvm_device.hpp"
 #include "dvm_descriptors.hpp"

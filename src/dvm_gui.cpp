@@ -36,9 +36,10 @@ DvmGUI::DvmGUI()
       ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
   io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
   io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
-  // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable
-  // Gamepad
-  // Controls
+// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable
+// Gamepad
+// Controls
+#ifdef GUI_DOCKING
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
   io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable
   // Multi
@@ -46,6 +47,7 @@ DvmGUI::DvmGUI()
   // / Platform Windows
   io.ConfigViewportsNoAutoMerge = true;
   io.ConfigViewportsNoTaskBarIcon = true;
+#endif
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -54,11 +56,12 @@ DvmGUI::DvmGUI()
   // When viewports are enabled we tweak WindowRounding/WindowBg so platform
   // windows can look identical to regular ones.
   ImGuiStyle& style = ImGui::GetStyle();
+#ifdef GUI_DOCKING
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     style.WindowRounding = 0.0f;
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
   }
-
+#endif
   ImGui_ImplGlfw_InitForVulkan(dvmWindow.getGLFWwindow(), false);
 
   ImGui_ImplVulkan_InitInfo initInfo {};
@@ -74,17 +77,15 @@ DvmGUI::DvmGUI()
   initInfo.MinImageCount = 2;
   initInfo.ImageCount = 2;
   initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+  initInfo.RenderPass = dvmRenderer.getSwapChainRenderPass();
 
-  ImGui_ImplVulkan_Init(&initInfo, dvmRenderer.getSwapChainRenderPass());
+  ImGui_ImplVulkan_Init(&initInfo);
 
   // Upload Fonts
   {
-    VkCommandBuffer command_buffer = dvmDevice.beginSingleTimeCommands();
+    ImGui_ImplVulkan_CreateFontsTexture();
 
-    ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
-
-    dvmDevice.endSingleTimeCommands(command_buffer);
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
+    ImGui_ImplVulkan_DestroyFontsTexture();
   }
 }
 
@@ -155,10 +156,12 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
 
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
 
+#ifdef GUI_DOCKING
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
   }
+#endif
   ImGui::EndFrame();
 }
 }  // namespace dvm

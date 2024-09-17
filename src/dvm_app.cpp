@@ -91,7 +91,7 @@ void DvmApp::run()
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-  //   DvmGUI gui {};
+  DvmGUI gui {};
   DvmAudio& audio = DvmAudio::Get();
 
   while (!dvmWindow.shouldClose()
@@ -147,7 +147,7 @@ void DvmApp::run()
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(frameInfo);
       pointLightSystem.render(frameInfo);
-      //   gui.update(frameTime, commandBuffer);
+      gui.update(frameTime, commandBuffer);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }
