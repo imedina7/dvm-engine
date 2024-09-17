@@ -418,9 +418,10 @@ if(WIN32)
     ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
     lib/cmake/imgui
+    ${LIBSNDFILE_PATH}/lib
   )
 
-  target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio)
+  target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
 elseif(UNIX)
   message(STATUS "CREATING BUILD FOR UNIX")
   
