@@ -67,6 +67,11 @@ if(NOT IMGUI_PATH)
   set(IMGUI_PATH vendor/imgui)
 endif()
 
+if(NOT LIBSNDFILE_PATH)
+  message(STATUS "LIBSNDFILE_PATH not specified in .env.cmake, using vendor/imgui")
+  set(LIBSNDFILE_PATH vendor/libsndfile)
+endif()
+
 add_library(imgui STATIC
   ${IMGUI_PATH}/imgui.cpp
   ${IMGUI_PATH}/imgui.h
@@ -406,7 +411,7 @@ if(WIN32)
     ${GLM_PATH}
     ${IMGUI_PATH}
     ${PORTAUDIO_PATH}/include
-    vendor/libsndfile/include
+    ${LIBSNDFILE_PATH}/include
   )
 
   target_link_directories(${PROJECT_NAME} PUBLIC
