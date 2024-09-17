@@ -32,11 +32,22 @@ jobs:
       run: |
         curl -L https://github.com/glfw/glfw/releases/download/3.3.8/glfw-3.3.8.bin.WIN64.zip -o glfw.zip
         tar -xf glfw.zip -C vendor
+
     - name: Install GLM
       run: |
         curl -L -o glm.zip https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip
         unzip glm.zip -d C:/glm
         echo "GLM installed at C:/glm"
+    
+    - name: Download libsndfile
+      run: |
+        curl -L -o libsndfile.zip https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2-win64.zip
+        unzip libsndfile.zip -d vendor
+
+    - name: Set up environment variables
+      run: |
+        echo "LIBSNDFILE_DIR=$(pwd)/vendor/libsndfile-1.2.2-win64" >> $GITHUB_ENV
+        echo "PATH=$(pwd)/vendor/libsndfile-1.2.2-win64/bin:$PATH" >> $GITHUB_ENV
 
     - name: Build GLSL Shaders
       run: |
@@ -52,7 +63,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DPORTAUDIO_ENABLE=true
+        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DLIBSNDFILE_PATH="vendor\libsndfile-1.2.2-win64" -DPORTAUDIO_ENABLE=true
 
     - name: Build
       run: cmake --build build --config Release

@@ -2,57 +2,166 @@
 
 namespace dvm
 {
-  DvmGUI::DvmGUI(GLFWwindow* window,
-                 DvmDevice& dvmDevice,
-                 VkRenderPass renderPass)
+DvmGUI::DvmGUI()
+{
+  DvmApp& app = DvmApp::getInstance();
+  glfwWindow = app.getWindow().getGLFWwindow();
+  DvmDevice& dvmDevice = app.getDevice();
+  DvmWindow& dvmWindow = app.getWindow();
+
+  descriptorPool =
+      DvmDescriptorPool::Builder(dvmDevice)
+          .setMaxSets(11000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
+          .build();
+
+  DvmRenderer& dvmRenderer = app.getRenderer();
+
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+  io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+  io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable
+// Gamepad
+// Controls
+#ifdef GUI_DOCKING
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable
+  // Multi
+  //     - Viewport
+  // / Platform Windows
+  io.ConfigViewportsNoAutoMerge = true;
+  io.ConfigViewportsNoTaskBarIcon = true;
+#endif
+
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+  // ImGui::StyleColorsLight();
+
+  // When viewports are enabled we tweak WindowRounding/WindowBg so platform
+  // windows can look identical to regular ones.
+  ImGuiStyle& style = ImGui::GetStyle();
+#ifdef GUI_DOCKING
+  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    style.WindowRounding = 0.0f;
+    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+  }
+#endif
+  ImGui_ImplGlfw_InitForVulkan(dvmWindow.getGLFWwindow(), false);
+
+  ImGui_ImplVulkan_InitInfo initInfo {};
+  initInfo.Instance = dvmDevice.getInstance();
+  initInfo.Device = dvmDevice.device();
+  initInfo.PhysicalDevice = dvmDevice.getPhysicalDevice();
+  initInfo.QueueFamily = dvmDevice.findPhysicalQueueFamilies().graphicsFamily;
+  initInfo.Queue = dvmDevice.graphicsQueue();
+  initInfo.DescriptorPool = descriptorPool->getDescriptorPool();
+  initInfo.CheckVkResultFn = check_vk_result;
+  initInfo.Subpass = 0;
+  initInfo.Allocator = nullptr;
+  initInfo.MinImageCount = 2;
+  initInfo.ImageCount = 2;
+  initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+  initInfo.RenderPass = dvmRenderer.getSwapChainRenderPass();
+
+  ImGui_ImplVulkan_Init(&initInfo);
+
+  // Upload Fonts
   {
-    //io = ImGui::GetIO();
-    /*ImGui_ImplVulkan_InitInfo initInfo {};
-    initInfo.Instance = dvmDevice.getInstance();
-    initInfo.Device = dvmDevice.device();
-    initInfo.PhysicalDevice = dvmDevice.getPhysicalDevice();
-    initInfo.QueueFamily = g_QueueFamily;
-    initInfo.Queue = g_Queue;
-    initInfo.PipelineCache = g_PipelineCache;
-    initInfo.DescriptorPool = g_DescriptorPool;
-    initInfo.Subpass = 0;
-    initInfo.MinImageCount = g_MinImageCount;
-    initInfo.ImageCount = wd->ImageCount;
-    initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-    initInfo.Allocator = g_Allocator;
-    initInfo.CheckVkResultFn = check_vk_result;
-    ImGui_ImplVulkan_Init(&initInfo, renderPass);*/
+    ImGui_ImplVulkan_CreateFontsTexture();
+
+    ImGui_ImplVulkan_DestroyFontsTexture();
+  }
+}
+
+void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
+{
+  DvmApp& app = DvmApp::getInstance();
+  DvmDevice& dvmDevice = app.getDevice();
+
+  ImGuiIO& io = ImGui::GetIO();
+  int width, height;
+  glfwGetFramebufferSize(glfwWindow, &width, &height);
+
+  io.DisplaySize = ImVec2(width, height);
+  io.DeltaTime = dt;
+  ImGui_ImplGlfw_NewFrame();
+  ImGui_ImplVulkan_NewFrame();
+  ImGui::NewFrame();
+
+  if (show_demo_window) {
+    ImGui::ShowDemoWindow(&show_demo_window);
   }
 
-  void DvmGUI::NewFrame()
   {
-    //ImGui_ImplGlfw_Data* bd = ImGui_ImplGlfw_GetBackendData();
-    //IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplGlfw_InitForXXX()?");
+    static float f = 0.0f;
+    static int counter = 0;
 
-    //ImGuiIO& io = ImGui::GetIO();
+    ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
+                                    // and append into it.
 
-    //// Setup display size (every frame to accommodate for window resizing)
-    //int w, h;
-    //int display_w, display_h;
-    //glfwGetWindowSize(bd->Window, &w, &h);
-    //glfwGetFramebufferSize(bd->Window, &display_w, &display_h);
-    //io.DisplaySize = ImVec2((float)w, (float)h);
-    //if (w > 0 && h > 0)
-    //  io.DisplayFramebufferScale =
-    //      ImVec2((float)display_w / (float)w, (float)display_h / (float)h);
-    //if (bd->WantUpdateMonitors)
-    //  ImGui_ImplGlfw_UpdateMonitors();
+    ImGui::Text("This is some useful text.");  // Display some text (you can use
+                                               // a format strings too)
+    ImGui::Checkbox(
+        "Demo Window",
+        &show_demo_window);  // Edit bools storing our window open/close state
+    ImGui::Checkbox("Another Window", &show_another_window);
 
-    //// Setup time step
-    //double current_time = glfwGetTime();
-    //io.DeltaTime = bd->Time > 0.0 ? (float)(current_time - bd->Time)
-    //                              : (float)(1.0f / 60.0f);
-    //bd->Time = current_time;
+    ImGui::SliderFloat("float",
+                       &f,
+                       0.0f,
+                       1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3(
+        "clear color",
+        (float*)&clear_color);  // Edit 3 floats representing a color
 
-    //ImGui_ImplGlfw_UpdateMouseData();
-    //ImGui_ImplGlfw_UpdateMouseCursor();
+    if (ImGui::Button("Button"))  // Buttons return true when clicked (most
+                                  // widgets return true when edited/activated)
+      counter++;
+    ImGui::SameLine();
+    ImGui::Text("counter = %d", counter);
 
-    //// Update game controllers (if enabled and available)
-    //ImGui_ImplGlfw_UpdateGamepads();
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate,
+                ImGui::GetIO().Framerate);
+    ImGui::End();
   }
-  }  // namespace dvm
+  if (show_another_window) {
+    ImGui::Begin(
+        "Another Window",
+        &show_another_window);  // Pass a pointer to our bool variable (the
+                                // window will have a closing button that will
+                                // clear the bool when clicked)
+    ImGui::Text("Hello from another window!");
+    if (ImGui::Button("Close Me"))
+      show_another_window = false;
+    ImGui::End();
+  }
+  ImGui::Render();
+
+  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
+
+#ifdef GUI_DOCKING
+  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
+  }
+#endif
+  ImGui::EndFrame();
+}
+}  // namespace dvm

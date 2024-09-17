@@ -67,6 +67,11 @@ if(NOT IMGUI_PATH)
   set(IMGUI_PATH vendor/imgui)
 endif()
 
+if(NOT LIBSNDFILE_PATH)
+  message(STATUS "LIBSNDFILE_PATH not specified in .env.cmake, using vendor/imgui")
+  set(LIBSNDFILE_PATH vendor/libsndfile)
+endif()
+
 add_library(imgui STATIC
   ${IMGUI_PATH}/imgui.cpp
   ${IMGUI_PATH}/imgui.h
@@ -79,6 +84,7 @@ add_library(imgui STATIC
   ${IMGUI_PATH}/imgui_tables.cpp
   ${IMGUI_PATH}/imgui_widgets.cpp
 )
+
 target_include_directories(imgui PUBLIC
   $<BUILD_INTERFACE:${ROOT}>
   $<INSTALL_INTERFACE:include>)
@@ -379,6 +385,9 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
+target_include_directories(imgui PUBLIC )
+target_link_libraries(${PROJECT_NAME} imgui)
+
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build")
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -402,26 +411,34 @@ if(WIN32)
     ${GLM_PATH}
     ${IMGUI_PATH}
     ${PORTAUDIO_PATH}/include
+    ${LIBSNDFILE_PATH}/include
   )
 
   target_link_directories(${PROJECT_NAME} PUBLIC
     ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
     lib/cmake/imgui
+    ${LIBSNDFILE_PATH}/lib
   )
 
-  target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio)
+  target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
 elseif(UNIX)
   message(STATUS "CREATING BUILD FOR UNIX")
+  
   target_include_directories(${PROJECT_NAME} PUBLIC
+    /usr/include
     ${PROJECT_SOURCE_DIR}/src
     ${TINYOBJ_PATH}
     ${IMGUI_PATH}
     ${PORTAUDIO_PATH}/include
     ${PORTAUDIO_PATH}/src/common
   )
+  target_link_directories(${PROJECT_NAME} PUBLIC
+    ${Vulkan_LIBRARIES}
+    ${GLFW_LIB}
+    lib/cmake/imgui)
 
-  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio)
+  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
 endif()
 
 
