@@ -78,13 +78,10 @@ add_library(imgui STATIC
   ${IMGUI_PATH}/imgui_internal.h
   ${IMGUI_PATH}/imgui_tables.cpp
   ${IMGUI_PATH}/imgui_widgets.cpp
-  ${IMGUI_PATH}/backends/imgui_impl_vulkan.cpp
-  ${IMGUI_PATH}/backends/imgui_impl_glfw.cpp
 )
 
 target_include_directories(imgui PUBLIC
   $<BUILD_INTERFACE:${ROOT}>
-  ${GLFW_INCLUDE_DIRS}
   $<INSTALL_INTERFACE:include>)
 
 
