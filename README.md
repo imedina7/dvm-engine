@@ -1,24 +1,6 @@
 # dvm-engine
 
-Dvm-engine is an open-source, lightweight, minimal 3D engine boilerplate. It includes very little features but sets a baseline for anyone who would like to start building a game.
-
-## Features
-
-- [X] Multiplatform (Windows / Linux)
-- [X] OBJ Mesh import
-- [X] FPS camera
-- [X] GUI
-- [X] Lighting
-  - [X] Diffuse + Specular
-  - [X] Directional light
-  - [X] Point lights
-  - [ ] Area lights
-  - [ ] Shadows
-  - [ ] Environment textures
-- [ ] Material system
-  - [X] Texture loading
-  - [ ] Multi material objects/meshes
-- [ ] ECS
+This is the dvm-engine project.
 
 # Building and installing
 
