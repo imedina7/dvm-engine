@@ -4,6 +4,8 @@ This is the dvm-engine project.
 
 # Building and installing
 
+![release](https://github.com/imedina7/dvm-engine/actions/workflows/release.yml/badge.svg)
+
 See the [BUILDING](BUILDING.md) document.
 
 # Contributing
