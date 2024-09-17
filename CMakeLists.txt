@@ -406,6 +406,7 @@ if(WIN32)
     ${GLM_PATH}
     ${IMGUI_PATH}
     ${PORTAUDIO_PATH}/include
+    vendor/libsndfile/include
   )
 
   target_link_directories(${PROJECT_NAME} PUBLIC
