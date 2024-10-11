@@ -26,7 +26,7 @@ public:
                      float dt,
                      DvmGameObject& gameObj,
                      glm::vec2 deltaCursor,
-                     float mouseSensibility);
+                     float mouseSensitivity);
 
   KeyMappings keys {};
 

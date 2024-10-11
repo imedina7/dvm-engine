@@ -23,6 +23,7 @@ DvmGUI::DvmGUI()
           .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000)
           .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000)
           .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
+          .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
           .build();
 
   DvmRenderer& dvmRenderer = app.getRenderer();
@@ -62,7 +63,7 @@ DvmGUI::DvmGUI()
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
   }
 #endif
-  ImGui_ImplGlfw_InitForVulkan(dvmWindow.getGLFWwindow(), false);
+  ImGui_ImplGlfw_InitForVulkan(dvmWindow.getGLFWwindow(), true);
 
   ImGui_ImplVulkan_InitInfo initInfo {};
   initInfo.Instance = dvmDevice.getInstance();
