@@ -23,8 +23,8 @@ namespace dvm
 {
 void DvmApp::run()
 {
-  std::vector<std::unique_ptr<DvmBuffer>> uboBuffers(
-      DvmSwapChain::MAX_FRAMES_IN_FLIGHT);
+  std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
+      uboBuffers;
 
   for (int i = 0; i < uboBuffers.size(); i++) {
     uboBuffers[i] = std::make_unique<DvmBuffer>(
@@ -53,8 +53,8 @@ void DvmApp::run()
   imageInfo.imageLayout = texture.getImageLayout();
   imageInfo.imageView = texture.getImageView();
 
-  std::vector<VkDescriptorSet> globalDescriptorSets(
-      DvmSwapChain::MAX_FRAMES_IN_FLIGHT);
+  std::array<VkDescriptorSet, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
+      globalDescriptorSets {};
 
   for (int i = 0; i < globalDescriptorSets.size(); i++) {
     auto bufferInfo = uboBuffers[i]->descriptorInfo();
@@ -83,7 +83,7 @@ void DvmApp::run()
   auto viewerObject = DvmGameObject::createGameObject();
   KeyboardMovementController cameraController {};
   viewerObject.transform.translation.z = -2.5f;
-  //   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
