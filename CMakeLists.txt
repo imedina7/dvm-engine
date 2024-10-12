@@ -69,7 +69,12 @@ endif()
 
 if(NOT LIBSNDFILE_PATH)
   message(STATUS "LIBSNDFILE_PATH not specified in .env.cmake, using vendor/imgui")
-  set(LIBSNDFILE_PATH vendor/libsndfile)
+  set(LIBSNDFILE_PATH vendor/libsndfile-1.2.2-win64)
+endif()
+
+if(NOT ASSIMP_PATH)
+  message(STATUS "ASSIMP_PATH not specified in .env.cmake, using vendor/assimp")
+  set(ASSIMP_PATH vendor/assimp)
 endif()
 
 add_library(imgui STATIC

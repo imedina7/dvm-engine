@@ -14,4 +14,5 @@ CMakeUserPresets.json
 compile_commands.json
 
 vendor/imgui/**
+vendor/libsndfile-1.2.2-win64/**
 src/vc140.pdb
