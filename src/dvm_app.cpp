@@ -83,17 +83,19 @@ void DvmApp::run()
   auto viewerObject = DvmGameObject::createGameObject();
   KeyboardMovementController cameraController {};
   viewerObject.transform.translation.z = -2.5f;
-     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
 
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+  
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   DvmGUI gui {};
-  DvmAudio& audio = DvmAudio::Get();
-
+  #ifdef AUDIO
+    DvmAudio& audio = DvmAudio::Get();
+  #endif
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
@@ -101,13 +103,16 @@ void DvmApp::run()
     double mouseNewX, mouseNewY;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
 
+    #ifdef AUDIO
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       audio.playFromFile(AUDIO_FILE_PATH);
     }
-
+    #endif
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
+
+    gui.checkUIToggle(mouseDelta);
 
     auto newTime = std::chrono::high_resolution_clock::now();
 
@@ -116,10 +121,14 @@ void DvmApp::run()
             newTime - currentTime)
             .count();
     currentTime = newTime;
-    cameraController.moveInPlaneXZ(
-        window, frameTime, viewerObject, mouseDelta, 0.1f);
-    camera.setViewYXZ(viewerObject.transform.translation,
-                      viewerObject.transform.rotation);
+
+    if (!gui.getUIVisibility()) {
+      cameraController.moveInPlaneXZ(
+          window, frameTime, viewerObject, mouseDelta, 0.1f);
+      camera.setViewYXZ(viewerObject.transform.translation,
+                        viewerObject.transform.rotation);
+    }
+    
 
     float aspect = dvmRenderer.getAspectRatio();
 

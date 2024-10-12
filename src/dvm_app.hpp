@@ -1,6 +1,8 @@
 #pragma once
 #include "dvm_device.hpp"
+#ifdef AUDIO
 #include "dvm_audio.hpp"
+#endif
 #include "dvm_gui.hpp"
 #include "dvm_game_object.hpp"
 #include "dvm_renderer.hpp"

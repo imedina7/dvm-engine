@@ -1,3 +1,4 @@
+#ifdef AUDIO
 #include "dvm_audio.hpp"
 
 namespace dvm
@@ -96,3 +97,5 @@ void DvmAudio::playFromFile(const std::string filename)
 //   }
 // }
 }  // namespace dvm
+
+#endif
