@@ -105,10 +105,10 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
   ImGui_ImplVulkan_NewFrame();
   ImGui::NewFrame();
 
-  if (show_demo_window) {
+  if (show_demo_window && ui_visible) {
     ImGui::ShowDemoWindow(&show_demo_window);
   }
-
+  if (ui_visible)
   {
     static float f = 0.0f;
     static int counter = 0;
@@ -142,7 +142,7 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
                 ImGui::GetIO().Framerate);
     ImGui::End();
   }
-  if (show_another_window) {
+  if (show_another_window && ui_visible) {
     ImGui::Begin(
         "Another Window",
         &show_another_window);  // Pass a pointer to our bool variable (the
@@ -153,7 +153,8 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
       show_another_window = false;
     ImGui::End();
   }
-  ImGui::Render();
+
+    ImGui::Render();
 
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
 
@@ -164,5 +165,17 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
   }
 #endif
   ImGui::EndFrame();
+}
+
+void DvmGUI::checkUIToggle(glm::vec2 mouseDelta) {
+  if (glfwGetKey(glfwWindow, GLFW_KEY_TAB) == GLFW_PRESS) {
+    if (glm::length(glm::normalize(mouseDelta)) > .7f)
+      return;
+    if (toggleUI()) {
+      glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    } else {
+      glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+  }
 }
 }  // namespace dvm

@@ -68,8 +68,8 @@ if(NOT IMGUI_PATH)
 endif()
 
 if(NOT LIBSNDFILE_PATH)
-  message(STATUS "LIBSNDFILE_PATH not specified in .env.cmake, using vendor/imgui")
-  set(LIBSNDFILE_PATH vendor/libsndfile)
+  message(STATUS "LIBSNDFILE_PATH not specified in .env.cmake, using vendor/libsndfile-1.2.2-win64")
+  set(LIBSNDFILE_PATH vendor/libsndfile-1.2.2-win64)
 endif()
 
 add_library(imgui STATIC

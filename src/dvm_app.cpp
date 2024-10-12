@@ -83,17 +83,19 @@ void DvmApp::run()
   auto viewerObject = DvmGameObject::createGameObject();
   KeyboardMovementController cameraController {};
   viewerObject.transform.translation.z = -2.5f;
-     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
 
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+  
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   DvmGUI gui {};
-  DvmAudio& audio = DvmAudio::Get();
-
+  #ifdef AUDIO
+    DvmAudio& audio = DvmAudio::Get();
+  #endif
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
@@ -101,13 +103,16 @@ void DvmApp::run()
     double mouseNewX, mouseNewY;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
 
+    #ifdef AUDIO
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       audio.playFromFile(AUDIO_FILE_PATH);
     }
-
+    #endif
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
+
+    gui.checkUIToggle(mouseDelta);
 
     auto newTime = std::chrono::high_resolution_clock::now();
 
@@ -116,10 +121,14 @@ void DvmApp::run()
             newTime - currentTime)
             .count();
     currentTime = newTime;
-    cameraController.moveInPlaneXZ(
-        window, frameTime, viewerObject, mouseDelta, 0.1f);
-    camera.setViewYXZ(viewerObject.transform.translation,
-                      viewerObject.transform.rotation);
+
+    if (!gui.getUIVisibility()) {
+      cameraController.moveInPlaneXZ(
+          window, frameTime, viewerObject, mouseDelta, 0.1f);
+      camera.setViewYXZ(viewerObject.transform.translation,
+                        viewerObject.transform.rotation);
+    }
+    
 
     float aspect = dvmRenderer.getAspectRatio();
 
@@ -158,7 +167,7 @@ void DvmApp::run()
 void DvmApp::loadGameObjects()
 {
   std::shared_ptr<DvmModel> model =
-      DvmModel::createModelFromFile(dvmDevice, "models/flat_vase.obj");
+      DvmModel::createModelFromFile(dvmDevice, "models/shading_test_box.obj");
 
   auto vase = DvmGameObject::createGameObject();
   vase.model = model;
@@ -167,34 +176,46 @@ void DvmApp::loadGameObjects()
       .5f,
       .0f,
   };
-  vase.transform.scale = {1.5f, 1.5f, 1.5f};
+  vase.transform.scale = {1.f, 1.f, 1.f};
   gameObjects.emplace(vase.getId(), std::move(vase));
+//   std::shared_ptr<DvmModel> model =
+//       DvmModel::createModelFromFile(dvmDevice, "models/flat_vase.obj");
 
-  std::shared_ptr<DvmModel> smoothVaseModel =
-      DvmModel::createModelFromFile(dvmDevice, "models/smooth_vase.obj");
+//   auto vase = DvmGameObject::createGameObject();
+//   vase.model = model;
+//   vase.transform.translation = {
+//       -0.5f,
+//       .5f,
+//       .0f,
+//   };
+//   vase.transform.scale = {1.5f, 1.5f, 1.5f};
+//   gameObjects.emplace(vase.getId(), std::move(vase));
 
-  auto smoothVase = DvmGameObject::createGameObject();
-  smoothVase.model = smoothVaseModel;
-  smoothVase.transform.translation = {
-      0.5f,
-      .5f,
-      .0f,
-  };
-  smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
-  gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+//   std::shared_ptr<DvmModel> smoothVaseModel =
+//       DvmModel::createModelFromFile(dvmDevice, "models/smooth_vase.obj");
 
-  std::shared_ptr<DvmModel> suzanneModel =
-      DvmModel::createModelFromFile(dvmDevice, "models/suzanne.obj");
+//   auto smoothVase = DvmGameObject::createGameObject();
+//   smoothVase.model = smoothVaseModel;
+//   smoothVase.transform.translation = {
+//       0.5f,
+//       .5f,
+//       .0f,
+//   };
+//   smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
+//   gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
-  auto suzanne = DvmGameObject::createGameObject();
-  suzanne.model = suzanneModel;
-  suzanne.transform.translation = {
-      0.f,
-      -1.5f,
-      .0f,
-  };
-  suzanne.transform.scale = {0.5f, 0.5f, 0.5f};
-  gameObjects.emplace(suzanne.getId(), std::move(suzanne));
+//   std::shared_ptr<DvmModel> suzanneModel =
+//       DvmModel::createModelFromFile(dvmDevice, "models/suzanne.obj");
+
+//   auto suzanne = DvmGameObject::createGameObject();
+//   suzanne.model = suzanneModel;
+//   suzanne.transform.translation = {
+//       0.f,
+//       -1.5f,
+//       .0f,
+//   };
+//   suzanne.transform.scale = {0.5f, 0.5f, 0.5f};
+//   gameObjects.emplace(suzanne.getId(), std::move(suzanne));
 
   std::shared_ptr<DvmModel> floorModel =
       DvmModel::createModelFromFile(dvmDevice, "models/quad.obj");
