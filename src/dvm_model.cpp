@@ -173,10 +173,20 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
   std::vector<tinyobj::material_t> materials;
   std::string warn, err;
 
+  std::cout << "Loading object in path \"" << filepath << "\"\n";
+
   if (!tinyobj::LoadObj(
           &attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
   {
     throw std::runtime_error(warn + err);
+  }
+
+  if(materials.size() > 0) {
+    for(const auto& material: materials) {
+      std::cout << "Loaded material: \"" << material.name << "\"\n";
+    }
+  } else {
+    std::cout << "No materials loaded" << "\n";
   }
 
   vertices.clear();
