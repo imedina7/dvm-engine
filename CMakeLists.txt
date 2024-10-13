@@ -408,6 +408,7 @@ if(WIN32)
       ${IMGUI_PATH}
       ${PORTAUDIO_PATH}/include
       ${LIBSNDFILE_PATH}/include
+      vendor/entt
     )
 
     target_link_directories(${PROJECT_NAME} PUBLIC
@@ -427,6 +428,7 @@ if(WIN32)
       ${GLFW_INCLUDE_DIRS}
       ${GLM_PATH}
       ${IMGUI_PATH}
+      vendor/entt
     )
 
     target_link_directories(${PROJECT_NAME} PUBLIC
@@ -456,6 +458,7 @@ elseif(UNIX)
         ${PORTAUDIO_PATH}/include
         ${PORTAUDIO_PATH}/src/common
         ${Vulkan_INCLUDE_DIRS}
+        vendor/entt
         )
       target_link_directories(${PROJECT_NAME} PUBLIC
         ${GLFW_LIB}
@@ -490,13 +493,14 @@ elseif(UNIX)
         ${TINYOBJ_PATH}
         ${IMGUI_PATH}
         ${Vulkan_INCLUDE_DIRS}
+        vendor/entt
       )
       target_link_directories(${PROJECT_NAME} PUBLIC
         ${GLFW_LIB}
         ${Vulkan_LIBRARIES}
         build
       )
-      
+
       target_link_libraries(${PROJECT_NAME}
         glfw3
         imgui
@@ -511,7 +515,6 @@ elseif(UNIX)
         "-framework MediaPlayer"
         "-framework QuartzCore"
       )
-      
     endif()
   else()
 
@@ -519,7 +522,7 @@ elseif(UNIX)
     ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
     lib/cmake/imgui)
-  
+
   if(AUDIO_ENGINE)
     target_include_directories(${PROJECT_NAME} PUBLIC
       /usr/include
@@ -528,8 +531,9 @@ elseif(UNIX)
       ${IMGUI_PATH}
       ${PORTAUDIO_PATH}/include
       ${PORTAUDIO_PATH}/src/common
+      vendor/entt
     )
-    
+
       target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
     else()
       target_include_directories(${PROJECT_NAME} PUBLIC
@@ -537,6 +541,7 @@ elseif(UNIX)
         ${PROJECT_SOURCE_DIR}/src
         ${TINYOBJ_PATH}
         ${IMGUI_PATH}
+        vendor/entt
       )
       target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES})
     endif()
