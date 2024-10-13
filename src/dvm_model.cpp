@@ -175,8 +175,13 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
 
   std::cout << "Loading object in path \"" << filepath << "\"\n";
 
+  size_t indx = filepath.find_last_of('/');
+  std::string dir = filepath.substr(0, indx);
+
+  std::cout << "materials loaded from: " << dir << "\n";
+
   if (!tinyobj::LoadObj(
-          &attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
+          &attrib, &shapes, &materials, &warn, &err, filepath.c_str(), dir.c_str()))
   {
     throw std::runtime_error(warn + err);
   }
