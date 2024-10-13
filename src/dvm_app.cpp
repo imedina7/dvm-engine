@@ -47,7 +47,7 @@ void DvmApp::run()
                       VK_SHADER_STAGE_ALL_GRAPHICS)
           .build();
 
-  Texture texture = Texture(dvmDevice, "../textures/image.png");
+  Texture texture = Texture(dvmDevice, "../textures/diffuse_bake.png");
   VkDescriptorImageInfo imageInfo {};
   imageInfo.sampler = texture.getSampler();
   imageInfo.imageLayout = texture.getImageLayout();
@@ -76,13 +76,14 @@ void DvmApp::run()
   DvmCamera camera {};
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
-  camera.setViewDirection(glm::vec3(0.f, 3.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
+  camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
 
   auto currentTime = std::chrono::high_resolution_clock::now();
 
   auto viewerObject = DvmGameObject::createGameObject();
   KeyboardMovementController cameraController {};
-  viewerObject.transform.translation.z = -2.5f;
+  viewerObject.transform.translation.z = -3.f;
+  viewerObject.transform.translation.y = -1.f;
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
@@ -172,11 +173,12 @@ void DvmApp::loadGameObjects()
   auto vase = DvmGameObject::createGameObject();
   vase.model = model;
   vase.transform.translation = {
-      -0.5f,
-      .5f,
+      0.f,
+      0.f,
       .0f,
   };
   vase.transform.scale = {1.f, 1.f, 1.f};
+  vase.transform.rotation = {0.f, glm::pi<float>(), 0.f};
   gameObjects.emplace(vase.getId(), std::move(vase));
 //   std::shared_ptr<DvmModel> model =
 //       DvmModel::createModelFromFile(dvmDevice, "models/flat_vase.obj");
@@ -217,7 +219,7 @@ void DvmApp::loadGameObjects()
 //   suzanne.transform.scale = {0.5f, 0.5f, 0.5f};
 //   gameObjects.emplace(suzanne.getId(), std::move(suzanne));
 
-  std::shared_ptr<DvmModel> floorModel =
+  /*std::shared_ptr<DvmModel> floorModel =
       DvmModel::createModelFromFile(dvmDevice, "models/quad.obj");
 
   auto floorObject = DvmGameObject::createGameObject();
@@ -228,25 +230,26 @@ void DvmApp::loadGameObjects()
       .0f,
   };
   floorObject.transform.scale = {5.f, 1.f, 5.f};
-  gameObjects.emplace(floorObject.getId(), std::move(floorObject));
+  gameObjects.emplace(floorObject.getId(), std::move(floorObject));*/
   std::vector<glm::vec3> lightColors {
-      {1.f, .1f, .1f},
-      {.1f, .1f, 1.f},
+      {1.f, 1.f, 1.f},
+     /* {.1f, .1f, 1.f},
       {.1f, 1.f, .1f},
       {1.f, 1.f, .1f},
       {.1f, 1.f, 1.f},
-      {1.f, 1.f, 1.f},
+      {1.f, 1.f, 1.f},*/
   };
 
   for (int i = 0; i < lightColors.size(); i++) {
     auto pointLight = DvmGameObject::createPointLight(0.2f);
-    pointLight.color = lightColors[i];
+    pointLight.transform.translation = {0.f, -1.f, 0.f};
+   /* pointLight.color = lightColors[i];
     auto rotateLight =
         glm::rotate(glm::mat4(1.f),
                     (i * glm::two_pi<float>()) / lightColors.size(),
                     {0.f, -1.f, 0.f});
     pointLight.transform.translation =
-        glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+        glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));*/
     gameObjects.emplace(pointLight.getId(), std::move(pointLight));
   }
 }

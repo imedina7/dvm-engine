@@ -58,6 +58,6 @@ void main() {
     blinnTerm = pow(blinnTerm, 202.0);
     specularLight += intensity * blinnTerm;
   }
-  vec3 imageColor = texture(image, fragUV).xyz;
+  vec3 imageColor = texture(image, fragUV * vec2(1.0, -1.0)).xyz;
   outColor = vec4((diffuseLight * fragColor + specularLight * fragColor) * imageColor, 1.0);
 }
