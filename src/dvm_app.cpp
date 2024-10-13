@@ -170,86 +170,22 @@ void DvmApp::loadGameObjects()
   std::shared_ptr<DvmModel> model =
       DvmModel::createModelFromFile(dvmDevice, "models/shading_test_box.obj");
 
-  auto vase = DvmGameObject::createGameObject();
-  vase.model = model;
-  vase.transform.translation = {
-      0.f,
-      0.f,
-      .0f,
-  };
-  vase.transform.scale = {1.f, 1.f, 1.f};
-  vase.transform.rotation = {0.f, glm::pi<float>(), 0.f};
-  gameObjects.emplace(vase.getId(), std::move(vase));
-//   std::shared_ptr<DvmModel> model =
-//       DvmModel::createModelFromFile(dvmDevice, "models/flat_vase.obj");
+  auto box = DvmGameObject::createGameObject();
 
-//   auto vase = DvmGameObject::createGameObject();
-//   vase.model = model;
-//   vase.transform.translation = {
-//       -0.5f,
-//       .5f,
-//       .0f,
-//   };
-//   vase.transform.scale = {1.5f, 1.5f, 1.5f};
-//   gameObjects.emplace(vase.getId(), std::move(vase));
+  box.model = model;
+  box.transform.translation = { 0.f, 0.f, .0f };
+  box.transform.scale = {1.f, 1.f, 1.f};
+  box.transform.rotation = {0.f, glm::pi<float>(), 0.f};
 
-//   std::shared_ptr<DvmModel> smoothVaseModel =
-//       DvmModel::createModelFromFile(dvmDevice, "models/smooth_vase.obj");
+  gameObjects.emplace(box.getId(), std::move(box));
 
-//   auto smoothVase = DvmGameObject::createGameObject();
-//   smoothVase.model = smoothVaseModel;
-//   smoothVase.transform.translation = {
-//       0.5f,
-//       .5f,
-//       .0f,
-//   };
-//   smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
-//   gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
-
-//   std::shared_ptr<DvmModel> suzanneModel =
-//       DvmModel::createModelFromFile(dvmDevice, "models/suzanne.obj");
-
-//   auto suzanne = DvmGameObject::createGameObject();
-//   suzanne.model = suzanneModel;
-//   suzanne.transform.translation = {
-//       0.f,
-//       -1.5f,
-//       .0f,
-//   };
-//   suzanne.transform.scale = {0.5f, 0.5f, 0.5f};
-//   gameObjects.emplace(suzanne.getId(), std::move(suzanne));
-
-  /*std::shared_ptr<DvmModel> floorModel =
-      DvmModel::createModelFromFile(dvmDevice, "models/quad.obj");
-
-  auto floorObject = DvmGameObject::createGameObject();
-  floorObject.model = floorModel;
-  floorObject.transform.translation = {
-      .0f,
-      .5f,
-      .0f,
-  };
-  floorObject.transform.scale = {5.f, 1.f, 5.f};
-  gameObjects.emplace(floorObject.getId(), std::move(floorObject));*/
   std::vector<glm::vec3> lightColors {
       {1.f, 1.f, 1.f},
-     /* {.1f, .1f, 1.f},
-      {.1f, 1.f, .1f},
-      {1.f, 1.f, .1f},
-      {.1f, 1.f, 1.f},
-      {1.f, 1.f, 1.f},*/
   };
 
   for (int i = 0; i < lightColors.size(); i++) {
     auto pointLight = DvmGameObject::createPointLight(0.2f);
     pointLight.transform.translation = {0.f, -1.f, 0.f};
-   /* pointLight.color = lightColors[i];
-    auto rotateLight =
-        glm::rotate(glm::mat4(1.f),
-                    (i * glm::two_pi<float>()) / lightColors.size(),
-                    {0.f, -1.f, 0.f});
-    pointLight.transform.translation =
-        glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));*/
     gameObjects.emplace(pointLight.getId(), std::move(pointLight));
   }
 }

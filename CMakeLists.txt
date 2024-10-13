@@ -412,6 +412,7 @@ if(WIN32)
     ${IMGUI_PATH}
     ${PORTAUDIO_PATH}/include
     ${LIBSNDFILE_PATH}/include
+    vendor/entt
   )
 
   target_link_directories(${PROJECT_NAME} PUBLIC
