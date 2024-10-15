@@ -1,6 +1,6 @@
 # dvm-engine
 
-Dvm-engine is a free and open-source, lightweight, minimal 3D engine boilerplate. It includes very little features but sets a baseline for anyone who would like to start building a game.
+Dvm-engine is a free and open-source, lightweight, minimal 3D engine boilerplate. It includes very little features but sets a starting point for anyone who would like to start building a game.
 
 ## Features
 
