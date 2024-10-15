@@ -112,16 +112,16 @@ jobs:
         brew install portaudio
         brew install libsndfile
         brew install make
-        brew install apple-gcc
+        brew install gcc
     - name: List Vulkan SDK install dir & check make/gcc paths
       run: |
         ls $VULKAN_SDK
         which make
-        which apple-gcc
+        which gcc
 
     - name: Build
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=$VULKAN_SDK -DCMAKE_MAKE_PROGRAM=/usr/local/bin/make -DCMAKE_C_COMPILER=/usr/local/bin/apple-gcc -DCMAKE_CXX_COMPILER=/usr/local/bin/apple-g++
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=$VULKAN_SDK -DCMAKE_MAKE_PROGRAM=/usr/local/bin/make -DCMAKE_C_COMPILER=/usr/local/bin/gcc -DCMAKE_CXX_COMPILER=/usr/local/bin/apple-g++
         cmake --build .
