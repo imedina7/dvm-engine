@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <chrono>
+#include <iostream>
 #include <vulkan/vulkan_core.h>
 
 #include "systems/simple_render_system.hpp"
@@ -25,6 +26,8 @@ void DvmApp::run()
 {
   std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
       uboBuffers;
+
+  int time = 0;
 
   for (int i = 0; i < uboBuffers.size(); i++) {
     uboBuffers[i] = std::make_unique<DvmBuffer>(
@@ -89,13 +92,12 @@ void DvmApp::run()
 
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-  
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  DvmGUI gui {};
-  #ifdef AUDIO
-    DvmAudio& audio = DvmAudio::Get();
-  #endif
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  DvmGUI dvmGui {};
+#ifdef AUDIO
+  DvmAudio& audio = DvmAudio::Get();
+#endif
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
@@ -103,16 +105,14 @@ void DvmApp::run()
     double mouseNewX, mouseNewY;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
 
-    #ifdef AUDIO
+#ifdef AUDIO
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       audio.playFromFile(AUDIO_FILE_PATH);
     }
-    #endif
+#endif
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
-
-    gui.checkUIToggle(mouseDelta);
 
     auto newTime = std::chrono::high_resolution_clock::now();
 
@@ -122,13 +122,12 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    if (!gui.getUIVisibility()) {
+    if (!dvmGui.getUIVisibility()) {
       cameraController.moveInPlaneXZ(
           window, frameTime, viewerObject, mouseDelta, 0.1f);
       camera.setViewYXZ(viewerObject.transform.translation,
                         viewerObject.transform.rotation);
     }
-    
 
     float aspect = dvmRenderer.getAspectRatio();
 
@@ -148,6 +147,7 @@ void DvmApp::run()
       ubo.projection = camera.getProjection();
       ubo.view = camera.getView();
       ubo.inverseView = camera.getInverseView();
+      ubo.time = time++;
       pointLightSystem.update(frameInfo, ubo);
 
       uboBuffers[frameIndex]->writeToBuffer(&ubo);
@@ -156,7 +156,7 @@ void DvmApp::run()
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(frameInfo);
       pointLightSystem.render(frameInfo);
-      gui.update(frameTime, commandBuffer);
+      dvmGui.render(frameTime, commandBuffer);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }

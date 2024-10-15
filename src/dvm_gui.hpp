@@ -3,7 +3,7 @@
 #include "gui/imgui_impl_glfw.h"
 #include "gui/imgui_impl_vulkan.h"
 
-#include<glm/glm.hpp>
+#include <glm/glm.hpp>
 
 #include "dvm_device.hpp"
 #include "dvm_descriptors.hpp"
@@ -22,6 +22,10 @@ static void check_vk_result(VkResult err)
 
 namespace dvm
 {
+
+void keyEventsCallback(
+    GLFWwindow* window, int key, int scan, int action, int mod);
+
 class DvmGUI
 {
 public:
@@ -33,7 +37,7 @@ public:
     ImGui::DestroyContext();
   }
 
-  void update(float dt, VkCommandBuffer command_buffer);
+  void render(float dt, VkCommandBuffer command_buffer);
   const bool toggleUI()
   {
     ui_visible = !ui_visible;
@@ -42,7 +46,7 @@ public:
 
   const bool getUIVisibility() { return ui_visible; };
 
-  void checkUIToggle(glm::vec2 mouseDelta);
+  void checkUIToggle();
 
 private:
   GLFWwindow* glfwWindow;

@@ -19,6 +19,7 @@ layout (set = 0, binding = 0) uniform GlobalUbo {
   vec4 ambientLightColor;
   PointLight pointLights[10];
   int numLights;
+  int time;
 } ubo;
 
 layout (set = 0, binding = 1) uniform sampler2D image;
@@ -48,7 +49,7 @@ void main() {
     directionToLight = normalize(directionToLight);
 
     float cosAngleIncidence = max(dot(normalize(fragNormalWorld), directionToLight), 0);
-    vec3 intensity = light.color.xyz * light.color.w * attenuation;
+    vec3 intensity = light.color.xyz * light.color.w * attenuation * (sin(ubo.time / 100.0) * 0.5 + 1);
 
     diffuseLight += intensity * cosAngleIncidence;
 
