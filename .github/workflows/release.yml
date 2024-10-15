@@ -82,7 +82,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libvulkan-dev libglm-dev libsndfile1-dev libglfw3-dev libportaudio19-dev
+        sudo apt-get install -y libvulkan-dev libglm-dev libsndfile1-dev libglfw3-dev portaudio19-dev
 
     - name: Configure and Build
       run: |
