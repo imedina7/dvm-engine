@@ -114,6 +114,7 @@ jobs:
 
     - name: Build
       run: |
+        mkdir build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$VULKAN_SDK/share/vulkan/sdk/vulkan-1.0.cmake
         cmake --build .
