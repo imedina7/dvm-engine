@@ -88,3 +88,26 @@ jobs:
       run: |
         cmake -S . -B build
         cmake --build build
+  macos:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        brew install cmake
+        brew install vulkan-sdk
+        brew install glfw
+        brew install glm
+        brew install portaudio
+        brew install libsndfile
+
+    - name: Build
+      run: |
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=`brew --prefix vulkan-sdk`/share/vulkan/sdk/vulkan-1.0.cmake
+        cmake --build .
