@@ -3,7 +3,7 @@ name: Release C++ CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  windows:
     runs-on: windows-latest
 
     steps:
@@ -67,4 +67,21 @@ jobs:
 
     - name: Build
       run: cmake --build build --config Release
+  linux:
+    runs-on: ubuntu-latest
 
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up CMake
+      uses: actions/setup-cmake@v2
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libvulkan-dev libglm-dev libsndfile1-dev
+
+    - name: Configure and Build
+      run: |
+        cmake -S . -B build
+        cmake --build build
