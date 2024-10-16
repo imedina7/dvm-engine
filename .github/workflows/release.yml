@@ -105,12 +105,13 @@ jobs:
         brew install portaudio
         brew install libsndfile
         brew install make
-        # Install Vulkan SDK
-        brew install --cask apenngrace/vulkan/vulkan-sdk
 
-    - name: Set VULKAN_SDK_PATH
+    - name: Install Vulkan SDK
       run: |
-        export VULKAN_SDK=`brew --prefix vulkan-sdk`
+        curl -sSf https://vulkan.lunarg.com/sdk/page/MacOS.html | sh -s 'latest'
+        export VULKAN_SDK=`/usr/bin/xcode-select -p`/../Library/Developer/Vulkan/SDKs/VulkanSDK/macOS
+        export PATH=$VULKAN_SDK/bin:$PATH
+        export DYLD_LIBRARY_PATH=$VULKAN_SDK/lib:$DYLD_LIBRARY_PATH
 
     - name: Build
       run: |
