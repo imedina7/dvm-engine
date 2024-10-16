@@ -109,19 +109,17 @@ jobs:
         brew install libsndfile
         brew install make
         brew install gcc
-    - name: List Vulkan SDK install dir & check make/gcc paths
-      run: |
-        git clone https://github.com/KhronosGroup/MoltenVK.git
-        cd MoltenVK
-        mkdir build
-        cd build
-        cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DVK_LAYER_LINKAGE=static -DVK_LIBRARY_LINKAGE=static -DMACOS=ON -DMOLTENVK_INSTALL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -B .
-        make
-        sudo make install
+    - name: Install Vulkan SDK
+      uses: humbletim/install-vulkan-sdk@v1.1.1
+      with:
+        version: 1.3.204.1
+        cache: true
+    - name: List Vulkan SDK install dir
+      run: ls $VULKAN_SDK
 
     - name: Build
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/Applications/VulkanSDK/1.3.231.1/Mac/vulkan -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=$VULKAN_SDK -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1
         cmake --build .
