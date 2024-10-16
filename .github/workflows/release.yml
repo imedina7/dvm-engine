@@ -112,7 +112,7 @@ jobs:
         brew install gcc
     - name: List Vulkan SDK install dir
       run: |
-        ls /Applications/VulkanSDK/1.3.231.1/Mac/vulkan
+        ls /Applications/VulkanSDK
 
     - name: Build
       run: |
