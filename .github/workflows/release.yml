@@ -106,7 +106,6 @@ jobs:
         export VULKAN_SDK=/usr/local/vulkan
 
         # Install other dependencies using Homebrew
-        brew install cmake
         brew install glfw
         brew install glm
         brew install portaudio
@@ -115,7 +114,7 @@ jobs:
         brew install gcc
     - name: List Vulkan SDK install dir & check make/gcc paths
       run: |
-        ls $VULKAN_SDK
+        ls $VULKAN_SDK/src
         which make
         which gcc
 
