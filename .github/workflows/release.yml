@@ -114,7 +114,7 @@ jobs:
         export VULKAN_SDK="/Library/Frameworks/Vulkan.framework/Versions/1.3.231.1/LunarG"
 
     - name: list vulkan sdk dir
-      run: ls /Library/Frameworks/Vulkan.framework/Versions/1.3.231.1/LunarG
+      run: ls /Library/Frameworks/Vulkan.framework/
 
     - name: Check Vulkan SDK installation
       run: vulkaninfo
