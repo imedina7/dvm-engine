@@ -108,13 +108,12 @@ jobs:
 
     - name: Install Vulkan
       run: |
-        curl -sSf -O https://sdk.lunarg.com/sdk/download/1.3.231.1/mac/vulkansdk-macos-1.3.231.1.dmg
-        hdiutil attach vulkansdk-macos-1.3.231.1.dmg -nobrowse -plist | xmllint --xpath '/plist/dict/key[.="devmode"]/following-sibling::dict/true' - 2>/dev/null && hdiutil detach /Volumes/VulkanSDK
-        export DYLD_FALLBACK_LIBRARY_PATH="/Library/Frameworks/Vulkan.framework/Versions/1.3.231.1/LunarG/lib:$DYLD_FALLBACK_LIBRARY_PATH"
-        export VULKAN_SDK="/Library/Frameworks/Vulkan.framework/Versions/1.3.231.1/LunarG"
+        brew install vulkan-loader
+        export VULKAN_SDK=$(brew --prefix)/Cellar/vulkan-loader/1.3.231.1/lib/vulkan
+        export DYLD_LIBRARY_PATH=$VULKAN_SDK:$DYLD_LIBRARY_PATH
 
     - name: list vulkan sdk dir
-      run: ls /Library/Frameworks/
+      run: ls $VULKAN_SDK
 
     - name: Check Vulkan SDK installation
       run: vulkaninfo
