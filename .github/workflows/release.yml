@@ -115,7 +115,7 @@ jobs:
         cd MoltenVK
         mkdir build
         cd build
-        cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DVK_LAYER_LINKAGE=static -DVK_LIBRARY_LINKAGE=static -DMACOS=ON -DMOLTENVK_INSTALL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr/local
+        cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DVK_LAYER_LINKAGE=static -DVK_LIBRARY_LINKAGE=static -DMACOS=ON -DMOLTENVK_INSTALL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -B .
         make
         sudo make install
 
