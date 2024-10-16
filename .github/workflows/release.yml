@@ -123,5 +123,5 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=$VULKAN_SDK -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DAPPLE
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=$VULKAN_SDK -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1
         cmake --build .
