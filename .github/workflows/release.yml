@@ -107,7 +107,7 @@ jobs:
         brew install make
 
     - name: List Vulkan SDK dir
-      run: ls /Lib/vulkan
+      run: ls /Lib
 
     - name: Build
       run: |
