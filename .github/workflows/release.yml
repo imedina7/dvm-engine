@@ -105,9 +105,8 @@ jobs:
         brew install portaudio
         brew install libsndfile
         brew install make
-        brew install gcc
         # Install Vulkan SDK
-        brew install --cask vulkan-sdk
+        brew cask install apenngrace/vulkan/vulkan-sdk
 
     - name: Set VULKAN_SDK_PATH
       run: |
