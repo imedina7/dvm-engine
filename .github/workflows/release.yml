@@ -115,7 +115,7 @@ jobs:
     - name: list vulkan sdk dir
       run: |
         ls /opt/homebrew/Cellar/vulkan-headers/1.3.296
-        ls /opt/homebrew/Cellar/vulkan-loader/1.3.296
+        ls /opt/homebrew/Cellar/vulkan-loader/1.3.296/lib
 
     - name: Check Vulkan SDK installation
       run: vulkaninfo
