@@ -424,6 +424,11 @@ if(WIN32)
   target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
 elseif(UNIX)
   message(STATUS "CREATING BUILD FOR UNIX")
+
+  if(APPLE)
+    set(CMAKE_CXX_COMPILER clang++)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  endif()
   
   target_include_directories(${PROJECT_NAME} PUBLIC
     /usr/include
