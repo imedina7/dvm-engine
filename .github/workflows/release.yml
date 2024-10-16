@@ -106,7 +106,7 @@ jobs:
         brew install libsndfile
         brew install make
         # Install Vulkan SDK
-        brew cask install apenngrace/vulkan/vulkan-sdk
+        brew install --cask apenngrace/vulkan/vulkan-sdk
 
     - name: Set VULKAN_SDK_PATH
       run: |
