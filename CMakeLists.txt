@@ -438,6 +438,7 @@ elseif(UNIX)
 
     target_include_directories(${PROJECT_NAME} PUBLIC
       /usr/include
+      /opt/homebrew/include
       ${PROJECT_SOURCE_DIR}/src
       ${TINYOBJ_PATH}
       ${IMGUI_PATH}
