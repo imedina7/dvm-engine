@@ -20,7 +20,7 @@ project(${NAME} VERSION 0.23.0)
 # 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
 if(DEFINED VULKAN_SDK_PATH)
   if(APPLE)
-    set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/libexec/include") # 1.1 Make sure this include path is correct
     set(Vulkan_LIBRARY "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
   else()
@@ -434,7 +434,7 @@ elseif(UNIX)
   if(APPLE)
     message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DVULKAN_SDK=${Vulkan_LIBRARY}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1")
 
     target_include_directories(${PROJECT_NAME} PUBLIC
       /usr/include
@@ -448,23 +448,25 @@ elseif(UNIX)
     )
     target_link_directories(${PROJECT_NAME} PUBLIC
       ${GLFW_LIB}
-      lib/cmake/imgui)
+      lib/cmake/imgui
+      ${Vulkan_LIBRARY}
+    )
       
-    target_link_libraries(${PROJECT_NAME} glfw portaudio sndfile)
+    target_link_libraries(${PROJECT_NAME} glfw portaudio sndfile MoltenVK)
   else()
   
-  target_include_directories(${PROJECT_NAME} PUBLIC
-    /usr/include
-    ${PROJECT_SOURCE_DIR}/src
-    ${TINYOBJ_PATH}
-    ${IMGUI_PATH}
-    ${PORTAUDIO_PATH}/include
-    ${PORTAUDIO_PATH}/src/common
-  )
-  target_link_directories(${PROJECT_NAME} PUBLIC
-    ${Vulkan_LIBRARY}
-    ${GLFW_LIB}
-    lib/cmake/imgui)
+    target_include_directories(${PROJECT_NAME} PUBLIC
+      /usr/include
+      ${PROJECT_SOURCE_DIR}/src
+      ${TINYOBJ_PATH}
+      ${IMGUI_PATH}
+      ${PORTAUDIO_PATH}/include
+      ${PORTAUDIO_PATH}/src/common
+    )
+    target_link_directories(${PROJECT_NAME} PUBLIC
+      ${Vulkan_LIBRARY}
+      ${GLFW_LIB}
+      lib/cmake/imgui)
     
     target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARY} portaudio sndfile)
   endif()
