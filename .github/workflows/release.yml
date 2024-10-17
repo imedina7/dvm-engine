@@ -105,24 +105,12 @@ jobs:
         brew install portaudio
         brew install libsndfile
         brew install make
-
-    - name: Install Vulkan
-      run: |
-        brew install vulkan-loader
-        export VULKAN_SDK=$(brew --prefix)/Cellar/vulkan-loader/1.3.231.1/lib/vulkan
-        export DYLD_LIBRARY_PATH=$VULKAN_SDK:$DYLD_LIBRARY_PATH
-
-    - name: list vulkan sdk dir
-      run: |
-        ls /opt/homebrew/Cellar/vulkan-headers/1.3.296
-        ls /opt/homebrew/Cellar/vulkan-loader/1.3.296/lib
-
-    - name: Check Vulkan SDK installation
-      run: vulkaninfo
+        # Install Vulkan SDK (MoltenVK)
+        brew install molten-vk
 
     - name: Build
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=$VULKAN_SDK -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1
         cmake --build .
