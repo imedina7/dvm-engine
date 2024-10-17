@@ -23,8 +23,16 @@ if(DEFINED VULKAN_SDK_PATH)
   set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
   set(Vulkan_FOUND "True")
 else()
-  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
-  message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
+  if(APPLE)
+    find_package(FindVulkan COMPONENTS MoltenVK)
+
+    if(NOT Vulkan_MoltenVK_FOUND)
+      message(FATAL_ERROR "Could not find MoltenVK library!")
+    endif()
+  else()
+    find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
+    message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
+  endif()
 endif()
 if(NOT Vulkan_FOUND)
   message(FATAL_ERROR "Could not find Vulkan library!")
@@ -426,8 +434,9 @@ elseif(UNIX)
   message(STATUS "CREATING BUILD FOR UNIX")
 
   if(APPLE)
+    message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DVULKAN_SDK=${Vulkan_LIBRARIES}")
   endif()
   
   target_include_directories(${PROJECT_NAME} PUBLIC
