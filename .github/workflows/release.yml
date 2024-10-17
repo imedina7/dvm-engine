@@ -108,7 +108,7 @@ jobs:
         # Install Vulkan SDK (MoltenVK)
         brew install molten-vk
     - name: List MoltenVK dir
-      run: ls /opt/homebrew/Cellar/molten-vk/1.2.11
+      run: ls -R /opt/homebrew/Cellar/molten-vk/1.2.11/include
 
     - name: Build
       run: |
