@@ -24,7 +24,7 @@ if(DEFINED VULKAN_SDK_PATH)
   set(Vulkan_FOUND "True")
 else()
   if(APPLE)
-    find_package(FindVulkan COMPONENTS MoltenVK)
+    find_package(Vulkan REQUIRED COMPONENTS MoltenVK)
 
     if(NOT Vulkan_MoltenVK_FOUND)
       message(FATAL_ERROR "Could not find MoltenVK library!")
@@ -437,7 +437,22 @@ elseif(UNIX)
     message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DVULKAN_SDK=${Vulkan_LIBRARIES}")
-  endif()
+
+    target_include_directories(${PROJECT_NAME} PUBLIC
+      /usr/include
+      ${PROJECT_SOURCE_DIR}/src
+      ${TINYOBJ_PATH}
+      ${IMGUI_PATH}
+      ${PORTAUDIO_PATH}/include
+      ${PORTAUDIO_PATH}/src/common
+      ${Vulkan_INCLUDE_DIRS}
+    )
+    target_link_directories(${PROJECT_NAME} PUBLIC
+      ${GLFW_LIB}
+      lib/cmake/imgui)
+      
+    target_link_libraries(${PROJECT_NAME} glfw portaudio sndfile)
+  else()
   
   target_include_directories(${PROJECT_NAME} PUBLIC
     /usr/include
@@ -451,8 +466,9 @@ elseif(UNIX)
     ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
     lib/cmake/imgui)
-
-  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
+    
+    target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
+  endif()
 endif()
 
 
