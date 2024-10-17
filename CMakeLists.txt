@@ -19,20 +19,18 @@ project(${NAME} VERSION 0.23.0)
 
 # 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
 if(DEFINED VULKAN_SDK_PATH)
-  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
-  set(Vulkan_FOUND "True")
-else()
   if(APPLE)
-    find_package(Vulkan REQUIRED COMPONENTS MoltenVK)
-
-    if(NOT Vulkan_MoltenVK_FOUND)
-      message(FATAL_ERROR "Could not find MoltenVK library!")
-    endif()
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_FOUND "True")
   else()
-    find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
-    message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_FOUND "True")
   endif()
+else()
+  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
+  message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
 endif()
 if(NOT Vulkan_FOUND)
   message(FATAL_ERROR "Could not find Vulkan library!")
