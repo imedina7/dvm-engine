@@ -20,12 +20,12 @@ project(${NAME} VERSION 0.23.0)
 # 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
 if(DEFINED VULKAN_SDK_PATH)
   if(APPLE)
-    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/include") # 1.1 Make sure this include path is correct
-    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARY "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
   else()
-    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARY "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
   endif()
 else()
@@ -35,7 +35,7 @@ endif()
 if(NOT Vulkan_FOUND)
   message(FATAL_ERROR "Could not find Vulkan library!")
 else()
-  message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
+  message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARY}")
 endif()
 
 
@@ -411,7 +411,7 @@ if(WIN32)
 
   target_include_directories(${PROJECT_NAME} PUBLIC
     ${PROJECT_SOURCE_DIR}/src
-    ${Vulkan_INCLUDE_DIRS}
+    ${Vulkan_INCLUDE_DIR}
     ${TINYOBJ_PATH}
     ${GLFW_INCLUDE_DIRS}
     ${GLM_PATH}
@@ -421,7 +421,7 @@ if(WIN32)
   )
 
   target_link_directories(${PROJECT_NAME} PUBLIC
-    ${Vulkan_LIBRARIES}
+    ${Vulkan_LIBRARY}
     ${GLFW_LIB}
     lib/cmake/imgui
     ${LIBSNDFILE_PATH}/lib
@@ -434,7 +434,7 @@ elseif(UNIX)
   if(APPLE)
     message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DVULKAN_SDK=${Vulkan_LIBRARIES}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DVULKAN_SDK=${Vulkan_LIBRARY}")
 
     target_include_directories(${PROJECT_NAME} PUBLIC
       /usr/include
@@ -443,7 +443,7 @@ elseif(UNIX)
       ${IMGUI_PATH}
       ${PORTAUDIO_PATH}/include
       ${PORTAUDIO_PATH}/src/common
-      ${Vulkan_INCLUDE_DIRS}
+      ${Vulkan_INCLUDE_DIR}
     )
     target_link_directories(${PROJECT_NAME} PUBLIC
       ${GLFW_LIB}
@@ -461,11 +461,11 @@ elseif(UNIX)
     ${PORTAUDIO_PATH}/src/common
   )
   target_link_directories(${PROJECT_NAME} PUBLIC
-    ${Vulkan_LIBRARIES}
+    ${Vulkan_LIBRARY}
     ${GLFW_LIB}
     lib/cmake/imgui)
     
-    target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
+    target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARY} portaudio sndfile)
   endif()
 endif()
 
