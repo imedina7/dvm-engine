@@ -109,8 +109,6 @@ jobs:
         brew install molten-vk
         brew install vulkan-tools
 
-    - name: List Vulkan SDK dir
-      run: ls -R /opt/homebrew/Cellar/molten-vk/1.2.11
     - name: Compile Shaders
       run: |
         mkdir build
