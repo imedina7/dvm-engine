@@ -101,12 +101,12 @@ target_include_directories(imgui PUBLIC
   $<BUILD_INTERFACE:${ROOT}>
   $<INSTALL_INTERFACE:include>)
 
+if(NOT PORTAUDIO_PATH)
+  message(STATUS "PORTAUDIO_PATH not specified in .env.cmake, using vendor/portaudio")
+  set(PORTAUDIO_PATH vendor/portaudio)
+endif()
 
 if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
-  if(NOT PORTAUDIO_PATH)
-    message(STATUS "PORTAUDIO_PATH not specified in .env.cmake, using vendor/portaudio")
-    set(PORTAUDIO_PATH vendor/portaudio)
-  endif()
 
   add_library(PortAudio STATIC ${PORTAUDIO_PATH}/src/common/pa_allocation.c
     ${PORTAUDIO_PATH}/src/common/pa_allocation.h
@@ -445,8 +445,6 @@ elseif(UNIX)
     message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
 
-    
-    
     if(AUDIO_ENGINE)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DAUDIO=1")
       target_include_directories(${PROJECT_NAME} PUBLIC
@@ -458,13 +456,15 @@ elseif(UNIX)
         ${PORTAUDIO_PATH}/include
         ${PORTAUDIO_PATH}/src/common
         ${Vulkan_INCLUDE_DIRS}
-      )
+        )
       target_link_directories(${PROJECT_NAME} PUBLIC
         ${GLFW_LIB}
         ${Vulkan_LIBRARIES}
+        ${PORTAUDIO_PATH}/lib
+        ${LIBSNDFILE_PATH}/lib
         build
       )
-      
+
       target_link_libraries(${PROJECT_NAME}
         glfw
         portaudio

@@ -107,15 +107,17 @@ jobs:
         brew install make
         # Install Vulkan SDK (MoltenVK)
         brew install molten-vk
-    - name: List GLFW dir
-      run: ls -R /opt/homebrew/Cellar/glfw/3.4
+        brew install vulkan-tools
 
-    - name: print clang version
-      run: clang --version
-
-    - name: Build
+    - name: Compile Shaders
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11 -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1 -DGLFW_PATH=/opt/homebrew/Cellar/glfw/3.4
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11
+        cmake --build . --target Shaders
+
+
+    - name: Build Engine
+      run: |
+        cmake -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11 -DPORTAUDIO_PATH=/opt/homebrew/Cellar/portaudio/19.7.0 -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1 -DGLFW_PATH=/opt/homebrew/Cellar/glfw/3.4 -DAUDIO_ENGINE=true -DLIBSNDFILE_PATH=/opt/homebrew/Cellar/libsndfile/1.2.2
         cmake --build .
