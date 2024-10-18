@@ -110,6 +110,9 @@ jobs:
     - name: List GLFW dir
       run: ls -R /opt/homebrew/Cellar/glfw/3.4
 
+    - name: print clang version
+      run: clang --version
+
     - name: Build
       run: |
         mkdir build
