@@ -23,9 +23,13 @@ if(DEFINED VULKAN_SDK_PATH)
     set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/libexec/include") # 1.1 Make sure this include path is correct
     set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
-  else()
+  elseif(WIN32)
     set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
     set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_FOUND "True")
+  else()
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
   endif()
 else()
