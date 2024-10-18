@@ -111,8 +111,8 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Shaders -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11
-        cmake --build .
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11
+        cmake --build . --target Shaders
 
 
     - name: Build Engine
