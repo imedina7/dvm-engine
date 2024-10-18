@@ -475,10 +475,11 @@ elseif(UNIX)
         "-framework CoreGraphics"
         "-framework CoreMotion"
         "-framework Foundation"
+        "-framework AppKit"
+        "-framework IOKit"
+        "-framework IOSurface"
         "-framework MediaPlayer"
-        "-framework OpenGLES"
         "-framework QuartzCore"
-        "-framework UIKit"
       )
     else()
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1")
