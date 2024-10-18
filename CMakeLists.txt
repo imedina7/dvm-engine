@@ -20,12 +20,12 @@ project(${NAME} VERSION 0.23.0)
 # 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
 if(DEFINED VULKAN_SDK_PATH)
   if(APPLE)
-    set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/libexec/include") # 1.1 Make sure this include path is correct
-    set(Vulkan_LIBRARY "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/libexec/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
   else()
-    set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-    set(Vulkan_LIBRARY "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
   endif()
 else()
@@ -35,7 +35,7 @@ endif()
 if(NOT Vulkan_FOUND)
   message(FATAL_ERROR "Could not find Vulkan library!")
 else()
-  message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARY}")
+  message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
 endif()
 
 
@@ -333,7 +333,6 @@ if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
         endif()
       endif()
 
-      check_include_file(sys/audioio.h HAVE_SYS_AUDIOIO_H)
       cmake_dependent_option(AUDIOIO "Enable support for Solaris/NetBSD audio" ON "HAVE_SYS_AUDIOIO_H" AUDIOIO)
       if(AUDIOIO AND HAVE_SYS_AUDIOIO_H)
         target_sources(PortAudio PRIVATE ${PORTAUDIO_PATH}/src/hostapi/audioio/pa_unix_audioio.c)
@@ -400,7 +399,7 @@ if(WIN32)
   if(AUDIO_ENGINE)
     target_include_directories(${PROJECT_NAME} PUBLIC
       ${PROJECT_SOURCE_DIR}/src
-      ${Vulkan_INCLUDE_DIR}
+      ${Vulkan_INCLUDE_DIRS}
       ${TINYOBJ_PATH}
       ${GLFW_INCLUDE_DIRS}
       ${GLM_PATH}
@@ -410,7 +409,7 @@ if(WIN32)
     )
 
     target_link_directories(${PROJECT_NAME} PUBLIC
-      ${Vulkan_LIBRARY}
+      ${Vulkan_LIBRARIES}
       ${GLFW_LIB}
       lib/cmake/imgui
       ${LIBSNDFILE_PATH}/lib
@@ -421,7 +420,7 @@ if(WIN32)
   else()
     target_include_directories(${PROJECT_NAME} PUBLIC
       ${PROJECT_SOURCE_DIR}/src
-      ${Vulkan_INCLUDE_DIR}
+      ${Vulkan_INCLUDE_DIRS}
       ${TINYOBJ_PATH}
       ${GLFW_INCLUDE_DIRS}
       ${GLM_PATH}
@@ -429,7 +428,7 @@ if(WIN32)
     )
 
     target_link_directories(${PROJECT_NAME} PUBLIC
-      ${Vulkan_LIBRARY}
+      ${Vulkan_LIBRARIES}
       ${GLFW_LIB}
       lib/cmake/imgui
     )
@@ -454,11 +453,11 @@ elseif(UNIX)
         ${IMGUI_PATH}
         ${PORTAUDIO_PATH}/include
         ${PORTAUDIO_PATH}/src/common
-        ${Vulkan_INCLUDE_DIR}
+        ${Vulkan_INCLUDE_DIRS}
       )
       target_link_directories(${PROJECT_NAME} PUBLIC
         ${GLFW_LIB}
-        ${Vulkan_LIBRARY}
+        ${Vulkan_LIBRARIES}
         build
       )
       
@@ -471,11 +470,11 @@ elseif(UNIX)
         ${PROJECT_SOURCE_DIR}/src
         ${TINYOBJ_PATH}
         ${IMGUI_PATH}
-        ${Vulkan_INCLUDE_DIR}
+        ${Vulkan_INCLUDE_DIRS}
       )
       target_link_directories(${PROJECT_NAME} PUBLIC
         ${GLFW_LIB}
-        ${Vulkan_LIBRARY}
+        ${Vulkan_LIBRARIES}
         build
       )
       
@@ -485,7 +484,7 @@ elseif(UNIX)
   else()
 
   target_link_directories(${PROJECT_NAME} PUBLIC
-    ${Vulkan_LIBRARY}
+    ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
     lib/cmake/imgui)
   
@@ -499,7 +498,7 @@ elseif(UNIX)
       ${PORTAUDIO_PATH}/src/common
     )
     
-      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARY} portaudio sndfile)
+      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
     else()
       target_include_directories(${PROJECT_NAME} PUBLIC
         /usr/include
@@ -507,7 +506,7 @@ elseif(UNIX)
         ${TINYOBJ_PATH}
         ${IMGUI_PATH}
       )
-      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARY})
+      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES})
     endif()
   endif()
 endif()
