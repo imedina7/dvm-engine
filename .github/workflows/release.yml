@@ -86,7 +86,7 @@ jobs:
 
     - name: Configure and Build
       run: |
-        cmake -S . -B build -DAUDIO_ENGINE=true -DPORTAUDIO_ENABLE
+        cmake -S . -B build -DAUDIO_ENGINE=true -DPORTAUDIO_ENABLE=true
         cmake --build build
   macos:
 
