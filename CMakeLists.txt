@@ -505,7 +505,6 @@ elseif(UNIX)
         "-framework CoreMotion"
         "-framework Foundation"
         "-framework MediaPlayer"
-        "-framework OpenGLES"
         "-framework QuartzCore"
         "-framework UIKit"
       )
