@@ -504,8 +504,10 @@ elseif(UNIX)
         "-framework CoreGraphics"
         "-framework CoreMotion"
         "-framework Foundation"
+        "-framework IOSurface"
         "-framework MediaPlayer"
         "-framework QuartzCore"
+        "-framework Scripting"
       )
       
     endif()
