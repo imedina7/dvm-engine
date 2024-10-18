@@ -48,6 +48,8 @@ if(DEFINED GLFW_PATH)
   elseif(CMAKE_GENERATOR STREQUAL "MinGW Makefiles")
     message(STATUS "USING MINGW")
     set(GLFW_LIB "${GLFW_PATH}/lib-mingw-w64") # 2.1 make sure matches glfw mingw subdirectory
+  else()
+    set(GLFW_LIB "${GLFW_PATH}/lib") # 2.1 make sure matches glfw subdirectory
   endif()
 else()
   find_package(glfw3 3.3 REQUIRED)
@@ -448,11 +450,11 @@ elseif(UNIX)
     )
     target_link_directories(${PROJECT_NAME} PUBLIC
       ${GLFW_LIB}
-      lib/cmake/imgui
       ${Vulkan_LIBRARY}
+      build
     )
       
-    target_link_libraries(${PROJECT_NAME} glfw portaudio sndfile MoltenVK)
+    target_link_libraries(${PROJECT_NAME} glfw3 portaudio imgui sndfile MoltenVK)
   else()
   
     target_include_directories(${PROJECT_NAME} PUBLIC
