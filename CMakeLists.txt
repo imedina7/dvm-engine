@@ -445,8 +445,6 @@ elseif(UNIX)
     message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
 
-    
-    
     if(AUDIO_ENGINE)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DAUDIO=1")
       target_include_directories(${PROJECT_NAME} PUBLIC
@@ -458,13 +456,14 @@ elseif(UNIX)
         ${PORTAUDIO_PATH}/include
         ${PORTAUDIO_PATH}/src/common
         ${Vulkan_INCLUDE_DIRS}
-      )
+        )
       target_link_directories(${PROJECT_NAME} PUBLIC
         ${GLFW_LIB}
         ${Vulkan_LIBRARIES}
+        ${PORTAUDIO_PATH}/lib
         build
       )
-      
+
       target_link_libraries(${PROJECT_NAME}
         glfw
         portaudio
