@@ -90,7 +90,7 @@ jobs:
     - name: Verify Vulkan installation
       run: |
         echo "Vulkan SDK installed at ${{ env.VULKAN_SDK }}"
-        ls ${{ env.VULKAN_SDK }}
+        ls -R ${{ env.VULKAN_SDK }}
 
     - name: Install Dependencies
       run: |
