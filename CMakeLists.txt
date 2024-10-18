@@ -461,6 +461,7 @@ elseif(UNIX)
         ${GLFW_LIB}
         ${Vulkan_LIBRARIES}
         ${PORTAUDIO_PATH}/lib
+        ${LIBSNDFILE_PATH}/lib
         build
       )
 
