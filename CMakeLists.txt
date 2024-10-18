@@ -506,7 +506,6 @@ elseif(UNIX)
         "-framework Foundation"
         "-framework MediaPlayer"
         "-framework QuartzCore"
-        "-framework UIKit"
       )
       
     endif()
