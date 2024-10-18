@@ -4,7 +4,10 @@ Dvm-engine is a free and open-source, lightweight, minimal 3D engine boilerplate
 
 ## Features
 
-- [X] Multiplatform (Windows / Linux)
+- [X] Multiplatform
+  - [X] Windows
+  - [X] Linux
+  - [X] MacOS (builds untested)
 - [X] OBJ Mesh import
 - [X] FPS camera
 - [X] GUI
