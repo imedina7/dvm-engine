@@ -19,9 +19,19 @@ project(${NAME} VERSION 0.23.0)
 
 # 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
 if(DEFINED VULKAN_SDK_PATH)
-  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
-  set(Vulkan_FOUND "True")
+  if(APPLE)
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/libexec/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_FOUND "True")
+  elseif(WIN32)
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_FOUND "True")
+  else()
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/lib") # 1.2 Make sure lib path is correct
+    set(Vulkan_FOUND "True")
+  endif()
 else()
   find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
   message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
@@ -42,6 +52,8 @@ if(DEFINED GLFW_PATH)
   elseif(CMAKE_GENERATOR STREQUAL "MinGW Makefiles")
     message(STATUS "USING MINGW")
     set(GLFW_LIB "${GLFW_PATH}/lib-mingw-w64") # 2.1 make sure matches glfw mingw subdirectory
+  else()
+    set(GLFW_LIB "${GLFW_PATH}/lib") # 2.1 make sure matches glfw subdirectory
   endif()
 else()
   find_package(glfw3 3.3 REQUIRED)
@@ -90,7 +102,7 @@ target_include_directories(imgui PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 
-if(PORTAUDIO_ENABLE)
+if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
   if(NOT PORTAUDIO_PATH)
     message(STATUS "PORTAUDIO_PATH not specified in .env.cmake, using vendor/portaudio")
     set(PORTAUDIO_PATH vendor/portaudio)
@@ -124,9 +136,7 @@ if(PORTAUDIO_ENABLE)
   if(UNIX)
     target_compile_options(PortAudio PRIVATE -fPIC)
   endif()
-endif()
 
-if(PORTAUDIO_ENABLE)
   set(INSTALL_TARGETS imgui
     PortAudio)
 
@@ -325,21 +335,6 @@ if(PORTAUDIO_ENABLE)
         endif()
       endif()
 
-      # OSS is intentionally off by default to avoid confusing users of PortAudio
-      # applications. OSS builds but there are no devices available on modern
-      # Linux systems.
-      find_package(OSS)
-      cmake_dependent_option(PA_USE_OSS "Enable support for OSS" OFF "OSS_FOUND" OFF)
-      if(PA_USE_OSS)
-        target_sources(PortAudio PRIVATE ${PORTAUDIO_PATH}/src/hostapi/oss/pa_unix_oss.c)
-        target_compile_definitions(PortAudio PUBLIC PA_USE_OSS=1)
-        set(PKGCONFIG_CFLAGS "${PKGCONFIG_CFLAGS} -DPA_USE_OSS=1")
-        target_link_libraries(PortAudio PRIVATE OSS::oss)
-        # The FindOSS.cmake module does not need to be installed like the JACK modules because it
-        # does not link any library; it only adds an include directory and compile definition.
-      endif()
-
-      check_include_file(sys/audioio.h HAVE_SYS_AUDIOIO_H)
       cmake_dependent_option(AUDIOIO "Enable support for Solaris/NetBSD audio" ON "HAVE_SYS_AUDIOIO_H" AUDIOIO)
       if(AUDIOIO AND HAVE_SYS_AUDIOIO_H)
         target_sources(PortAudio PRIVATE ${PORTAUDIO_PATH}/src/hostapi/audioio/pa_unix_audioio.c)
@@ -403,42 +398,148 @@ if(WIN32)
     )
   endif()
 
-  target_include_directories(${PROJECT_NAME} PUBLIC
-    ${PROJECT_SOURCE_DIR}/src
-    ${Vulkan_INCLUDE_DIRS}
-    ${TINYOBJ_PATH}
-    ${GLFW_INCLUDE_DIRS}
-    ${GLM_PATH}
-    ${IMGUI_PATH}
-    ${PORTAUDIO_PATH}/include
-    ${LIBSNDFILE_PATH}/include
-  )
+  if(AUDIO_ENGINE)
+    target_include_directories(${PROJECT_NAME} PUBLIC
+      ${PROJECT_SOURCE_DIR}/src
+      ${Vulkan_INCLUDE_DIRS}
+      ${TINYOBJ_PATH}
+      ${GLFW_INCLUDE_DIRS}
+      ${GLM_PATH}
+      ${IMGUI_PATH}
+      ${PORTAUDIO_PATH}/include
+      ${LIBSNDFILE_PATH}/include
+    )
 
-  target_link_directories(${PROJECT_NAME} PUBLIC
-    ${Vulkan_LIBRARIES}
-    ${GLFW_LIB}
-    lib/cmake/imgui
-    ${LIBSNDFILE_PATH}/lib
-  )
+    target_link_directories(${PROJECT_NAME} PUBLIC
+      ${Vulkan_LIBRARIES}
+      ${GLFW_LIB}
+      lib/cmake/imgui
+      ${LIBSNDFILE_PATH}/lib
+    )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DAUDIO=1")
 
-  target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
+    target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
+  else()
+    target_include_directories(${PROJECT_NAME} PUBLIC
+      ${PROJECT_SOURCE_DIR}/src
+      ${Vulkan_INCLUDE_DIRS}
+      ${TINYOBJ_PATH}
+      ${GLFW_INCLUDE_DIRS}
+      ${GLM_PATH}
+      ${IMGUI_PATH}
+    )
+
+    target_link_directories(${PROJECT_NAME} PUBLIC
+      ${Vulkan_LIBRARIES}
+      ${GLFW_LIB}
+      lib/cmake/imgui
+    )
+
+    target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
+
+  endif()
 elseif(UNIX)
   message(STATUS "CREATING BUILD FOR UNIX")
-  
-  target_include_directories(${PROJECT_NAME} PUBLIC
-    /usr/include
-    ${PROJECT_SOURCE_DIR}/src
-    ${TINYOBJ_PATH}
-    ${IMGUI_PATH}
-    ${PORTAUDIO_PATH}/include
-    ${PORTAUDIO_PATH}/src/common
-  )
+
+  if(APPLE)
+    message(STATUS "CREATING BUILD FOR APPLE MACOS")
+    set(CMAKE_CXX_COMPILER clang++)
+
+    
+    
+    if(AUDIO_ENGINE)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DAUDIO=1")
+      target_include_directories(${PROJECT_NAME} PUBLIC
+        /usr/include
+        /opt/homebrew/include
+        ${PROJECT_SOURCE_DIR}/src
+        ${TINYOBJ_PATH}
+        ${IMGUI_PATH}
+        ${PORTAUDIO_PATH}/include
+        ${PORTAUDIO_PATH}/src/common
+        ${Vulkan_INCLUDE_DIRS}
+      )
+      target_link_directories(${PROJECT_NAME} PUBLIC
+        ${GLFW_LIB}
+        ${Vulkan_LIBRARIES}
+        build
+      )
+      
+      target_link_libraries(${PROJECT_NAME}
+        glfw
+        portaudio
+        imgui
+        sndfile
+        MoltenVK
+        "-framework AVFoundation"
+        "-framework CoreGraphics"
+        "-framework CoreMotion"
+        "-framework Foundation"
+        "-framework MediaPlayer"
+        "-framework OpenGLES"
+        "-framework QuartzCore"
+        "-framework UIKit"
+      )
+    else()
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1")
+      target_include_directories(${PROJECT_NAME} PUBLIC
+        /usr/include
+        /opt/homebrew/include
+        ${PROJECT_SOURCE_DIR}/src
+        ${TINYOBJ_PATH}
+        ${IMGUI_PATH}
+        ${Vulkan_INCLUDE_DIRS}
+      )
+      target_link_directories(${PROJECT_NAME} PUBLIC
+        ${GLFW_LIB}
+        ${Vulkan_LIBRARIES}
+        build
+      )
+      
+      target_link_libraries(${PROJECT_NAME}
+        glfw3
+        imgui
+        MoltenVK
+        "-framework AVFoundation"
+        "-framework CoreGraphics"
+        "-framework CoreMotion"
+        "-framework Foundation"
+        "-framework AppKit"
+        "-framework IOKit"
+        "-framework IOSurface"
+        "-framework MediaPlayer"
+        "-framework QuartzCore"
+      )
+      
+    endif()
+  else()
+
   target_link_directories(${PROJECT_NAME} PUBLIC
     ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
     lib/cmake/imgui)
-
-  target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
+  
+  if(AUDIO_ENGINE)
+    target_include_directories(${PROJECT_NAME} PUBLIC
+      /usr/include
+      ${PROJECT_SOURCE_DIR}/src
+      ${TINYOBJ_PATH}
+      ${IMGUI_PATH}
+      ${PORTAUDIO_PATH}/include
+      ${PORTAUDIO_PATH}/src/common
+    )
+    
+      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} portaudio sndfile)
+    else()
+      target_include_directories(${PROJECT_NAME} PUBLIC
+        /usr/include
+        ${PROJECT_SOURCE_DIR}/src
+        ${TINYOBJ_PATH}
+        ${IMGUI_PATH}
+      )
+      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES})
+    endif()
+  endif()
 endif()
 
 

@@ -63,7 +63,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DLIBSNDFILE_PATH="vendor\libsndfile-1.2.2-win64" -DPORTAUDIO_ENABLE=true
+        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DLIBSNDFILE_PATH="vendor\libsndfile-1.2.2-win64" -DPORTAUDIO_ENABLE=true -DAUDIO_ENGINE=true
 
     - name: Build
       run: cmake --build build --config Release
@@ -86,5 +86,36 @@ jobs:
 
     - name: Configure and Build
       run: |
-        cmake -S . -B build
+        cmake -S . -B build -DAUDIO_ENGINE=true
         cmake --build build
+  macos:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        # Install other dependencies using Homebrew
+        brew install glfw
+        brew install glm
+        brew install portaudio
+        brew install libsndfile
+        brew install make
+        # Install Vulkan SDK (MoltenVK)
+        brew install molten-vk
+    - name: List GLFW dir
+      run: ls -R /opt/homebrew/Cellar/glfw/3.4
+
+    - name: print clang version
+      run: clang --version
+
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11 -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1 -DGLFW_PATH=/opt/homebrew/Cellar/glfw/3.4
+        cmake --build .

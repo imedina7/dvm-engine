@@ -5,7 +5,10 @@ It provides very little features but sets a starting point for anyone who would 
 
 ## Features
 
-- [X] Multiplatform (Windows / Linux)
+- [X] Multiplatform
+  - [X] Windows
+  - [X] Linux
+  - [X] MacOS (builds untested)
 - [X] OBJ Mesh import
 - [X] FPS camera
 - [X] GUI
