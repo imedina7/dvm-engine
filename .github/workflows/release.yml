@@ -107,7 +107,7 @@ jobs:
         brew install make
         # Install Vulkan SDK (MoltenVK)
         brew install molten-vk
-        brew install glslangValidator
+        brew install vulkan-tools
 
     - name: List Vulkan SDK dir
       run: ls -R /opt/homebrew/Cellar/molten-vk/1.2.11
