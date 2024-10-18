@@ -98,7 +98,7 @@ target_include_directories(imgui PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 
-if(PORTAUDIO_ENABLE)
+if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
   if(NOT PORTAUDIO_PATH)
     message(STATUS "PORTAUDIO_PATH not specified in .env.cmake, using vendor/portaudio")
     set(PORTAUDIO_PATH vendor/portaudio)
@@ -134,7 +134,7 @@ if(PORTAUDIO_ENABLE)
   endif()
 endif()
 
-if(PORTAUDIO_ENABLE)
+if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
   set(INSTALL_TARGETS imgui
     PortAudio)
 
@@ -438,25 +438,50 @@ elseif(UNIX)
     set(CMAKE_CXX_COMPILER clang++)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1")
 
-    target_include_directories(${PROJECT_NAME} PUBLIC
-      /usr/include
-      /opt/homebrew/include
-      ${PROJECT_SOURCE_DIR}/src
-      ${TINYOBJ_PATH}
-      ${IMGUI_PATH}
-      ${PORTAUDIO_PATH}/include
-      ${PORTAUDIO_PATH}/src/common
-      ${Vulkan_INCLUDE_DIR}
-    )
-    target_link_directories(${PROJECT_NAME} PUBLIC
-      ${GLFW_LIB}
-      ${Vulkan_LIBRARY}
-      build
-    )
+    if(AUDIO_ENGINE)
+      target_include_directories(${PROJECT_NAME} PUBLIC
+        /usr/include
+        /opt/homebrew/include
+        ${PROJECT_SOURCE_DIR}/src
+        ${TINYOBJ_PATH}
+        ${IMGUI_PATH}
+        ${PORTAUDIO_PATH}/include
+        ${PORTAUDIO_PATH}/src/common
+        ${Vulkan_INCLUDE_DIR}
+      )
+      target_link_directories(${PROJECT_NAME} PUBLIC
+        ${GLFW_LIB}
+        ${Vulkan_LIBRARY}
+        build
+      )
       
-    target_link_libraries(${PROJECT_NAME} glfw3 portaudio imgui sndfile MoltenVK)
+      target_link_libraries(${PROJECT_NAME} glfw3 portaudio imgui sndfile MoltenVK)
+    else()
+      target_include_directories(${PROJECT_NAME} PUBLIC
+        /usr/include
+        /opt/homebrew/include
+        ${PROJECT_SOURCE_DIR}/src
+        ${TINYOBJ_PATH}
+        ${IMGUI_PATH}
+        ${Vulkan_INCLUDE_DIR}
+      )
+      target_link_directories(${PROJECT_NAME} PUBLIC
+        ${GLFW_LIB}
+        ${Vulkan_LIBRARY}
+        build
+      )
+      
+      target_link_libraries(${PROJECT_NAME} glfw3 imgui MoltenVK)
+      
+    endif()
   else()
+
+  target_link_directories(${PROJECT_NAME} PUBLIC
+    ${Vulkan_LIBRARY}
+    ${GLFW_LIB}
+    lib/cmake/imgui)
   
+  if(AUDIO_ENGINE)
     target_include_directories(${PROJECT_NAME} PUBLIC
       /usr/include
       ${PROJECT_SOURCE_DIR}/src
@@ -465,12 +490,17 @@ elseif(UNIX)
       ${PORTAUDIO_PATH}/include
       ${PORTAUDIO_PATH}/src/common
     )
-    target_link_directories(${PROJECT_NAME} PUBLIC
-      ${Vulkan_LIBRARY}
-      ${GLFW_LIB}
-      lib/cmake/imgui)
     
-    target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARY} portaudio sndfile)
+      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARY} portaudio sndfile)
+    else()
+      target_include_directories(${PROJECT_NAME} PUBLIC
+        /usr/include
+        ${PROJECT_SOURCE_DIR}/src
+        ${TINYOBJ_PATH}
+        ${IMGUI_PATH}
+      )
+      target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARY})
+    endif()
   endif()
 endif()
 
