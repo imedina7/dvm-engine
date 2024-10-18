@@ -411,34 +411,55 @@ if(WIN32)
     )
   endif()
 
-  target_include_directories(${PROJECT_NAME} PUBLIC
-    ${PROJECT_SOURCE_DIR}/src
-    ${Vulkan_INCLUDE_DIR}
-    ${TINYOBJ_PATH}
-    ${GLFW_INCLUDE_DIRS}
-    ${GLM_PATH}
-    ${IMGUI_PATH}
-    ${PORTAUDIO_PATH}/include
-    ${LIBSNDFILE_PATH}/include
-  )
+  if(AUDIO_ENGINE)
+    target_include_directories(${PROJECT_NAME} PUBLIC
+      ${PROJECT_SOURCE_DIR}/src
+      ${Vulkan_INCLUDE_DIR}
+      ${TINYOBJ_PATH}
+      ${GLFW_INCLUDE_DIRS}
+      ${GLM_PATH}
+      ${IMGUI_PATH}
+      ${PORTAUDIO_PATH}/include
+      ${LIBSNDFILE_PATH}/include
+    )
 
-  target_link_directories(${PROJECT_NAME} PUBLIC
-    ${Vulkan_LIBRARY}
-    ${GLFW_LIB}
-    lib/cmake/imgui
-    ${LIBSNDFILE_PATH}/lib
-  )
+    target_link_directories(${PROJECT_NAME} PUBLIC
+      ${Vulkan_LIBRARY}
+      ${GLFW_LIB}
+      lib/cmake/imgui
+      ${LIBSNDFILE_PATH}/lib
+    )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DAUDIO=1")
 
-  target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
+    target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
+  else()
+    target_include_directories(${PROJECT_NAME} PUBLIC
+      ${PROJECT_SOURCE_DIR}/src
+      ${Vulkan_INCLUDE_DIR}
+      ${TINYOBJ_PATH}
+      ${GLFW_INCLUDE_DIRS}
+      ${GLM_PATH}
+      ${IMGUI_PATH}
+    )
+
+    target_link_directories(${PROJECT_NAME} PUBLIC
+      ${Vulkan_LIBRARY}
+      ${GLFW_LIB}
+      lib/cmake/imgui
+    )
+
+    target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
+
+  endif()
 elseif(UNIX)
   message(STATUS "CREATING BUILD FOR UNIX")
 
   if(APPLE)
     message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1")
-
+    
     if(AUDIO_ENGINE)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DAUDIO=1")
       target_include_directories(${PROJECT_NAME} PUBLIC
         /usr/include
         /opt/homebrew/include
@@ -457,6 +478,7 @@ elseif(UNIX)
       
       target_link_libraries(${PROJECT_NAME} glfw3 portaudio imgui sndfile MoltenVK)
     else()
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1")
       target_include_directories(${PROJECT_NAME} PUBLIC
         /usr/include
         /opt/homebrew/include
