@@ -101,12 +101,12 @@ target_include_directories(imgui PUBLIC
   $<BUILD_INTERFACE:${ROOT}>
   $<INSTALL_INTERFACE:include>)
 
+if(NOT PORTAUDIO_PATH)
+  message(STATUS "PORTAUDIO_PATH not specified in .env.cmake, using vendor/portaudio")
+  set(PORTAUDIO_PATH vendor/portaudio)
+endif()
 
 if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
-  if(NOT PORTAUDIO_PATH)
-    message(STATUS "PORTAUDIO_PATH not specified in .env.cmake, using vendor/portaudio")
-    set(PORTAUDIO_PATH vendor/portaudio)
-  endif()
 
   add_library(PortAudio STATIC ${PORTAUDIO_PATH}/src/common/pa_allocation.c
     ${PORTAUDIO_PATH}/src/common/pa_allocation.h
