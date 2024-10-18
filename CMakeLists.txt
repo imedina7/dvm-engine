@@ -444,6 +444,8 @@ elseif(UNIX)
   if(APPLE)
     message(STATUS "CREATING BUILD FOR APPLE MACOS")
     set(CMAKE_CXX_COMPILER clang++)
+
+    
     
     if(AUDIO_ENGINE)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1 -DAUDIO=1")
@@ -463,7 +465,21 @@ elseif(UNIX)
         build
       )
       
-      target_link_libraries(${PROJECT_NAME} glfw portaudio imgui sndfile MoltenVK)
+      target_link_libraries(${PROJECT_NAME}
+        glfw
+        portaudio
+        imgui
+        sndfile
+        MoltenVK
+        "-framework AVFoundation"
+        "-framework CoreGraphics"
+        "-framework CoreMotion"
+        "-framework Foundation"
+        "-framework MediaPlayer"
+        "-framework OpenGLES"
+        "-framework QuartzCore"
+        "-framework UIKit"
+      )
     else()
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DMACOS=1")
       target_include_directories(${PROJECT_NAME} PUBLIC
@@ -480,7 +496,19 @@ elseif(UNIX)
         build
       )
       
-      target_link_libraries(${PROJECT_NAME} glfw3 imgui MoltenVK)
+      target_link_libraries(${PROJECT_NAME}
+        glfw3
+        imgui
+        MoltenVK
+        "-framework AVFoundation"
+        "-framework CoreGraphics"
+        "-framework CoreMotion"
+        "-framework Foundation"
+        "-framework MediaPlayer"
+        "-framework OpenGLES"
+        "-framework QuartzCore"
+        "-framework UIKit"
+      )
       
     endif()
   else()
