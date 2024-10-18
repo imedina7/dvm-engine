@@ -136,9 +136,7 @@ if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
   if(UNIX)
     target_compile_options(PortAudio PRIVATE -fPIC)
   endif()
-endif()
 
-if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
   set(INSTALL_TARGETS imgui
     PortAudio)
 
