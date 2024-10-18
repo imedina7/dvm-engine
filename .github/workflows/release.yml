@@ -89,8 +89,7 @@ jobs:
 
     - name: Verify Vulkan installation
       run: |
-        echo "Vulkan SDK installed at ${{ env.VULKAN_SDK }}"
-        ls ${{ env.VULKAN_SDK }}/vulkansdk
+        echo "Vulkan SDK installed at ${{ env.VULKAN_SDK }}/x86_64"
         ls ${{ env.VULKAN_SDK }}/x86_64
 
     - name: Install Dependencies
@@ -100,7 +99,7 @@ jobs:
 
     - name: Configure and Build
       run: |
-        cmake -S . -B build -DAUDIO_ENGINE=true -DPORTAUDIO_ENABLE=true -DVULKAN_SDK_PATH=${{ env.VULKAN_SDK }}
+        cmake -S . -B build -DAUDIO_ENGINE=true -DPORTAUDIO_ENABLE=true -DVULKAN_SDK_PATH=${{ env.VULKAN_SDK }}/x86_64
         cmake --build build
   macos:
 
