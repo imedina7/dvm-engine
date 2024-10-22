@@ -91,7 +91,7 @@ jobs:
 
     - name: Configure and Build
       run: |
-        cmake -S . -B build -DAUDIO_ENGINE=true
+        cmake -S . -B build -DAUDIO_ENGINE=true -DUNIT_TESTS=true
         cmake --build build
     - name: Run Unit Tests
       run: ctest --test-dir build --output-on-failure -j12
