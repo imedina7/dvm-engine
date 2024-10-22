@@ -47,7 +47,10 @@ jobs:
     - name: Set up environment variables
       run: |
         echo "LIBSNDFILE_DIR=$(pwd)/vendor/libsndfile-1.2.2-win64" >> $GITHUB_ENV
-        echo "PATH=$(pwd)/vendor/libsndfile-1.2.2-win64/bin:$PATH" >> $GITHUB_ENV
+        echo "PATH=$(pwd)\vendor\libsndfile-1.2.2-win64\bin:$PATH" >> $GITHUB_ENV
+        echo "GLM_PATH=C:\glm\glm" >> $GITHUB_ENV
+        echo "GLFW_PATH=vendor\glfw-3.3.8.bin.WIN64" >> $GITHUB_ENV
+        echo "GLFW_LIBRARY=C:\ProgramData\chocolatey\lib\glfw\lib" >> $GITHUB_ENV
 
     - name: Build GLSL Shaders
       run: |
@@ -63,7 +66,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DLIBSNDFILE_PATH="vendor\libsndfile-1.2.2-win64" ${{ vars.CMAKE_BUILD_OPTS_WINDOWS }}
+        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="${{ env.GLM_PATH }}" -DGLFW_PATH="${{ env.GLFW_PATH }}" -DGLFW_LIBRARY="${{ env.GLFW_LIBRARY }}" ${{ vars.CMAKE_BUILD_OPTS_WINDOWS }}
 
     - name: Build
       run: cmake --build build --config Release
@@ -115,16 +118,23 @@ jobs:
         # Install Vulkan SDK (MoltenVK)
         brew install molten-vk
         brew install vulkan-tools
+    
+    - name: Set up Environment Variables
+      run: |
+        echo "VULKAN_SDK=/opt/homebrew/Cellar/molten-vk/1.2.11" >> $GITHUB_ENV
+        echo "PORTAUDIO_PATH=/opt/homebrew/Cellar/portaudio/19.7.0" >> $GITHUB_ENV
+        echo "GLFW_PATH=/opt/homebrew/Cellar/glfw/3.4" >> $GITHUB_ENV
+        echo "LIBSNDFILE_PATH=/opt/homebrew/Cellar/libsndfile/1.2.2" >> $GITHUB_ENV
 
     - name: Compile Shaders
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=${{ env.VULKAN_SDK }}
         cmake --build . --target Shaders
 
 
     - name: Build Engine
       run: |
-        cmake -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11 -DPORTAUDIO_PATH=/opt/homebrew/Cellar/portaudio/19.7.0 -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DGLFW_PATH=/opt/homebrew/Cellar/glfw/3.4 -DLIBSNDFILE_PATH=/opt/homebrew/Cellar/libsndfile/1.2.2 ${{ vars.CMAKE_BUILD_OPTS_MACOS }}
+        cmake -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=${{ env.VULKAN_SDK }} -DPORTAUDIO_PATH=${{ env.PORTAUDIO_PATH }} -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DGLFW_PATH=${{ env.GLFW_PATH }} -DLIBSNDFILE_PATH=${{ env.LIBSNDFILE_PATH }} ${{ vars.CMAKE_BUILD_OPTS_MACOS }}
         cmake --build .
