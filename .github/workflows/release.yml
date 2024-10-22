@@ -63,7 +63,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DLIBSNDFILE_PATH="vendor\libsndfile-1.2.2-win64" -DPORTAUDIO_ENABLE=true -DAUDIO_ENGINE=true
+        cmake -S . -B build -DVULKAN_SDK_PATH="${{ env.VULKAN_SDK }}" -DGLM_PATH="C:\glm\glm" -DGLFW_PATH="vendor\glfw-3.3.8.bin.WIN64" -DGLFW_LIBRARY="C:\ProgramData\chocolatey\lib\glfw\lib" -DLIBSNDFILE_PATH="vendor\libsndfile-1.2.2-win64" ${{ env.CMAKE_BUILD_OPTS_WINDOWS }}
 
     - name: Build
       run: cmake --build build --config Release
@@ -91,7 +91,7 @@ jobs:
 
     - name: Configure and Build
       run: |
-        cmake -S . -B build -DAUDIO_ENGINE=true -DUNIT_TESTS=true
+        cmake -S . -B build ${{ env.CMAKE_BUILD_OPTS_LINUX }}
         cmake --build build
     - name: Run Unit Tests
       run: ctest --test-dir build --output-on-failure -j12
@@ -126,5 +126,5 @@ jobs:
 
     - name: Build Engine
       run: |
-        cmake -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11 -DPORTAUDIO_PATH=/opt/homebrew/Cellar/portaudio/19.7.0 -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DAPPLE=1 -DGLFW_PATH=/opt/homebrew/Cellar/glfw/3.4 -DAUDIO_ENGINE=true -DLIBSNDFILE_PATH=/opt/homebrew/Cellar/libsndfile/1.2.2
+        cmake -DCMAKE_BUILD_TYPE=Release -DVULKAN_SDK_PATH=/opt/homebrew/Cellar/molten-vk/1.2.11 -DPORTAUDIO_PATH=/opt/homebrew/Cellar/portaudio/19.7.0 -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DGLFW_PATH=/opt/homebrew/Cellar/glfw/3.4 -DLIBSNDFILE_PATH=/opt/homebrew/Cellar/libsndfile/1.2.2 ${{ env.CMAKE_BUILD_OPTS_MACOS }}
         cmake --build .
