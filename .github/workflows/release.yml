@@ -46,11 +46,11 @@ jobs:
 
     - name: Set up environment variables
       run: |
-        echo "LIBSNDFILE_DIR=$(pwd)/vendor/libsndfile-1.2.2-win64" >> $GITHUB_ENV
-        echo "PATH=$(pwd)\vendor\libsndfile-1.2.2-win64\bin:$PATH" >> $GITHUB_ENV
-        echo "GLM_PATH=C:\glm\glm" >> $GITHUB_ENV
-        echo "GLFW_PATH=vendor\glfw-3.3.8.bin.WIN64" >> $GITHUB_ENV
-        echo "GLFW_LIBRARY=C:\ProgramData\chocolatey\lib\glfw\lib" >> $GITHUB_ENV
+        echo "LIBSNDFILE_DIR=$(pwd)/vendor/libsndfile-1.2.2-win64" >> $Env:GITHUB_ENV
+        echo "PATH=$(pwd)\vendor\libsndfile-1.2.2-win64\bin:$PATH" >> $Env:GITHUB_ENV
+        echo "GLM_PATH=C:\glm\glm" >> $Env:GITHUB_ENV
+        echo "GLFW_PATH=vendor\glfw-3.3.8.bin.WIN64" >> $Env:GITHUB_ENV
+        echo "GLFW_LIBRARY=C:\ProgramData\chocolatey\lib\glfw\lib" >> $Env:GITHUB_ENV
 
     - name: Build GLSL Shaders
       run: |
