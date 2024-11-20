@@ -1,8 +1,9 @@
 #pragma once
 
 #include "dvm_camera.hpp"
-#include "dvm_game_object.hpp"
+#include "dvm_components.hpp"
 #include <vulkan/vulkan.h>
+#include <entt.hpp>
 
 namespace dvm
 {
@@ -30,6 +31,6 @@ struct FrameInfo
   VkCommandBuffer commandBuffer;
   DvmCamera& camera;
   VkDescriptorSet globalDescriptorSet;
-  DvmGameObject::Map& gameObjects;
+  entt::registry& registry;
 };
 }  // namespace dvm

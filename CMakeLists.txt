@@ -398,7 +398,7 @@ if(WIN32)
     )
   endif()
 
-  if(AUDIO_ENGINE)
+  if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
     target_include_directories(${PROJECT_NAME} PUBLIC
       ${PROJECT_SOURCE_DIR}/src
       ${Vulkan_INCLUDE_DIRS}
@@ -437,7 +437,7 @@ if(WIN32)
       lib/cmake/imgui
     )
 
-    target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui PortAudio sndfile)
+    target_link_libraries(${PROJECT_NAME} glfw3 vulkan-1 imgui)
 
   endif()
 elseif(UNIX)

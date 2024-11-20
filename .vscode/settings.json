@@ -80,7 +80,14 @@
     "xutility": "cpp",
     "*.ipp": "cpp",
     "*.inc": "cpp",
-    "stream_ref": "cpp"
+    "stream_ref": "cpp",
+    "ranges": "cpp",
+    "regex": "cpp",
+    "any": "cpp",
+    "deque": "cpp",
+    "queue": "cpp",
+    "stack": "cpp",
+    "variant": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

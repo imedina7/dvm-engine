@@ -17,7 +17,7 @@ public:
   DvmWindow(const DvmWindow&) = delete;
   DvmWindow& operator=(const DvmWindow&) = delete;
 
-  bool wasWindowResized() { return framebufferResized; }
+  bool wasWindowResized() const { return framebufferResized; }
   void resetWindowResized() { framebufferResized = false; }
   bool shouldClose() { return glfwWindowShouldClose(window); }
 

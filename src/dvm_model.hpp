@@ -1,3 +1,4 @@
+#pragma once
 #include "dvm_device.hpp"
 #include "dvm_buffer.hpp"
 
@@ -66,5 +67,14 @@ private:
   bool hasIndexBuffer = false;
   std::unique_ptr<DvmBuffer> indexBuffer;
   uint32_t indexCount;
+};
+struct ModelComponent
+{
+  std::unique_ptr<DvmModel> model;
+  ModelComponent(std::unique_ptr<DvmModel> _model)
+      : model
+  {std::move(_model)}
+  {
+  }
 };
 }  // namespace dvm

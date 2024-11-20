@@ -1,12 +1,18 @@
 #pragma once
 
-#include "dvm_game_object.hpp"
+#include <entt.hpp>
+#include "dvm_components.hpp"
+#include "dvm_camera.hpp"
 
 namespace dvm
 {
-class KeyboardMovementController
+class FPSMovementController
 {
 public:
+  FPSMovementController() = default;
+  FPSMovementController(GLFWwindow* _window)
+      : window {_window}
+  {}
   struct KeyMappings
   {
     int moveForward = GLFW_KEY_W;
@@ -22,9 +28,10 @@ public:
     int lookRight = GLFW_KEY_RIGHT;
   };
 
-  void moveInPlaneXZ(GLFWwindow* window,
+  void moveInPlaneXZ(DvmCamera& camera,
                      float dt,
-                     DvmGameObject& gameObj,
+                     entt::registry& registry,
+                     entt::entity entity,
                      glm::vec2 deltaCursor,
                      float mouseSensitivity);
 
@@ -32,5 +39,8 @@ public:
 
   float moveSpeed {3.f};
   float lookSpeed {1.5f};
+
+private:
+  GLFWwindow* window;
 };
 }  // namespace dvm

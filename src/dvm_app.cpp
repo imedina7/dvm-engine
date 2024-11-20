@@ -4,6 +4,7 @@
 #include "dvm_frame_info.hpp"
 #include "dvm_swap_chain.hpp"
 #include "keyboard_movement_controller.hpp"
+#include <iostream>
 #include <array>
 #include <cstdint>
 #include <stdexcept>
@@ -48,10 +49,7 @@ void DvmApp::run()
           .build();
 
   Texture texture = Texture(dvmDevice, "../textures/diffuse_bake.png");
-  VkDescriptorImageInfo imageInfo {};
-  imageInfo.sampler = texture.getSampler();
-  imageInfo.imageLayout = texture.getImageLayout();
-  imageInfo.imageView = texture.getImageView();
+  VkDescriptorImageInfo imageInfo = texture.getDescriptorImageInfo();
 
   std::array<VkDescriptorSet, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
       globalDescriptorSets {};
@@ -73,25 +71,27 @@ void DvmApp::run()
                                      dvmRenderer.getSwapChainRenderPass(),
                                      globalSetLayout->getDescriptorSetLayout()};
 
-  DvmCamera camera {};
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
-  camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
+  // camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
 
   auto currentTime = std::chrono::high_resolution_clock::now();
-
-  auto viewerObject = DvmGameObject::createGameObject();
-  KeyboardMovementController cameraController {};
-  viewerObject.transform.translation.z = -3.f;
-  viewerObject.transform.translation.y = -1.f;
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
 
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-  
+
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+  FPSMovementController cameraController {window};
+
+  Scene scene {cameraController};
+
+  scene.load();
+
+  entt::registry& registry = scene.getRegistry();
 
   DvmGUI gui {};
   #ifdef AUDIO
@@ -123,17 +123,9 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    if (!gui.getUIVisibility()) {
-      cameraController.moveInPlaneXZ(
-          window, frameTime, viewerObject, mouseDelta, 0.1f);
-      camera.setViewYXZ(viewerObject.transform.translation,
-                        viewerObject.transform.rotation);
-    }
-    
+    DvmCamera& camera = scene.getCamera();
 
-    float aspect = dvmRenderer.getAspectRatio();
-
-    camera.setPerspectiveProjection(glm::radians(50.f), aspect, .06f, 100.f);
+    scene.update(frameTime, mouseDelta);
 
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
       int frameIndex = dvmRenderer.getCurrentFrameIndex();
@@ -143,7 +135,7 @@ void DvmApp::run()
                            commandBuffer,
                            camera,
                            globalDescriptorSets[frameIndex],
-                           gameObjects};
+                           registry};
       GlobalUbo ubo {};
 
       ubo.projection = camera.getProjection();
@@ -163,30 +155,5 @@ void DvmApp::run()
     }
   }
   vkDeviceWaitIdle(dvmDevice.device());
-}
-
-void DvmApp::loadGameObjects()
-{
-  std::shared_ptr<DvmModel> model =
-      DvmModel::createModelFromFile(dvmDevice, "models/shading_test_box.obj");
-
-  auto box = DvmGameObject::createGameObject();
-
-  box.model = model;
-  box.transform.translation = { 0.f, 0.f, .0f };
-  box.transform.scale = {1.f, 1.f, 1.f};
-  box.transform.rotation = {0.f, glm::pi<float>(), 0.f};
-
-  gameObjects.emplace(box.getId(), std::move(box));
-
-  std::vector<glm::vec3> lightColors {
-      {1.f, 1.f, 1.f},
-  };
-
-  for (int i = 0; i < lightColors.size(); i++) {
-    auto pointLight = DvmGameObject::createPointLight(0.2f);
-    pointLight.transform.translation = {0.f, -1.f, 0.f};
-    gameObjects.emplace(pointLight.getId(), std::move(pointLight));
-  }
 }
 }  // namespace dvm

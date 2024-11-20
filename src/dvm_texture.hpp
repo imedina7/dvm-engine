@@ -14,9 +14,10 @@ public:
   Texture(Texture&&) = delete;
   Texture& operator=(Texture&&) = delete;
 
-  VkSampler getSampler() { return sampler; }
-  VkImageView getImageView() { return imageView; }
-  VkImageLayout getImageLayout() { return imageLayout; }
+  VkSampler getSampler() const { return sampler; }
+  VkImageView getImageView() const { return imageView; }
+  VkImageLayout getImageLayout() const { return imageLayout; }
+  VkDescriptorImageInfo getDescriptorImageInfo();
 
 private:
   void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
