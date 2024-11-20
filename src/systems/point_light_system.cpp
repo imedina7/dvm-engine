@@ -100,8 +100,10 @@ void PointLightSystem::render(FrameInfo& frameInfo)
 {
   std::map<float, entt::entity> sorted;
 
-  auto& view = frameInfo.registry.view<PointLightComponent, TransformComponent>();
-  for (auto &&[entity, pointLight, transform] : view.each()) {
+  for (auto&& [entity, pointLight, transform] :
+       frameInfo.registry.view<PointLightComponent, TransformComponent>()
+           .each())
+  {
 
     glm::vec3 offset =
         frameInfo.camera.getPosition() - transform.translation;
