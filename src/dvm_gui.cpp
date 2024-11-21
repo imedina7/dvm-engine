@@ -28,7 +28,6 @@ DvmGUI::DvmGUI()
 
   DvmRenderer& dvmRenderer = app.getRenderer();
 
-  uiState.outlinerState.title = "test";
   uiState.outlinerState.isVisible = true;
 
   panelWindows.emplace_back(new gui::Outliner(uiState.outlinerState));
