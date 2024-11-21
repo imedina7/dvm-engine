@@ -83,10 +83,6 @@ void DvmApp::run()
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-  FPSMovementController cameraController {window};
-
-  Scene scene {cameraController};
-
   scene.load();
 
   entt::registry& registry = scene.getRegistry();

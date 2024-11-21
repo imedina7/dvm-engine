@@ -1,7 +1,7 @@
 #pragma once
 #include "dvm_device.hpp"
 #ifdef AUDIO
-#include "dvm_audio.hpp"
+#  include "dvm_audio.hpp"
 #endif
 #include "dvm_gui.hpp"
 #include "dvm_components.hpp"
@@ -17,15 +17,15 @@
 #include <glm/gtc/constants.hpp>
 
 #ifndef WINDOW_WIDTH
-#define WINDOW_WIDTH 800
+#  define WINDOW_WIDTH 800
 #endif
 
 #ifndef WINDOW_HEIGHT
-#define WINDOW_HEIGHT 600
+#  define WINDOW_HEIGHT 600
 #endif
 
 #ifndef WINDOW_TITLE
-#define WINDOW_TITLE "DVMtech - DVM Engine"
+#  define WINDOW_TITLE "DVMtech - DVM Engine"
 #endif
 
 namespace dvm
@@ -56,6 +56,8 @@ public:
 
   void run();
 
+  Scene& getScene() { return scene; };
+
 private:
   DvmApp()
   {
@@ -73,5 +75,6 @@ private:
   DvmDevice dvmDevice {dvmWindow};
   DvmRenderer dvmRenderer {dvmWindow, dvmDevice};
   std::unique_ptr<DvmDescriptorPool> globalPool {};
+  Scene scene {};
 };
 }  // namespace dvm

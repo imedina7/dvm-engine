@@ -10,9 +10,7 @@ class FPSMovementController
 {
 public:
   FPSMovementController() = default;
-  FPSMovementController(GLFWwindow* _window)
-      : window {_window}
-  {}
+  ~FPSMovementController() = default;
   struct KeyMappings
   {
     int moveForward = GLFW_KEY_W;
@@ -39,8 +37,5 @@ public:
 
   float moveSpeed {3.f};
   float lookSpeed {1.5f};
-
-private:
-  GLFWwindow* window;
 };
 }  // namespace dvm
