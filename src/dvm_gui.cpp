@@ -28,6 +28,11 @@ DvmGUI::DvmGUI()
 
   DvmRenderer& dvmRenderer = app.getRenderer();
 
+  uiState.outlinerState.title = "test";
+  uiState.outlinerState.isVisible = true;
+
+  panelWindows.emplace_back(new gui::Outliner(uiState.outlinerState));
+
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -105,56 +110,11 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
   ImGui_ImplVulkan_NewFrame();
   ImGui::NewFrame();
 
-  if (show_demo_window && ui_visible) {
-    ImGui::ShowDemoWindow(&show_demo_window);
+  for (auto panel : panelWindows) {
+    if (panel->isVisible())
+      panel->draw();
   }
-  if (ui_visible)
-  {
-    static float f = 0.0f;
-    static int counter = 0;
-
-    ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
-                                    // and append into it.
-
-    ImGui::Text("This is some useful text.");  // Display some text (you can use
-                                               // a format strings too)
-    ImGui::Checkbox(
-        "Demo Window",
-        &show_demo_window);  // Edit bools storing our window open/close state
-    ImGui::Checkbox("Another Window", &show_another_window);
-
-    ImGui::SliderFloat("float",
-                       &f,
-                       0.0f,
-                       1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3(
-        "clear color",
-        (float*)&clear_color);  // Edit 3 floats representing a color
-
-    if (ImGui::Button("Button"))  // Buttons return true when clicked (most
-                                  // widgets return true when edited/activated)
-      counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                1000.0f / ImGui::GetIO().Framerate,
-                ImGui::GetIO().Framerate);
-    ImGui::End();
-  }
-  if (show_another_window && ui_visible) {
-    ImGui::Begin(
-        "Another Window",
-        &show_another_window);  // Pass a pointer to our bool variable (the
-                                // window will have a closing button that will
-                                // clear the bool when clicked)
-    ImGui::Text("Hello from another window!");
-    if (ImGui::Button("Close Me"))
-      show_another_window = false;
-    ImGui::End();
-  }
-
-    ImGui::Render();
+  ImGui::Render();
 
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
 
@@ -167,7 +127,8 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
   ImGui::EndFrame();
 }
 
-void DvmGUI::checkUIToggle(glm::vec2 mouseDelta) {
+void DvmGUI::checkUIToggle(glm::vec2 mouseDelta)
+{
   if (glfwGetKey(glfwWindow, GLFW_KEY_TAB) == GLFW_PRESS) {
     if (glm::length(glm::normalize(mouseDelta)) > .7f)
       return;

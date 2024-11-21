@@ -73,8 +73,6 @@ void DvmApp::run()
 
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
-  // camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
-
   auto currentTime = std::chrono::high_resolution_clock::now();
 
   double mouseInitX, mouseInitY;
@@ -83,7 +81,7 @@ void DvmApp::run()
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
   FPSMovementController cameraController {window};
 
@@ -94,9 +92,9 @@ void DvmApp::run()
   entt::registry& registry = scene.getRegistry();
 
   DvmGUI gui {};
-  #ifdef AUDIO
-    DvmAudio& audio = DvmAudio::Get();
-  #endif
+#ifdef AUDIO
+  DvmAudio& audio = DvmAudio::Get();
+#endif
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
@@ -104,11 +102,11 @@ void DvmApp::run()
     double mouseNewX, mouseNewY;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
 
-    #ifdef AUDIO
+#ifdef AUDIO
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       audio.playFromFile(AUDIO_FILE_PATH);
     }
-    #endif
+#endif
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;

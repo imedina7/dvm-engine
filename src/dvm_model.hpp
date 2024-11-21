@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include <memory>
+#include <tinyobjloader.h>
 
 #ifndef ENGINE_DIR
 #  define ENGINE_DIR "../"
@@ -40,6 +41,7 @@ public:
   {
     std::vector<Vertex> vertices {};
     std::vector<uint32_t> indices {};
+    std::vector<tinyobj::material_t> materials {};
 
     void loadModel(const std::string& filepath);
   };
@@ -58,6 +60,7 @@ public:
 private:
   void createVertexBuffers(const std::vector<Vertex>& vertices);
   void createIndexBuffers(const std::vector<uint32_t>& indices);
+  void createMaterials(const std::vector<tinyobj::material_t>& materials);
 
   DvmDevice& dvmDevice;
 

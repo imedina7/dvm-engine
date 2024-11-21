@@ -34,9 +34,14 @@ DvmModel::DvmModel(DvmDevice& device, const DvmModel::Builder& builder)
 {
   createVertexBuffers(builder.vertices);
   createIndexBuffers(builder.indices);
+  createMaterials(builder.materials);
 }
 
 DvmModel::~DvmModel() {}
+
+void DvmModel::createMaterials(const std::vector<tinyobj::material_t>& materials){
+
+}
 
 void DvmModel::createVertexBuffers(const std::vector<Vertex>& vertices)
 {
@@ -114,6 +119,7 @@ std::unique_ptr<DvmModel> DvmModel::createModelFromFile(
   Builder builder {};
   builder.loadModel(ENGINE_DIR + filepath);
   std::cout << "Vertex count: " << builder.vertices.size() << std::endl;
+  std::cout << "Materials count: " << builder.materials.size() << std::endl;
   return std::make_unique<DvmModel>(device, builder);
 }
 
@@ -170,7 +176,6 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
 {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
-  std::vector<tinyobj::material_t> materials;
   std::string warn, err;
 
   std::cout << "Loading object in path \"" << filepath << "\"\n";
