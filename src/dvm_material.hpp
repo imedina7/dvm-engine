@@ -4,7 +4,7 @@ namespace dvm
 {
 enum MaterialType
 {
-  MtPbr = 0;
+  MtPbr = 0
 };
 class DvmMaterial
 {
@@ -18,8 +18,8 @@ class DvmMaterial
   };
 
 public:
-  Material() = default;
-  ~Material() = default;
+  DvmMaterial() = default;
+  ~DvmMaterial() = default;
 
 private:
   int materialType;
