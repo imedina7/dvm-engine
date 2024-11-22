@@ -1,8 +1,27 @@
 #pragma once
-namespace dvm {
-class Material {
-  public:
-    Material() = default;
-    ~Material() = default;
+#include <glm/glm.hpp>
+namespace dvm
+{
+enum MaterialType
+{
+  MtPbr = 0;
 };
-}
+class DvmMaterial
+{
+  struct PbrMaterial
+  {
+    glm::vec3 diffuseColor {0.8f};
+    glm::vec3 specularColor {0.8f};
+    glm::vec3 emissiveColor {0.f};
+    float roughness = 0.5f;
+    float metallic = 0.f;
+  };
+
+public:
+  Material() = default;
+  ~Material() = default;
+
+private:
+  int materialType;
+};
+}  // namespace dvm
