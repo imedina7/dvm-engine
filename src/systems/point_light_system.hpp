@@ -1,6 +1,6 @@
 #pragma once
 #include "dvm_device.hpp"
-#include "dvm_game_object.hpp"
+#include "dvm_components.hpp"
 #include "dvm_frame_info.hpp"
 #include "dvm_camera.hpp"
 #include "dvm_pipeline.hpp"

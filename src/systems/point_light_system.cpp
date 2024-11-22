@@ -81,21 +81,16 @@ void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
   auto rotateLight =
       glm::rotate(glm::mat4(1.f), frameInfo.frameTime, {0.f, -1.f, 0.f});
   int lightIndex = 0;
-  for (auto& kv : frameInfo.gameObjects) {
-    auto& obj = kv.second;
-    if (obj.pointLight == nullptr) {
-      continue;
-    }
+  for (auto &&[entity, pointLight, transform] : frameInfo.registry.view<PointLightComponent, TransformComponent>().each()) {
 
     assert(lightIndex < MAX_LIGHTS && "Max point lights exceeded");
 
-    obj.transform.translation =
-        glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
+    transform.translation = glm::vec3(rotateLight * glm::vec4(transform.translation, 1.f));
 
     ubo.pointLights[lightIndex].position =
-        glm::vec4(obj.transform.translation, 1.f);
+        glm::vec4(transform.translation, 1.f);
     ubo.pointLights[lightIndex].color =
-        glm::vec4(obj.color, obj.pointLight->lightIntensity);
+        glm::vec4(pointLight.lightColor, pointLight.lightIntensity);
     lightIndex++;
   }
   ubo.numLights = lightIndex;
@@ -103,18 +98,19 @@ void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
 
 void PointLightSystem::render(FrameInfo& frameInfo)
 {
-  std::map<float, DvmGameObject::id_t> sorted;
-  for (auto& kv : frameInfo.gameObjects) {
-    DvmGameObject& obj = kv.second;
-    if (obj.pointLight == nullptr)
-      continue;
+  std::map<float, entt::entity> sorted;
+
+  for (auto&& [entity, pointLight, transform] :
+       frameInfo.registry.view<PointLightComponent, TransformComponent>()
+           .each())
+  {
 
     glm::vec3 offset =
-        frameInfo.camera.getPosition() - obj.transform.translation;
+        frameInfo.camera.getPosition() - transform.translation;
 
     float disSquared = glm::dot(offset, offset);
 
-    sorted[disSquared] = obj.getId();
+    sorted[disSquared] = entity;
   }
 
   dvmPipeline->bind(frameInfo.commandBuffer);
@@ -127,16 +123,14 @@ void PointLightSystem::render(FrameInfo& frameInfo)
                           &frameInfo.globalDescriptorSet,
                           0,
                           nullptr);
+
   for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
-    auto& obj = frameInfo.gameObjects.at(it->second);
-    if (obj.pointLight == nullptr) {
-      continue;
-    }
+    auto [pointLight, transform] = frameInfo.registry.get<PointLightComponent, TransformComponent>(it->second);
 
     PointLightPushConstants push {};
-    push.position = glm::vec4(obj.transform.translation, 1.f);
-    push.color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
-    push.radius = obj.transform.scale.x;
+    push.position = glm::vec4(transform.translation, 1.f);
+    push.color = glm::vec4(pointLight.lightColor, pointLight.lightIntensity);
+    push.radius = transform.scale.x;
 
     vkCmdPushConstants(
         frameInfo.commandBuffer,

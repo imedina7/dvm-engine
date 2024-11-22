@@ -34,9 +34,14 @@ DvmModel::DvmModel(DvmDevice& device, const DvmModel::Builder& builder)
 {
   createVertexBuffers(builder.vertices);
   createIndexBuffers(builder.indices);
+  createMaterials(builder.materials);
 }
 
 DvmModel::~DvmModel() {}
+
+void DvmModel::createMaterials(const std::vector<tinyobj::material_t>& materials){
+
+}
 
 void DvmModel::createVertexBuffers(const std::vector<Vertex>& vertices)
 {
@@ -114,6 +119,7 @@ std::unique_ptr<DvmModel> DvmModel::createModelFromFile(
   Builder builder {};
   builder.loadModel(ENGINE_DIR + filepath);
   std::cout << "Vertex count: " << builder.vertices.size() << std::endl;
+  std::cout << "Materials count: " << builder.materials.size() << std::endl;
   return std::make_unique<DvmModel>(device, builder);
 }
 
@@ -170,13 +176,27 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
 {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
-  std::vector<tinyobj::material_t> materials;
   std::string warn, err;
 
+  std::cout << "Loading object in path \"" << filepath << "\"\n";
+
+  size_t indx = filepath.find_last_of('/');
+  std::string dir = filepath.substr(0, indx);
+
+  std::cout << "materials loaded from: " << dir << "\n";
+
   if (!tinyobj::LoadObj(
-          &attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
+          &attrib, &shapes, &materials, &warn, &err, filepath.c_str(), dir.c_str()))
   {
     throw std::runtime_error(warn + err);
+  }
+
+  if(materials.size() > 0) {
+    for(const auto& material: materials) {
+      std::cout << "Loaded material: \"" << material.name << "\"\n";
+    }
+  } else {
+    std::cout << "No materials loaded" << "\n";
   }
 
   vertices.clear();

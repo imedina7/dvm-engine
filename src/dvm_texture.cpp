@@ -265,4 +265,12 @@ void Texture::generateMipmaps()
                        &barrier);
   dvmDevice.endSingleTimeCommands(commandBuffer);
 }
+
+VkDescriptorImageInfo Texture::getDescriptorImageInfo() {
+  VkDescriptorImageInfo imageInfo {};
+  imageInfo.sampler = sampler;
+  imageInfo.imageLayout = imageLayout;
+  imageInfo.imageView = imageView;
+  return imageInfo;
+}
 }  // namespace dvm

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "dvm_camera.hpp"
-#include "dvm_game_object.hpp"
+#include "dvm_components.hpp"
 #include <vulkan/vulkan.h>
+#include <entt.hpp>
 
 namespace dvm
 {
@@ -19,7 +20,7 @@ struct GlobalUbo
   glm::mat4 projection {1.0f};
   glm::mat4 view {1.0f};
   glm::mat4 inverseView {1.0f};
-  glm::vec4 ambientLightColor {1.0f, 1.0f, 1.0f, .02f};  // w is intensity
+  glm::vec4 ambientLightColor {.56f, 1.0f, 0.67f, .08f};  // w is intensity
   PointLight pointLights[MAX_LIGHTS];
   int numLights;
 };
@@ -30,6 +31,6 @@ struct FrameInfo
   VkCommandBuffer commandBuffer;
   DvmCamera& camera;
   VkDescriptorSet globalDescriptorSet;
-  DvmGameObject::Map& gameObjects;
+  entt::registry& registry;
 };
 }  // namespace dvm

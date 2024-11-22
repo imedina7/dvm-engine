@@ -2,8 +2,12 @@
 
 #include "gui/imgui_impl_glfw.h"
 #include "gui/imgui_impl_vulkan.h"
+#include "gui/panels/panel.hpp"
+#include "gui/panels/outliner.hpp"
 
-#include<glm/glm.hpp>
+#include <vector>
+
+#include <glm/glm.hpp>
 
 #include "dvm_device.hpp"
 #include "dvm_descriptors.hpp"
@@ -22,6 +26,10 @@ static void check_vk_result(VkResult err)
 
 namespace dvm
 {
+struct GlobalState
+{
+  gui::OutlinerState outlinerState;
+};
 class DvmGUI
 {
 public:
@@ -36,20 +44,20 @@ public:
   void update(float dt, VkCommandBuffer command_buffer);
   const bool toggleUI()
   {
-    ui_visible = !ui_visible;
-    return ui_visible;
+    uiVisible = !uiVisible;
+    return uiVisible;
   };
 
-  const bool getUIVisibility() { return ui_visible; };
+  const bool getUIVisibility() const { return uiVisible; };
+  const GlobalState& getState() const { return uiState; };
 
   void checkUIToggle(glm::vec2 mouseDelta);
 
 private:
   GLFWwindow* glfwWindow;
+  GlobalState uiState;
+  std::vector<gui::Panel*> panelWindows;
   std::unique_ptr<DvmDescriptorPool> descriptorPool;
-  bool show_demo_window = true;
-  bool ui_visible = false;
-  bool show_another_window = false;
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  bool uiVisible = false;
 };
 }  // namespace dvm

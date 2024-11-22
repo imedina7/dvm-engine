@@ -4,6 +4,7 @@
 #include "dvm_frame_info.hpp"
 #include "dvm_swap_chain.hpp"
 #include "keyboard_movement_controller.hpp"
+#include <iostream>
 #include <array>
 #include <cstdint>
 #include <stdexcept>
@@ -47,11 +48,8 @@ void DvmApp::run()
                       VK_SHADER_STAGE_ALL_GRAPHICS)
           .build();
 
-  Texture texture = Texture(dvmDevice, "../textures/image.png");
-  VkDescriptorImageInfo imageInfo {};
-  imageInfo.sampler = texture.getSampler();
-  imageInfo.imageLayout = texture.getImageLayout();
-  imageInfo.imageView = texture.getImageView();
+  Texture texture = Texture(dvmDevice, "../textures/diffuse_bake.png");
+  VkDescriptorImageInfo imageInfo = texture.getDescriptorImageInfo();
 
   std::array<VkDescriptorSet, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
       globalDescriptorSets {};
@@ -73,29 +71,26 @@ void DvmApp::run()
                                      dvmRenderer.getSwapChainRenderPass(),
                                      globalSetLayout->getDescriptorSetLayout()};
 
-  DvmCamera camera {};
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
-  camera.setViewDirection(glm::vec3(0.f, 3.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
-
   auto currentTime = std::chrono::high_resolution_clock::now();
-
-  auto viewerObject = DvmGameObject::createGameObject();
-  KeyboardMovementController cameraController {};
-  viewerObject.transform.translation.z = -2.5f;
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
 
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-  
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+  scene.load();
+
+  entt::registry& registry = scene.getRegistry();
 
   DvmGUI gui {};
-  #ifdef AUDIO
-    DvmAudio& audio = DvmAudio::Get();
-  #endif
+#ifdef AUDIO
+  DvmAudio& audio = DvmAudio::Get();
+#endif
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
@@ -103,11 +98,11 @@ void DvmApp::run()
     double mouseNewX, mouseNewY;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
 
-    #ifdef AUDIO
+#ifdef AUDIO
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       audio.playFromFile(AUDIO_FILE_PATH);
     }
-    #endif
+#endif
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
@@ -122,17 +117,9 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    if (!gui.getUIVisibility()) {
-      cameraController.moveInPlaneXZ(
-          window, frameTime, viewerObject, mouseDelta, 0.1f);
-      camera.setViewYXZ(viewerObject.transform.translation,
-                        viewerObject.transform.rotation);
-    }
-    
+    DvmCamera& camera = scene.getCamera();
 
-    float aspect = dvmRenderer.getAspectRatio();
-
-    camera.setPerspectiveProjection(glm::radians(50.f), aspect, .06f, 100.f);
+    scene.update(frameTime, mouseDelta);
 
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
       int frameIndex = dvmRenderer.getCurrentFrameIndex();
@@ -142,7 +129,7 @@ void DvmApp::run()
                            commandBuffer,
                            camera,
                            globalDescriptorSets[frameIndex],
-                           gameObjects};
+                           registry};
       GlobalUbo ubo {};
 
       ubo.projection = camera.getProjection();
@@ -162,80 +149,5 @@ void DvmApp::run()
     }
   }
   vkDeviceWaitIdle(dvmDevice.device());
-}
-
-void DvmApp::loadGameObjects()
-{
-  std::shared_ptr<DvmModel> model =
-      DvmModel::createModelFromFile(dvmDevice, "models/flat_vase.obj");
-
-  auto vase = DvmGameObject::createGameObject();
-  vase.model = model;
-  vase.transform.translation = {
-      -0.5f,
-      .5f,
-      .0f,
-  };
-  vase.transform.scale = {1.5f, 1.5f, 1.5f};
-  gameObjects.emplace(vase.getId(), std::move(vase));
-
-  std::shared_ptr<DvmModel> smoothVaseModel =
-      DvmModel::createModelFromFile(dvmDevice, "models/smooth_vase.obj");
-
-  auto smoothVase = DvmGameObject::createGameObject();
-  smoothVase.model = smoothVaseModel;
-  smoothVase.transform.translation = {
-      0.5f,
-      .5f,
-      .0f,
-  };
-  smoothVase.transform.scale = {1.5f, 1.5f, 1.5f};
-  gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
-
-  std::shared_ptr<DvmModel> suzanneModel =
-      DvmModel::createModelFromFile(dvmDevice, "models/suzanne.obj");
-
-  auto suzanne = DvmGameObject::createGameObject();
-  suzanne.model = suzanneModel;
-  suzanne.transform.translation = {
-      0.f,
-      -1.5f,
-      .0f,
-  };
-  suzanne.transform.scale = {0.5f, 0.5f, 0.5f};
-  gameObjects.emplace(suzanne.getId(), std::move(suzanne));
-
-  std::shared_ptr<DvmModel> floorModel =
-      DvmModel::createModelFromFile(dvmDevice, "models/quad.obj");
-
-  auto floorObject = DvmGameObject::createGameObject();
-  floorObject.model = floorModel;
-  floorObject.transform.translation = {
-      .0f,
-      .5f,
-      .0f,
-  };
-  floorObject.transform.scale = {5.f, 1.f, 5.f};
-  gameObjects.emplace(floorObject.getId(), std::move(floorObject));
-  std::vector<glm::vec3> lightColors {
-      {1.f, .1f, .1f},
-      {.1f, .1f, 1.f},
-      {.1f, 1.f, .1f},
-      {1.f, 1.f, .1f},
-      {.1f, 1.f, 1.f},
-      {1.f, 1.f, 1.f},
-  };
-
-  for (int i = 0; i < lightColors.size(); i++) {
-    auto pointLight = DvmGameObject::createPointLight(0.2f);
-    pointLight.color = lightColors[i];
-    auto rotateLight =
-        glm::rotate(glm::mat4(1.f),
-                    (i * glm::two_pi<float>()) / lightColors.size(),
-                    {0.f, -1.f, 0.f});
-    pointLight.transform.translation =
-        glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
-    gameObjects.emplace(pointLight.getId(), std::move(pointLight));
-  }
 }
 }  // namespace dvm

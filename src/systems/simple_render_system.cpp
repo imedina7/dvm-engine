@@ -1,6 +1,7 @@
 #include "simple_render_system.hpp"
 #include "dvm_swap_chain.hpp"
 #include <array>
+#include <entt.hpp>
 #include <cstdint>
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
@@ -83,26 +84,25 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo)
                           0,
                           nullptr);
 
-  for (auto& kv : frameInfo.gameObjects) {
-    auto& obj = kv.second;
-    if (obj.model == nullptr)
-      continue;
+  auto view = frameInfo.registry.view<ModelComponent, TransformComponent>();
 
-    SimplePushConstantData push {};
+  for(auto &&[entity, model, transform] : view.each())
+      {
+        SimplePushConstantData push {};
 
-    push.normalMatrix = obj.transform.normalMatrix();
-    push.modelMatrix = obj.transform.mat4();
+        push.normalMatrix = transform.normalMatrix();
+        push.modelMatrix = transform.mat4();
 
-    vkCmdPushConstants(
-        frameInfo.commandBuffer,
-        pipelineLayout,
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        0,
-        sizeof(SimplePushConstantData),
-        &push);
+        vkCmdPushConstants(
+            frameInfo.commandBuffer,
+            pipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(SimplePushConstantData),
+            &push);
 
-    obj.model->bind(frameInfo.commandBuffer);
-    obj.model->draw(frameInfo.commandBuffer);
-  }
+        model.model->bind(frameInfo.commandBuffer);
+        model.model->draw(frameInfo.commandBuffer);
+      }
 }
 }  // namespace dvm

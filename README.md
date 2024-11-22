@@ -22,8 +22,8 @@ It provides very little features but sets a starting point for anyone who would 
   - [ ] Environment textures
 - [ ] Material system
   - [X] Texture loading
-  - [ ] Multi material objects/meshes
-- [ ] ECS
+  - [ ] PBR
+- [X] ECS
 
 # Building and installing
 

@@ -1,0 +1,12 @@
+# Blender 4.2.2 LTS MTL File: 'shading_test_box.blend'
+# www.blender.org
+
+newmtl BoxMaterial
+Ns 1.962824
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Users/israel.medina/Documents/models/diffuse_bake.png

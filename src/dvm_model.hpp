@@ -1,3 +1,4 @@
+#pragma once
 #include "dvm_device.hpp"
 #include "dvm_buffer.hpp"
 
@@ -6,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include <memory>
+#include <tinyobjloader.h>
 
 #ifndef ENGINE_DIR
 #  define ENGINE_DIR "../"
@@ -39,6 +41,7 @@ public:
   {
     std::vector<Vertex> vertices {};
     std::vector<uint32_t> indices {};
+    std::vector<tinyobj::material_t> materials {};
 
     void loadModel(const std::string& filepath);
   };
@@ -57,6 +60,7 @@ public:
 private:
   void createVertexBuffers(const std::vector<Vertex>& vertices);
   void createIndexBuffers(const std::vector<uint32_t>& indices);
+  void createMaterials(const std::vector<tinyobj::material_t>& materials);
 
   DvmDevice& dvmDevice;
 
@@ -66,5 +70,14 @@ private:
   bool hasIndexBuffer = false;
   std::unique_ptr<DvmBuffer> indexBuffer;
   uint32_t indexCount;
+};
+struct ModelComponent
+{
+  std::unique_ptr<DvmModel> model;
+  ModelComponent(std::unique_ptr<DvmModel> _model)
+      : model
+  {std::move(_model)}
+  {
+  }
 };
 }  // namespace dvm
