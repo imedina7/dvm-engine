@@ -445,12 +445,14 @@ VkPresentModeKHR DvmSwapChain::chooseSwapPresentMode(
     }
   }
 
-  // for (const auto &availablePresentMode : availablePresentModes) {
-  //   if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-  //     std::cout << "Present mode: Immediate" << std::endl;
-  //     return availablePresentMode;
-  //   }
-  // }
+#ifdef PRESENT_IMMEDIATE_ENABLE
+  for (const auto& availablePresentMode : availablePresentModes) {
+    if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+      std::cout << "Present mode: Immediate" << std::endl;
+      return availablePresentMode;
+    }
+  }
+#endif
 
   std::cout << "Present mode: V-Sync" << std::endl;
   return VK_PRESENT_MODE_FIFO_KHR;

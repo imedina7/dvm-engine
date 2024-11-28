@@ -20,12 +20,13 @@ struct SimplePushConstantData
   glm::mat4 normalMatrix {1.0f};
 };
 
-SimpleRenderSystem::SimpleRenderSystem(DvmDevice& device,
-                                       VkRenderPass renderPass,
-                                       VkDescriptorSetLayout globalSetLayout)
+SimpleRenderSystem::SimpleRenderSystem(
+    DvmDevice& device,
+    VkRenderPass renderPass,
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
     : dvmDevice {device}
 {
-  createPipelineLayout(globalSetLayout);
+  createPipelineLayout(descriptorSetLayouts);
   createPipeline(renderPass);
 }
 SimpleRenderSystem::~SimpleRenderSystem()
@@ -34,14 +35,12 @@ SimpleRenderSystem::~SimpleRenderSystem()
 }
 
 void SimpleRenderSystem::createPipelineLayout(
-    VkDescriptorSetLayout globalSetLayout)
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
 {
   VkPushConstantRange pushConstantRange {
       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
       0,
       sizeof(SimplePushConstantData)};
-
-  std::vector<VkDescriptorSetLayout> descriptorSetLayouts {globalSetLayout};
 
   VkPipelineLayoutCreateInfo pipelineLayoutInfo {};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -71,7 +70,7 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass)
                                               pipelineConfig);
 }
 
-void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo)
+void SimpleRenderSystem::render(FrameInfo& frameInfo)
 {
   dvmPipeline->bind(frameInfo.commandBuffer);
 
@@ -86,23 +85,22 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo)
 
   auto view = frameInfo.registry.view<ModelComponent, TransformComponent>();
 
-  for(auto &&[entity, model, transform] : view.each())
-      {
-        SimplePushConstantData push {};
+  for (auto&& [entity, model, transform] : view.each()) {
+    SimplePushConstantData push {};
 
-        push.normalMatrix = transform.normalMatrix();
-        push.modelMatrix = transform.mat4();
+    push.normalMatrix = transform.normalMatrix();
+    push.modelMatrix = transform.mat4();
 
-        vkCmdPushConstants(
-            frameInfo.commandBuffer,
-            pipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(SimplePushConstantData),
-            &push);
+    vkCmdPushConstants(
+        frameInfo.commandBuffer,
+        pipelineLayout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,
+        sizeof(SimplePushConstantData),
+        &push);
 
-        model.model->bind(frameInfo.commandBuffer);
-        model.model->draw(frameInfo.commandBuffer);
-      }
+    model.model->bind(frameInfo.commandBuffer);
+    model.model->draw(frameInfo.commandBuffer);
+  }
 }
 }  // namespace dvm

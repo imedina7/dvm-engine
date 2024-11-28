@@ -23,6 +23,17 @@ layout (set = 0, binding = 0) uniform GlobalUbo {
 
 layout (set = 0, binding = 1) uniform sampler2D image;
 
+// layout (set = 1, binding = 0) uniform MaterialUbo {
+//   Material materials[100];
+// } material;
+
+// layout (set = 2, binding = 1) uniform sampler2D albedo;
+// layout (set = 2, binding = 2) uniform sampler2D roughness;
+// layout (set = 2, binding = 3) uniform sampler2D normal;
+// layout (set = 2, binding = 4) uniform sampler2D spec;
+// layout (set = 2, binding = 5) uniform sampler2D metallic;
+// layout (set = 2, binding = 6) uniform sampler2D emission;
+
 layout(push_constant) uniform Push {
   mat4 modelMatrix;
   mat4 normalMatrix;

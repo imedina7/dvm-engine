@@ -1,4 +1,5 @@
 #include "dvm_model.hpp"
+#include "dvm_app.hpp"
 #include "dvm_utils.hpp"
 
 #include <cassert>
@@ -39,8 +40,9 @@ DvmModel::DvmModel(DvmDevice& device, const DvmModel::Builder& builder)
 
 DvmModel::~DvmModel() {}
 
-void DvmModel::createMaterials(const std::vector<tinyobj::material_t>& materials){
-
+void DvmModel::createMaterials(
+    const std::vector<tinyobj::material_t>& materials)
+{
 }
 
 void DvmModel::createVertexBuffers(const std::vector<Vertex>& vertices)
@@ -114,10 +116,12 @@ void DvmModel::createIndexBuffers(const std::vector<uint32_t>& indices)
 }
 
 std::unique_ptr<DvmModel> DvmModel::createModelFromFile(
-    DvmDevice& device, const std::string& filepath)
+    const std::string& filepath)
 {
+  DvmDevice& device = DvmApp::getInstance().getDevice();
   Builder builder {};
-  builder.loadModel(ENGINE_DIR + filepath);
+  const std::string modelsPath = getModelsPath();
+  builder.loadModel(modelsPath + filepath);
   std::cout << "Vertex count: " << builder.vertices.size() << std::endl;
   std::cout << "Materials count: " << builder.materials.size() << std::endl;
   return std::make_unique<DvmModel>(device, builder);
@@ -176,6 +180,10 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
 {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
+
+  std::vector<tinyobj::material_t> materials;
+  bool hasMaterials = false;
+
   std::string warn, err;
 
   std::cout << "Loading object in path \"" << filepath << "\"\n";
@@ -185,14 +193,20 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
 
   std::cout << "materials loaded from: " << dir << "\n";
 
-  if (!tinyobj::LoadObj(
-          &attrib, &shapes, &materials, &warn, &err, filepath.c_str(), dir.c_str()))
+  if (!tinyobj::LoadObj(&attrib,
+                        &shapes,
+                        &materials,
+                        &warn,
+                        &err,
+                        filepath.c_str(),
+                        dir.c_str()))
   {
     throw std::runtime_error(warn + err);
   }
 
-  if(materials.size() > 0) {
-    for(const auto& material: materials) {
+  if (materials.size() > 0) {
+    hasMaterials = true;
+    for (const auto& material : materials) {
       std::cout << "Loaded material: \"" << material.name << "\"\n";
     }
   } else {
@@ -204,6 +218,11 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
 
   std::unordered_map<Vertex, uint32_t> uniqueVertices {};
   for (const auto& shape : shapes) {
+    if (hasMaterials) {
+      for (const auto mat_id : shape.mesh.material_ids) {
+      }
+    }
+
     for (const auto& index : shape.mesh.indices) {
       Vertex vertex {};
       if (index.vertex_index >= 0) {

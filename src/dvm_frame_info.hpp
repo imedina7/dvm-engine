@@ -24,6 +24,7 @@ struct GlobalUbo
   PointLight pointLights[MAX_LIGHTS];
   int numLights;
 };
+
 struct FrameInfo
 {
   int frameIndex;
