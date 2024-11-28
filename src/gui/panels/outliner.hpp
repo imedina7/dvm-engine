@@ -8,7 +8,6 @@ namespace dvm::gui
 {
 struct OutlinerState
 {
-  bool isVisible = false;
 };
 class Outliner : public Panel
 {
@@ -19,7 +18,6 @@ public:
   {
   }
   virtual void draw() override;
-  virtual bool isVisible() override;
 
 private:
   OutlinerState state;

@@ -28,8 +28,6 @@ DvmGUI::DvmGUI()
 
   DvmRenderer& dvmRenderer = app.getRenderer();
 
-  uiState.outlinerState.isVisible = true;
-
   panels.emplace_back(new gui::Outliner(uiState.outlinerState));
 
   // Setup Dear ImGui context
@@ -104,24 +102,21 @@ DvmGUI::DvmGUI()
   }
 }
 
-void DvmGUI::update(float dt, VkCommandBuffer commandBuffer)
+void DvmGUI::render(FrameInfo& frameInfo)
 {
-  frameTime = dt;
+  frameTime = frameInfo.frameTime;
 
   beginFrame();
 
-  renderPanels();
-
-  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+  if (uiVisible)
+    renderPanels(frameInfo.commandBuffer);
 
   endFrame();
 }
 
-void DvmGUI::checkUIToggle(glm::vec2 mouseDelta)
+void DvmGUI::checkUIToggle()
 {
   if (glfwGetKey(glfwWindow, GLFW_KEY_TAB) == GLFW_PRESS) {
-    if (glm::length(glm::normalize(mouseDelta)) > .7f)
-      return;
     if (toggleUI()) {
       glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     } else {
@@ -144,13 +139,14 @@ void DvmGUI::beginFrame()
   ImGui::NewFrame();
 }
 
-void DvmGUI::renderPanels()
+void DvmGUI::renderPanels(VkCommandBuffer commandBuffer)
 {
   for (auto panel : panels) {
     if (panel->isVisible())
       panel->draw();
   }
   ImGui::Render();
+  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 }
 
 void DvmGUI::endFrame()

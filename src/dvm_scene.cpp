@@ -25,6 +25,8 @@ void Scene::load()
 
   auto box = registry.create();
 
+  registry.emplace<TagComponent>(box, "Cornell Box");
+
   registry.emplace<TransformComponent>(box,
                                        glm::vec3(0.f, 0.f, 0.f),
                                        glm::vec3(1.f),
@@ -34,12 +36,17 @@ void Scene::load()
 
   std::vector<entt::entity> lights {registry.create()};
 
-  for (auto lightEntity : lights) {
-    registry.emplace<TransformComponent>(
-        lightEntity, glm::vec3(0.f, 0.f, -2.f), glm::vec3(.1f), glm::vec3(0.f));
+  for (int i = 0; i < lights.size(); i++) {
+    std::string lightName = "Light";
+    registry.emplace<TagComponent>(lights.at(i),
+                                   lightName.append(std::to_string(i)));
+    registry.emplace<TransformComponent>(lights.at(i),
+                                         glm::vec3(0.f, 0.f, -2.f),
+                                         glm::vec3(.1f),
+                                         glm::vec3(0.f));
 
     registry.emplace<PointLightComponent>(
-        lightEntity, 0.2f, glm::vec3(1.f, 1.f, 1.f));
+        lights.at(i), 0.2f, glm::vec3(1.f, 1.f, 1.f));
   }
 }
 

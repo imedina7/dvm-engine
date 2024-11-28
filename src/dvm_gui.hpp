@@ -9,11 +9,12 @@
 
 #include <glm/glm.hpp>
 
+#include "dvm_app.hpp"
 #include "dvm_device.hpp"
 #include "dvm_descriptors.hpp"
-#include "dvm_app.hpp"
-#include "dvm_window.hpp"
+#include "dvm_frame_info.hpp"
 #include "dvm_renderer.hpp"
+#include "dvm_window.hpp"
 
 static void check_vk_result(VkResult err)
 {
@@ -41,7 +42,7 @@ public:
     ImGui::DestroyContext();
   }
 
-  void update(float dt, VkCommandBuffer command_buffer);
+  void render(FrameInfo& frameInfo);
   const bool toggleUI()
   {
     uiVisible = !uiVisible;
@@ -51,12 +52,12 @@ public:
   const bool getUIVisibility() const { return uiVisible; };
   const GlobalState& getState() const { return uiState; };
 
-  void checkUIToggle(glm::vec2 mouseDelta);
+  void checkUIToggle();
 
 private:
   void initStyle();
   void beginFrame();
-  void renderPanels();
+  void renderPanels(VkCommandBuffer commandBuffer);
   void endFrame();
 
 private:

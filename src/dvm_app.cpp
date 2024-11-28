@@ -119,7 +119,7 @@ void DvmApp::run()
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
 
-    gui.checkUIToggle(mouseDelta);
+    gui.checkUIToggle();
 
     auto newTime = std::chrono::high_resolution_clock::now();
 
@@ -155,7 +155,7 @@ void DvmApp::run()
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.render(frameInfo);
       pointLightSystem.render(frameInfo);
-      gui.update(frameTime, commandBuffer);
+      gui.render(frameInfo);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }
