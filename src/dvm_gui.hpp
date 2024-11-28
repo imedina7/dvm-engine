@@ -54,10 +54,21 @@ public:
   void checkUIToggle(glm::vec2 mouseDelta);
 
 private:
+  void initStyle();
+  void beginFrame();
+  void renderPanels();
+  void endFrame();
+
+private:
   GLFWwindow* glfwWindow;
   GlobalState uiState;
-  std::vector<gui::Panel*> panelWindows;
+  std::vector<gui::Panel*> panels;
   std::unique_ptr<DvmDescriptorPool> descriptorPool;
   bool uiVisible = false;
+  float frameTime = 1.f;
+
+private:  // FONTS
+  ImFont* robotoMedium;
+  ImFont* doppioOne;
 };
 }  // namespace dvm

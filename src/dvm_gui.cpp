@@ -5,9 +5,9 @@ namespace dvm
 DvmGUI::DvmGUI()
 {
   DvmApp& app = DvmApp::getInstance();
-  glfwWindow = app.getWindow().getGLFWwindow();
   DvmDevice& dvmDevice = app.getDevice();
   DvmWindow& dvmWindow = app.getWindow();
+  glfwWindow = dvmWindow.getGLFWwindow();
 
   descriptorPool =
       DvmDescriptorPool::Builder(dvmDevice)
@@ -30,20 +30,28 @@ DvmGUI::DvmGUI()
 
   uiState.outlinerState.isVisible = true;
 
-  panelWindows.emplace_back(new gui::Outliner(uiState.outlinerState));
+  panels.emplace_back(new gui::Outliner(uiState.outlinerState));
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
   (void)io;
+
+  std::pair<float, float> scale = dvmWindow.getMonitorDPI();
+
+  robotoMedium = io.Fonts->AddFontFromFileTTF(
+      "../assets/fonts/Roboto-Medium.ttf", 14.f * scale.first);
+  doppioOne = io.Fonts->AddFontFromFileTTF(
+      "../assets/fonts/DoppioOne-Regular.ttf", 14.f * scale.first);
+
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
   io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
   io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
-// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable
-// Gamepad
-// Controls
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
 #ifdef GUI_DOCKING
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
   io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable
@@ -55,13 +63,15 @@ DvmGUI::DvmGUI()
 #endif
 
   // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
+  // ImGui::StyleColorsDark();
   // ImGui::StyleColorsLight();
 
+  initStyle();
+
+#ifdef GUI_DOCKING
   // When viewports are enabled we tweak WindowRounding/WindowBg so platform
   // windows can look identical to regular ones.
   ImGuiStyle& style = ImGui::GetStyle();
-#ifdef GUI_DOCKING
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     style.WindowRounding = 0.0f;
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -94,36 +104,17 @@ DvmGUI::DvmGUI()
   }
 }
 
-void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
+void DvmGUI::update(float dt, VkCommandBuffer commandBuffer)
 {
-  DvmApp& app = DvmApp::getInstance();
-  DvmDevice& dvmDevice = app.getDevice();
+  frameTime = dt;
 
-  ImGuiIO& io = ImGui::GetIO();
-  int width, height;
-  glfwGetFramebufferSize(glfwWindow, &width, &height);
+  beginFrame();
 
-  io.DisplaySize = ImVec2(width, height);
-  io.DeltaTime = dt;
-  ImGui_ImplGlfw_NewFrame();
-  ImGui_ImplVulkan_NewFrame();
-  ImGui::NewFrame();
+  renderPanels();
 
-  for (auto panel : panelWindows) {
-    if (panel->isVisible())
-      panel->draw();
-  }
-  ImGui::Render();
+  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
-  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
-
-#ifdef GUI_DOCKING
-  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
-  }
-#endif
-  ImGui::EndFrame();
+  endFrame();
 }
 
 void DvmGUI::checkUIToggle(glm::vec2 mouseDelta)
@@ -137,5 +128,46 @@ void DvmGUI::checkUIToggle(glm::vec2 mouseDelta)
       glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
   }
+}
+
+void DvmGUI::beginFrame()
+{
+  ImGuiIO& io = ImGui::GetIO();
+  int width, height;
+  glfwGetFramebufferSize(glfwWindow, &width, &height);
+
+  io.DisplaySize = ImVec2(width, height);
+  io.DeltaTime = frameTime;
+
+  ImGui_ImplGlfw_NewFrame();
+  ImGui_ImplVulkan_NewFrame();
+  ImGui::NewFrame();
+}
+
+void DvmGUI::renderPanels()
+{
+  for (auto panel : panels) {
+    if (panel->isVisible())
+      panel->draw();
+  }
+  ImGui::Render();
+}
+
+void DvmGUI::endFrame()
+{
+#ifdef GUI_DOCKING
+  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
+  }
+#endif
+  ImGui::EndFrame();
+}
+
+void DvmGUI::initStyle()
+{
+  ImGuiStyle& style = ImGui::GetStyle();
+  style.WindowRounding = 2.f;
+  style.Colors[ImGuiCol_FrameBg] = ImVec4(0, 0, 0, 1.f);
 }
 }  // namespace dvm
