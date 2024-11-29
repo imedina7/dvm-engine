@@ -18,7 +18,8 @@ void Outliner::draw()
 
   ImGui::SetNextWindowBgAlpha(0.7f);
 
-  for (auto&& [entity, tag] : registry.view<TagComponent>().each()) {
+  auto view = registry.view<TagComponent, TransformComponent>();
+  for (auto&& [entity, tag, transform] : view.each()) {
     // Use SetNextItemOpen() so set the default state of a node to be open. We
     // could also use TreeNodeEx() with the ImGuiTreeNodeFlags_DefaultOpen flag
     // to achieve the same thing!
@@ -32,7 +33,38 @@ void Outliner::draw()
 
     ImGui::PushID(static_cast<int>(entity));
     if (ImGui::TreeNode("", tag.tag.c_str())) {
-      ImGui::Text("blah blah");
+      // for (const auto component : view.components(entity)) {
+      //   std::string componentName = component.type().name();
+      //   ImGui::Text(componentName.data());
+      // }
+      ImGui::BeginGroup();
+      float translation[3] = {transform.translation.x,
+                              transform.translation.y,
+                              transform.translation.z};
+      float rotation[3] = {glm::degrees<float>(transform.rotation.x),
+                           glm::degrees<float>(transform.rotation.y),
+                           glm::degrees<float>(transform.rotation.z)};
+      float scale[3] = {
+          transform.scale.x, transform.scale.y, transform.scale.z};
+
+      if (ImGui::DragFloat3(
+              "Translation", translation, 0.2f, -99999999.f, 99999999.f))
+      {
+        transform.translation =
+            glm::vec3(translation[0], translation[1], translation[2]);
+        registry.replace<TransformComponent>(entity, transform);
+      }
+      if (ImGui::DragFloat3("Rotation", rotation, 0.2f, -360.f, 360.f)) {
+        transform.rotation = glm::vec3(glm::radians<float>(rotation[0]),
+                                       glm::radians<float>(rotation[1]),
+                                       glm::radians<float>(rotation[2]));
+        registry.replace<TransformComponent>(entity, transform);
+      }
+      if (ImGui::DragFloat3("Scale", scale, 0.2f, -99999999.f, 99999999.f)) {
+        transform.scale = glm::vec3(scale[0], scale[1], scale[2]);
+        registry.replace<TransformComponent>(entity, transform);
+      }
+      ImGui::EndGroup();
       ImGui::SameLine();
       if (ImGui::SmallButton("+")) {
       }
@@ -40,8 +72,6 @@ void Outliner::draw()
     }
     ImGui::PopID();
   }
-  ImGui::Text("This is some useful text.");
-  visibility = !ImGui::Button("Close", ImVec2(50, 30));
   ImGui::End();
 }
 }  // namespace dvm::gui

@@ -7,6 +7,9 @@
 
 #include "dvm_model.hpp"
 
+#define ALL_COMPONENTS \
+  Transform2dComponent, TagComponent, TransformComponent, PointLightComponent
+
 namespace dvm
 {
 using id_t = unsigned int;
