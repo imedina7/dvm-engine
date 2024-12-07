@@ -67,6 +67,7 @@ private:
   std::unique_ptr<DvmDescriptorPool> descriptorPool;
   bool uiVisible = false;
   float frameTime = 1.f;
+  glm::vec2 monitorScale {1.f};
 
 private:  // FONTS
   ImFont* robotoMedium;

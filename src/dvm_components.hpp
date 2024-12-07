@@ -6,13 +6,22 @@
 #include <unordered_map>
 
 #include "dvm_model.hpp"
-
-#define ALL_COMPONENTS \
-  Transform2dComponent, TagComponent, TransformComponent, PointLightComponent
+#include "uuid.hpp"
 
 namespace dvm
 {
 using id_t = unsigned int;
+
+struct IDComponent
+{
+  UUID id;
+
+  IDComponent() = default;
+  IDComponent(const IDComponent&) = default;
+  IDComponent(const UUID& uuid)
+      : id {uuid} {};
+
+};
 struct Transform2dComponent
 {
   glm::vec2 translation {};

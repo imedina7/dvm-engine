@@ -53,16 +53,16 @@ void DvmWindow::framebufferResizedCallback(GLFWwindow* window,
   dvmWindow->height = height;
 }
 
-std::pair<float, float> DvmWindow::getMonitorDPI()
+glm::vec2 DvmWindow::getMonitorDPI()
 {
   float xScale, yScale;
   glfwGetMonitorContentScale(getPrimaryMonitor(), &xScale, &yScale);
-  return {xScale, yScale};
+  return glm::vec2(xScale, yScale);
 }
-std::pair<float, float> DvmWindow::getMonitorDPI(GLFWmonitor* monitor)
+glm::vec2 DvmWindow::getMonitorDPI(GLFWmonitor* monitor)
 {
   float xScale, yScale;
   glfwGetMonitorContentScale(monitor, &xScale, &yScale);
-  return {xScale, yScale};
+  return glm::vec2(xScale, yScale);
 }
 }  // namespace dvm

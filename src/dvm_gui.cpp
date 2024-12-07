@@ -36,12 +36,12 @@ DvmGUI::DvmGUI()
   ImGuiIO& io = ImGui::GetIO();
   (void)io;
 
-  std::pair<float, float> scale = dvmWindow.getMonitorDPI();
+  monitorScale = dvmWindow.getMonitorDPI();
 
   robotoMedium = io.Fonts->AddFontFromFileTTF(
-      "../assets/fonts/Roboto-Medium.ttf", 14.f * scale.first);
+      "../assets/fonts/Roboto-Medium.ttf", 14.f * monitorScale.x);
   doppioOne = io.Fonts->AddFontFromFileTTF(
-      "../assets/fonts/DoppioOne-Regular.ttf", 14.f * scale.first);
+      "../assets/fonts/DoppioOne-Regular.ttf", 14.f * monitorScale.x);
 
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
@@ -163,7 +163,7 @@ void DvmGUI::endFrame()
 void DvmGUI::initStyle()
 {
   ImGuiStyle& style = ImGui::GetStyle();
-  style.WindowRounding = 2.f;
+  style.WindowRounding = 2.f * monitorScale.x;
   style.Colors[ImGuiCol_FrameBg] = ImVec4(0, 0, 0, 1.f);
 }
 }  // namespace dvm

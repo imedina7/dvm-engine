@@ -3,6 +3,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+
 #include <string>
 
 namespace dvm
@@ -31,8 +33,8 @@ public:
   GLFWmonitor* getPrimaryMonitor() { return monitors[0]; };
   const int getMonitorCount() const { return monitorCount; };
 
-  std::pair<float, float> getMonitorDPI();
-  std::pair<float, float> getMonitorDPI(GLFWmonitor* monitor);
+  glm::vec2 getMonitorDPI();
+  glm::vec2 getMonitorDPI(GLFWmonitor* monitor);
 
 private:
   static void framebufferResizedCallback(GLFWwindow* window,

@@ -1,4 +1,5 @@
 #include "dvm_scene.hpp"
+#include "dvm_entity.hpp"
 #include "dvm_app.hpp"
 
 #ifdef GLTF_ENABLE
@@ -13,26 +14,32 @@
 namespace dvm
 {
 
+  Entity Scene::createEntity(const std::string& label) {
+    Entity entity = {registry.create(), this};
+    entity.addComponent<TransformComponent>();
+    entity.addComponent<TagComponent>(label);
+    entity.addComponent<IDComponent>();
+    return entity;
+  }
+
 void Scene::load()
 
 {
-  viewerEntity = registry.create();
+  Entity viewerEntity = createEntity("Camera");
+  m_ViewerEntity = viewerEntity.getId();
 
-  registry.emplace<TransformComponent>(viewerEntity,
-                                       glm::vec3(0.f, -1.f, -3.f));
+  viewerEntity
+      .updateComponent<TransformComponent>(glm::vec3(0.f, -1.f, -3.f));
 
   camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
 
-  auto box = registry.create();
+  auto box = createEntity("Cornell Box");
 
-  registry.emplace<TagComponent>(box, "Cornell Box");
-
-  registry.emplace<TransformComponent>(box,
-                                       glm::vec3(0.f, 0.f, 0.f),
-                                       glm::vec3(1.f),
-                                       glm::vec3(0.f, glm::pi<float>(), 0.f));
-  registry.emplace<ModelComponent>(
-      box, DvmModel::createModelFromFile("shading_test_box.obj"));
+  box.updateComponent<TransformComponent>(glm::vec3(0.f, 0.f, 0.f),
+                                          glm::vec3(1.f),
+                                          glm::vec3(0.f, glm::pi<float>(), 0.f));
+      box.addComponent<ModelComponent>(
+          DvmModel::createModelFromFile("shading_test_box.obj"));
 
   std::vector<entt::entity> lights {registry.create()};
 
@@ -50,10 +57,13 @@ void Scene::load()
   }
 }
 
-void Scene::update(float frameTime, glm::vec2 mouseDelta)
+void Scene::update(float frameTime, glm::vec2 mouseDelta, bool controlCamera)
 {
+  if (controlCamera) {
   cameraController.moveInPlaneXZ(
-      camera, frameTime, registry, viewerEntity, mouseDelta, 0.1f);
+      camera, frameTime, registry, m_ViewerEntity, mouseDelta, 0.1f);
+
+  }
   auto& renderer = DvmApp::getInstance().getRenderer();
 
   float aspect = renderer.getAspectRatio();

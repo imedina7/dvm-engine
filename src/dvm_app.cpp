@@ -93,11 +93,11 @@ void DvmApp::run()
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  scene.load();
+  m_Scene.load();
 
-  entt::registry& registry = scene.getRegistry();
+  entt::registry& registry = m_Scene.getRegistry();
 
   DvmGUI gui {};
 #ifdef AUDIO
@@ -129,9 +129,9 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    DvmCamera& camera = scene.getCamera();
+    DvmCamera& camera = m_Scene.getCamera();
 
-    scene.update(frameTime, mouseDelta);
+    m_Scene.update(frameTime, mouseDelta, !gui.getUIVisibility());
 
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
       int frameIndex = dvmRenderer.getCurrentFrameIndex();

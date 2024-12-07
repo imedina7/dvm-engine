@@ -1,9 +1,10 @@
 #pragma once
-#include <entt.hpp>
-#include <string>
 #include "keyboard_movement_controller.hpp"
 #include "dvm_components.hpp"
 #include "dvm_camera.hpp"
+
+#include <entt.hpp>
+#include <string>
 
 namespace dvm
 {
@@ -14,11 +15,14 @@ static std::string getFilePathExtension(const std::string& FileName)
     return FileName.substr(FileName.find_last_of(".") + 1);
   return "";
 }
+
+class Entity;
 class Scene
 {
 public:
-  Scene() {}
+  Scene() = default;
   ~Scene() = default;
+  Entity createEntity(const std::string& label);
 
 #ifdef GLTF_ENABLE
   void loadFromGltf(const std::string filepath);
@@ -27,14 +31,16 @@ public:
 #endif
 
   void load();
-  void update(float deltaTime, glm::vec2 mouseDelta);
+  void update(float deltaTime, glm::vec2 mouseDelta, bool controlCamera);
   entt::registry& getRegistry() { return registry; };
   DvmCamera& getCamera() { return camera; };
 
 private:
   entt::registry registry;
-  entt::entity viewerEntity;
+  entt::entity m_ViewerEntity;
   FPSMovementController cameraController {};
   DvmCamera camera {};
+
+  friend class Entity;
 };
 }  // namespace dvm
