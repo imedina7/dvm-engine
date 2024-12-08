@@ -1,5 +1,6 @@
 #pragma once
-#include <xhash>
+#include<functional>
+#include<cstdint>
 
 namespace dvm {
   class UUID
