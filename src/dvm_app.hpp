@@ -56,7 +56,7 @@ public:
 
   void run();
 
-  Scene& getScene() { return scene; };
+  Scene& getScene() { return m_Scene; };
 
 private:
   DvmApp()
@@ -75,6 +75,6 @@ private:
   DvmDevice dvmDevice {dvmWindow};
   DvmRenderer dvmRenderer {dvmWindow, dvmDevice};
   std::unique_ptr<DvmDescriptorPool> globalPool {};
-  Scene scene {};
+  Scene m_Scene {};
 };
 }  // namespace dvm

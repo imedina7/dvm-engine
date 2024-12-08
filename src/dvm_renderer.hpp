@@ -11,6 +11,41 @@
 
 namespace dvm
 {
+
+// 0 Color on and Ambient off
+// 1 Color on and Ambient on
+// 2 Highlight on
+// 3 Reflection on and Ray trace on
+// 4 Transparency: Glass on
+//
+// Reflection: Ray trace on
+// 5 Reflection: Fresnel on and Ray trace on
+// 6 Transparency: Refraction on
+//
+// Reflection: Fresnel off and Ray trace on
+// 7 Transparency: Refraction on
+//
+// Reflection: Fresnel on and Ray trace on
+// 8 Reflection on and Ray trace off
+// 9 Transparency: Glass on
+//
+// Reflection: Ray trace off
+// 10 Casts shadows onto invisible surfaces
+
+// enum IlluminationModel {
+//   COLOR_ON_AMBIENT_OFF = 0,
+//   COLOR_ON_AMBIENT_ON,
+//   HIGHLIGHT_ON,
+//   REFLECTION_ON_RAYTRACE_ON,
+//   TRANSPARENCY_FRESNEL_OFF_RAYTRACE_ON_GLASS_ON,
+//   REFLECTION_FRESNEL_ON_RAYTRACE_ON,
+//   TRANSPARENCY_FRESNEL_ON_RAYTRACE_ON_REFRACTION_ON,
+//   TRANSPARENCY_FRESNEL_OFF_RAYTRACE_ON_REFRACTION_ON,
+//   REFLECTION_ON_FRESNEL_ON_RAYTRACE_OFF,
+//   TRANSPARENCY_FRESNEL_ON_RAYTRACE_ON_GLASS_ON,
+//   CAST_SHADOW_ONTO_INVISIBLE_SURFACES_ON
+// }
+
 class DvmRenderer
 {
 public:

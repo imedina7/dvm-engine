@@ -26,6 +26,8 @@ void DvmApp::run()
 {
   std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
       uboBuffers;
+  std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
+      materialBuffers;
 
   for (int i = 0; i < uboBuffers.size(); i++) {
     uboBuffers[i] = std::make_unique<DvmBuffer>(
@@ -36,6 +38,15 @@ void DvmApp::run()
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
         dvmDevice.properties.limits.minUniformBufferOffsetAlignment);
     uboBuffers[i]->map();
+
+    materialBuffers[i] = std::make_unique<DvmBuffer>(
+        dvmDevice,
+        sizeof(GlobalUbo),
+        DvmSwapChain::MAX_FRAMES_IN_FLIGHT,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+        dvmDevice.properties.limits.minUniformBufferOffsetAlignment);
+    materialBuffers[i]->map();
   }
 
   auto globalSetLayout =
@@ -48,7 +59,7 @@ void DvmApp::run()
                       VK_SHADER_STAGE_ALL_GRAPHICS)
           .build();
 
-  Texture texture = Texture(dvmDevice, "../textures/diffuse_bake.png");
+  Texture texture = Texture(dvmDevice, "../assets/textures/diffuse_bake.png");
   VkDescriptorImageInfo imageInfo = texture.getDescriptorImageInfo();
 
   std::array<VkDescriptorSet, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
@@ -62,10 +73,11 @@ void DvmApp::run()
         .build(globalDescriptorSets[i]);
   }
 
-  SimpleRenderSystem simpleRenderSystem {
-      dvmDevice,
-      dvmRenderer.getSwapChainRenderPass(),
+  std::vector<VkDescriptorSetLayout> descriptorSets = {
       globalSetLayout->getDescriptorSetLayout()};
+
+  SimpleRenderSystem simpleRenderSystem {
+      dvmDevice, dvmRenderer.getSwapChainRenderPass(), descriptorSets};
 
   PointLightSystem pointLightSystem {dvmDevice,
                                      dvmRenderer.getSwapChainRenderPass(),
@@ -81,11 +93,11 @@ void DvmApp::run()
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  scene.load();
+  m_Scene.load();
 
-  entt::registry& registry = scene.getRegistry();
+  entt::registry& registry = m_Scene.getRegistry();
 
   DvmGUI gui {};
 #ifdef AUDIO
@@ -107,7 +119,7 @@ void DvmApp::run()
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
 
-    gui.checkUIToggle(mouseDelta);
+    gui.checkUIToggle();
 
     auto newTime = std::chrono::high_resolution_clock::now();
 
@@ -117,9 +129,9 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    DvmCamera& camera = scene.getCamera();
+    DvmCamera& camera = m_Scene.getCamera();
 
-    scene.update(frameTime, mouseDelta);
+    m_Scene.update(frameTime, mouseDelta, !gui.getUIVisibility());
 
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
       int frameIndex = dvmRenderer.getCurrentFrameIndex();
@@ -141,9 +153,9 @@ void DvmApp::run()
       uboBuffers[frameIndex]->flush();
 
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
-      simpleRenderSystem.renderGameObjects(frameInfo);
+      simpleRenderSystem.render(frameInfo);
       pointLightSystem.render(frameInfo);
-      gui.update(frameTime, commandBuffer);
+      gui.render(frameInfo);
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }

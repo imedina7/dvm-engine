@@ -18,16 +18,17 @@ class SimpleRenderSystem
 public:
   SimpleRenderSystem(DvmDevice& dvmDevice,
                      VkRenderPass renderPass,
-                     VkDescriptorSetLayout globalSetLayout);
+                     std::vector<VkDescriptorSetLayout> globalSetLayout);
   ~SimpleRenderSystem();
 
   SimpleRenderSystem(const SimpleRenderSystem&) = delete;
   SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-  void renderGameObjects(FrameInfo& frameInfo);
+  void render(FrameInfo& frameInfo);
 
 private:
-  void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+  void createPipelineLayout(
+      std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
   void createPipeline(VkRenderPass renderPass);
 
   DvmDevice& dvmDevice;
