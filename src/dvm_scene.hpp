@@ -23,6 +23,7 @@ public:
   Scene() = default;
   ~Scene() = default;
   Entity createEntity(const std::string& label);
+  Entity createEntityWithUUID(const std::string& label);
 
 #ifdef GLTF_ENABLE
   void loadFromGltf(const std::string filepath);

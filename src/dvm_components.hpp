@@ -16,7 +16,9 @@ struct IDComponent
 {
   UUID id;
 
-  IDComponent() = default;
+  IDComponent() {
+    id = UUID();
+  };
   IDComponent(const IDComponent&) = default;
   IDComponent(const UUID& uuid)
       : id {uuid} {};

@@ -15,6 +15,12 @@ namespace dvm
 {
 
   Entity Scene::createEntity(const std::string& label) {
+
+    return createEntityWithUUID(label);
+  }
+
+  Entity Scene::createEntityWithUUID(const std::string& label)
+  {
     Entity entity = {registry.create(), this};
     entity.addComponent<TransformComponent>();
     entity.addComponent<TagComponent>(label);
