@@ -24,6 +24,25 @@ struct GlobalUbo
   PointLight pointLights[MAX_LIGHTS];
   int numLights;
 };
+
+#define MAX_PHYSICS_OBJECTS 100
+static constexpr const float WORLD_GRAVITY = -9.8f;
+
+struct RigidBody
+{
+  glm::vec4 direction {0.f};
+  glm::vec4 velocity {0.f};
+  float weight;
+  float friction;
+  float spring;
+};
+
+struct PhysicsUbo
+{
+  float gravity {WORLD_GRAVITY};
+  RigidBody objects[MAX_PHYSICS_OBJECTS];
+};
+
 struct FrameInfo
 {
   int frameIndex;

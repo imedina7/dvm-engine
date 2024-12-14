@@ -13,6 +13,7 @@
 
 #include "systems/simple_render_system.hpp"
 #include "systems/point_light_system.hpp"
+#include "systems/physics_system.hpp"
 
 #include "dvm_texture.hpp"
 
@@ -70,6 +71,8 @@ void DvmApp::run()
   PointLightSystem pointLightSystem {dvmDevice,
                                      dvmRenderer.getSwapChainRenderPass(),
                                      globalSetLayout->getDescriptorSetLayout()};
+
+  PhysicsSystem physicsSystem;
 
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
@@ -135,6 +138,7 @@ void DvmApp::run()
       ubo.projection = camera.getProjection();
       ubo.view = camera.getView();
       ubo.inverseView = camera.getInverseView();
+      physicsSystem.update(frameInfo, ubo);
       pointLightSystem.update(frameInfo, ubo);
 
       uboBuffers[frameIndex]->writeToBuffer(&ubo);

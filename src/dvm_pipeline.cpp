@@ -154,12 +154,22 @@ void DvmPipeline::bind(VkCommandBuffer commandBuffer)
       commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 }
 
-void DvmPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
+void DvmPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo,
+                                            bool isCompute)
 {
+  configInfo.bindingDescriptions = DvmModel::Vertex::getBindingDescriptions();
+  configInfo.attributeDescriptions =
+      DvmModel::Vertex::getAttributeDescriptions();
+
   configInfo.inputAssemblyInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+
+  if (isCompute) {
+    defaultComputePipelineConfigInfo(configInfo);
+    return;
+  }
 
   configInfo.viewportInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -237,10 +247,6 @@ void DvmPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
   configInfo.dynamicStateInfo.dynamicStateCount =
       static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
   configInfo.dynamicStateInfo.flags = 0;
-
-  configInfo.bindingDescriptions = DvmModel::Vertex::getBindingDescriptions();
-  configInfo.attributeDescriptions =
-      DvmModel::Vertex::getAttributeDescriptions();
 }
 
 void DvmPipeline::enableAlphaBlending(PipelineConfigInfo& configInfo)
@@ -258,5 +264,11 @@ void DvmPipeline::enableAlphaBlending(PipelineConfigInfo& configInfo)
   configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
   configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
   configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+}
+
+void DvmPipeline::defaultComputePipelineConfigInfo(
+    PipelineConfigInfo& configInfo)
+{
+  // To be implemented
 }
 }  // namespace dvm

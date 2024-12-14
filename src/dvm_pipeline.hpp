@@ -44,7 +44,11 @@ public:
 
   void bind(VkCommandBuffer commandBuffer);
 
-  static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+  static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo,
+                                        bool isCompute = false);
+
+  static void defaultComputePipelineConfigInfo(PipelineConfigInfo& configInfo);
+
   static void enableAlphaBlending(PipelineConfigInfo& configInfo);
 
 private:
