@@ -1,0 +1,40 @@
+#version 430
+
+#define MAX_PHYSICS_OBJECTS 100
+
+struct PointLight {
+  vec4 position; // ignore w
+  vec4 color; // w = intensity
+};
+
+layout (set = 0, binding = 0) uniform GlobalUbo {
+  mat4 projection;
+  mat4 view;
+  mat4 inverseView;
+  vec4 ambientLightColor;
+  PointLight pointLights[10];
+  int numLights;
+} globalUbo;
+
+
+struct RigidBody
+{
+  vec4 direction;
+  vec4 velocity;
+  float weight;
+  float friction;
+  float spring;
+};
+
+layout (set = 0, binding = 1) uniform PhysicsUbo
+{
+  float gravity;
+  RigidBody objects[MAX_PHYSICS_OBJECTS];
+} physicsUbo;
+
+layout (std430, binding = 2) buffer lay1 { int outbuf[]; };
+
+void main () {
+  const uint id = gl_GlobalInvocationID.x;
+  outbuf[id] = 1;
+}

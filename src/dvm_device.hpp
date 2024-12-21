@@ -20,9 +20,15 @@ struct QueueFamilyIndices
 {
   uint32_t graphicsFamily;
   uint32_t presentFamily;
+  uint32_t computeFamily;
   bool graphicsFamilyHasValue = false;
   bool presentFamilyHasValue = false;
-  bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
+  bool computeFamilyHasValue = false;
+  bool isComplete()
+  {
+    return graphicsFamilyHasValue && presentFamilyHasValue
+        && computeFamilyHasValue;
+  }
 };
 
 class DvmDevice
