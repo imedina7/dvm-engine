@@ -11,7 +11,8 @@ namespace dvm
 class PhysicsSystem
 {
 public:
-  PhysicsSystem(VkDescriptorSetLayout globalDescriptorSetLayout);
+  PhysicsSystem();
+  ~PhysicsSystem();
 
   PhysicsSystem(const PhysicsSystem&) = delete;
   PhysicsSystem& operator=(const PhysicsSystem&) = delete;

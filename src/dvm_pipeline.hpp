@@ -75,5 +75,6 @@ private:
   VkShaderModule vertShaderModule;
   VkShaderModule fragShaderModule;
   VkShaderModule computeShaderModule;
+  PipelineType pipelineType;
 };
 }  // namespace dvm

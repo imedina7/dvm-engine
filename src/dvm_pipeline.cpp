@@ -20,6 +20,7 @@ DvmPipeline::DvmPipeline(DvmDevice& device,
                          const PipelineConfigInfo& configInfo,
                          const PipelineType& pipelineType)
     : dvmDevice {device}
+    , pipelineType {pipelineType}
 {
   if (pipelineType == PipelineType::COMPUTE) {
     createComputePipeline(shaderFilepaths.at(0), configInfo);
@@ -36,9 +37,15 @@ DvmPipeline::DvmPipeline(DvmDevice& device,
 
 DvmPipeline::~DvmPipeline()
 {
-  vkDestroyShaderModule(dvmDevice.device(), vertShaderModule, nullptr);
-  vkDestroyShaderModule(dvmDevice.device(), fragShaderModule, nullptr);
-  vkDestroyPipeline(dvmDevice.device(), graphicsPipeline, nullptr);
+  if (pipelineType == PipelineType::GRAPHICS) {
+    vkDestroyShaderModule(dvmDevice.device(), vertShaderModule, nullptr);
+    vkDestroyShaderModule(dvmDevice.device(), fragShaderModule, nullptr);
+    vkDestroyPipeline(dvmDevice.device(), graphicsPipeline, nullptr);
+  }
+  if (pipelineType == PipelineType::COMPUTE) {
+    vkDestroyShaderModule(dvmDevice.device(), computeShaderModule, nullptr);
+    vkDestroyPipeline(dvmDevice.device(), computePipeline, nullptr);
+  }
 }
 
 std::vector<char> DvmPipeline::readFile(const std::string& filepath)
@@ -197,8 +204,12 @@ void DvmPipeline::createShaderModule(const std::vector<char>& code,
 
 void DvmPipeline::bind(VkCommandBuffer commandBuffer)
 {
-  vkCmdBindPipeline(
-      commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+  if (pipelineType == PipelineType::GRAPHICS)
+    vkCmdBindPipeline(
+        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+  if (pipelineType == PipelineType::COMPUTE)
+    vkCmdBindPipeline(
+        commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
 }
 
 void DvmPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)

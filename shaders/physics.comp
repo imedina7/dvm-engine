@@ -26,13 +26,13 @@ struct RigidBody
   float spring;
 };
 
-layout (set = 0, binding = 1) uniform PhysicsUbo
+layout (set = 1, binding = 0) uniform PhysicsUbo
 {
   float gravity;
   RigidBody objects[MAX_PHYSICS_OBJECTS];
 } physicsUbo;
 
-layout (std430, binding = 2) buffer lay1 { int outbuf[]; };
+layout (set = 1, binding = 1) buffer lay1 { int outbuf[]; };
 
 void main () {
   const uint id = gl_GlobalInvocationID.x;

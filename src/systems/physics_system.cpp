@@ -2,20 +2,34 @@
 #include "physics_system.hpp"
 namespace dvm
 {
-PhysicsSystem::PhysicsSystem(VkDescriptorSetLayout globalDescriptorSetLayout)
+PhysicsSystem::PhysicsSystem()
     : dvmDevice {DvmApp::getInstance().getDevice()}
 {
-  auto physicsLayout =
+  auto globalSetLayout =
       DvmDescriptorSetLayout::Builder(dvmDevice)
           .addBinding(
               0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
           .build();
+
+  auto physicsLayout =
+      DvmDescriptorSetLayout::Builder(dvmDevice)
+          .addBinding(
+              0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+          .addBinding(
+              1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+          .build();
   std::vector<VkDescriptorSetLayout> layouts {
-      globalDescriptorSetLayout, physicsLayout->getDescriptorSetLayout()};
+      globalSetLayout->getDescriptorSetLayout(),
+      physicsLayout->getDescriptorSetLayout()};
 
   createPipelineLayout(layouts);
   createPipeline();
 }
+PhysicsSystem::~PhysicsSystem()
+{
+  vkDestroyPipelineLayout(dvmDevice.device(), pipelineLayout, nullptr);
+}
+
 void PhysicsSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
 {
   dvmPipeline->bind(frameInfo.commandBuffer);

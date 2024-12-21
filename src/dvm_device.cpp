@@ -62,6 +62,7 @@ DvmDevice::DvmDevice(DvmWindow& window)
 
 DvmDevice::~DvmDevice()
 {
+  vkDestroyCommandPool(device_, computeCommandPool, nullptr);
   vkDestroyCommandPool(device_, commandPool, nullptr);
   vkDestroyDevice(device_, nullptr);
 
@@ -212,9 +213,9 @@ void DvmDevice::createCommandPool()
   }
 
   VkCommandPoolCreateInfo computePoolInfo = {};
-  poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  poolInfo.queueFamilyIndex = queueFamilyIndices.computeFamily;
-  poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
+  computePoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  computePoolInfo.queueFamilyIndex = queueFamilyIndices.computeFamily;
+  computePoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
       | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
   if (vkCreateCommandPool(
@@ -506,13 +507,18 @@ void DvmDevice::createBuffer(VkDeviceSize size,
   vkBindBufferMemory(device_, buffer, bufferMemory, 0);
 }
 
-VkCommandBuffer DvmDevice::beginSingleTimeCommands()
+VkCommandBuffer DvmDevice::beginSingleTimeCommands(CommandType commandType)
 {
   VkCommandBufferAllocateInfo allocInfo {};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  allocInfo.commandPool = commandPool;
   allocInfo.commandBufferCount = 1;
+
+  if (commandType == CommandType::GRAPHICS)
+    allocInfo.commandPool = commandPool;
+
+  if (commandType == CommandType::COMPUTE)
+    allocInfo.commandPool = computeCommandPool;
 
   VkCommandBuffer commandBuffer;
   vkAllocateCommandBuffers(device_, &allocInfo, &commandBuffer);
@@ -525,7 +531,8 @@ VkCommandBuffer DvmDevice::beginSingleTimeCommands()
   return commandBuffer;
 }
 
-void DvmDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer)
+void DvmDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer,
+                                      CommandType commandType)
 {
   vkEndCommandBuffer(commandBuffer);
 
@@ -534,10 +541,16 @@ void DvmDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer)
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &commandBuffer;
 
-  vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-  vkQueueWaitIdle(graphicsQueue_);
-
-  vkFreeCommandBuffers(device_, commandPool, 1, &commandBuffer);
+  if (commandType == CommandType::GRAPHICS) {
+    vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphicsQueue_);
+    vkFreeCommandBuffers(device_, commandPool, 1, &commandBuffer);
+  }
+  if (commandType == CommandType::COMPUTE) {
+    vkQueueSubmit(computeQueue_, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(computeQueue_);
+    vkFreeCommandBuffers(device_, computeCommandPool, 1, &commandBuffer);
+  }
 }
 
 void DvmDevice::copyBuffer(VkBuffer srcBuffer,

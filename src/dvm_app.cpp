@@ -72,7 +72,7 @@ void DvmApp::run()
                                      dvmRenderer.getSwapChainRenderPass(),
                                      globalSetLayout->getDescriptorSetLayout()};
 
-  PhysicsSystem physicsSystem {globalSetLayout->getDescriptorSetLayout()};
+  PhysicsSystem physicsSystem;
 
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 

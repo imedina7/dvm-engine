@@ -40,6 +40,12 @@ public:
   const bool enableValidationLayers = true;
 #endif
 
+  enum class CommandType
+  {
+    GRAPHICS = 0,
+    COMPUTE
+  };
+
   DvmDevice(DvmWindow& window);
   ~DvmDevice();
 
@@ -78,8 +84,10 @@ public:
                     VkMemoryPropertyFlags properties,
                     VkBuffer& buffer,
                     VkDeviceMemory& bufferMemory);
-  VkCommandBuffer beginSingleTimeCommands();
-  void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+  VkCommandBuffer beginSingleTimeCommands(
+      CommandType commandType = CommandType::GRAPHICS);
+  void endSingleTimeCommands(VkCommandBuffer commandBuffer,
+                             CommandType commandType = CommandType::GRAPHICS);
   void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
   void copyBufferToImage(VkBuffer buffer,
                          VkImage image,
