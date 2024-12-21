@@ -51,6 +51,7 @@ public:
 
   VkInstance getInstance() { return instance; }
   VkCommandPool getCommandPool() { return commandPool; }
+  VkCommandPool getComputeCommandPool() { return computeCommandPool; }
   VkDevice device() { return device_; }
   VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
   VkSurfaceKHR surface() { return surface_; }
@@ -117,11 +118,13 @@ private:
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   DvmWindow& window;
   VkCommandPool commandPool;
+  VkCommandPool computeCommandPool;
 
   VkDevice device_;
   VkSurfaceKHR surface_;
   VkQueue graphicsQueue_;
   VkQueue presentQueue_;
+  VkQueue computeQueue_;
 
   const std::vector<const char*> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};

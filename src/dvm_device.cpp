@@ -146,8 +146,8 @@ void DvmDevice::createLogicalDevice()
   QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-  std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily,
-                                            indices.presentFamily};
+  std::set<uint32_t> uniqueQueueFamilies = {
+      indices.graphicsFamily, indices.presentFamily, indices.computeFamily};
 
   float queuePriority = 1.0f;
   for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -192,6 +192,7 @@ void DvmDevice::createLogicalDevice()
 
   vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
   vkGetDeviceQueue(device_, indices.presentFamily, 0, &presentQueue_);
+  vkGetDeviceQueue(device_, indices.computeFamily, 0, &computeQueue_);
 }
 
 void DvmDevice::createCommandPool()
@@ -207,7 +208,20 @@ void DvmDevice::createCommandPool()
   if (vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPool)
       != VK_SUCCESS)
   {
-    throw std::runtime_error("failed to create command pool!");
+    throw std::runtime_error("failed to create graphics command pool!");
+  }
+
+  VkCommandPoolCreateInfo computePoolInfo = {};
+  poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  poolInfo.queueFamilyIndex = queueFamilyIndices.computeFamily;
+  poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
+      | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+  if (vkCreateCommandPool(
+          device_, &computePoolInfo, nullptr, &computeCommandPool)
+      != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to create compute command pool!");
   }
 }
 
