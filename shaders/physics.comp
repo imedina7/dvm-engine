@@ -1,40 +1,38 @@
 #version 430
 
-#define MAX_PHYSICS_OBJECTS 100
-
-struct PointLight {
-  vec4 position; // ignore w
-  vec4 color; // w = intensity
+struct RigidBody
+{
+  mat4 modelMatrix;
+  vec4 acceleration;
+  vec4 position;
+  vec4 velocity;
+  float mass;
+  float drag;
+  float bounciness;
+  bool useGravity;
 };
 
-layout (set = 0, binding = 0) uniform GlobalUbo {
+layout (binding = 0) uniform PhysicsUbo
+{
   mat4 projection;
   mat4 view;
   mat4 inverseView;
-  vec4 ambientLightColor;
-  PointLight pointLights[10];
-  int numLights;
-} globalUbo;
-
-
-struct RigidBody
-{
-  vec4 direction;
-  vec4 velocity;
-  float weight;
-  float friction;
-  float spring;
-};
-
-layout (set = 1, binding = 0) uniform PhysicsUbo
-{
-  float gravity;
-  RigidBody objects[MAX_PHYSICS_OBJECTS];
+  vec4 gravity;
+  int numBodies;
+  float deltaTime;
 } physicsUbo;
 
-layout (set = 1, binding = 1) buffer lay1 { int outbuf[]; };
+layout (std140, binding = 1) readonly buffer RigidBodySSBOIn {
+  RigidBody rigidBodiesIn[];
+} ;
+layout (std140, binding = 2) buffer RigidBodySSBOOut {
+  RigidBody rigidBodiesOut[];
+};
 
 void main () {
   const uint id = gl_GlobalInvocationID.x;
-  outbuf[id] = 1;
+  vec3 gravity = physicsUbo.gravity.xyz * physicsUbo.gravity.w;
+  if (rigidBodiesIn[id].useGravity) {
+    rigidBodiesOut[id].position = rigidBodiesIn[id].position + vec4(gravity, 0.0) * physicsUbo.deltaTime;
+  }
 }
