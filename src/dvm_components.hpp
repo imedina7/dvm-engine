@@ -104,12 +104,13 @@ struct TransformComponent
 struct MeshCollider
 {
   std::unique_ptr<DvmModel> model;
-  CollisionObject(std::unique_ptr<DvmModel> _model)
+  MeshCollider(std::unique_ptr<DvmModel> _model)
       : model {std::move(_model)}
   {
   }
 };
 
+struct BoxCollider;
 struct CapsuleCollider
 {
   float radius {1.f};
@@ -117,41 +118,10 @@ struct CapsuleCollider
   vec3 offset {0.f};
 
   CapsuleCollider() = default;
-  CapsuleCollider(float radius, float height, vec3 offset)
-      : radius {radius}
-      , height {height}
-      , offset {offset} {};
+  CapsuleCollider(float radius, float height, vec3 offset);
 
-  bool intersects(vec3 position)
-  {
-    float halfHeight = height / 2.0f;
-    if (position.y < offset.y - (halfHeight + radius)
-        || position.y > offset.y + (halfHeight + radius))
-      return false;
-    vec3 capsuleTop =
-        vec3(offset.x, offset.y - (halfHeight + radius), offset.z);
-
-    vec3 point = position - capsuleTop;
-
-    float angle = glm::acos(glm::dot(capsuleTop, point)
-                            / (capsuleTop.length * point.length));
-
-    float c = vec2(point.x, point.z).length * glm::cos(angle);
-    float closestRadius = glm::sin((point.y / radius) * half_pi<float>());
-    if (c > closestRadius)
-      return false;
-    return true;
-  }
-  bool intersects(BoxCollider box)
-  {
-    float halfHeight = height / 2.0f;
-    if (!box.intersects(
-            vec3(offset.x, offset.y - halfHeight + radius, offset.z))
-        && !box.intersects(
-            vec3(offset.x, offset.y + halfHeight + radius, offset.z)))
-      return false;
-    vec3 halfBoxSize = box.size / 2.0f;
-  }
+  bool intersects(vec3 position);
+  bool intersects(BoxCollider box);
 };
 
 struct BoxCollider
@@ -164,20 +134,7 @@ struct BoxCollider
       : size {size}
       , offset {offset} {};
 
-  bool intersects(vec3 position)
-  {
-    vec3 halfSize = size / 2.0f;
-    if (position.x < offset.x - halfSize.x
-        || position.x > offset.x + halfSize.x)
-      return false;
-    if (position.y < offset.y - halfSize.y
-        || position.y > offset.y + halfSize.y)
-      return false;
-    if (position.z < offset.z - halfSize.z
-        || position.z > offset.z + halfSize.z)
-      return false;
-    return true;
-  }
+  bool intersects(vec3 position);
 };
 
 struct Renderable

@@ -9,7 +9,7 @@ PhysicsSystem::PhysicsSystem()
   createPipelineLayout();
   createPipeline();
   createSyncObjects();
-  createCommandBuffers();
+  createCommandBuffer();
   createDescriptorPool();
   createStorageBuffers();
   createUniformBuffers();
@@ -17,7 +17,7 @@ PhysicsSystem::PhysicsSystem()
 }
 PhysicsSystem::~PhysicsSystem()
 {
-  freeCommandBuffers();
+  freeCommandBuffer();
   vkDestroyPipelineLayout(dvmDevice.device(), pipelineLayout, nullptr);
 }
 
@@ -25,8 +25,6 @@ void PhysicsSystem::update(FrameInfo& frameInfo)
 {
   const DvmCamera& camera = frameInfo.camera;
   int currentFrame = frameInfo.frameIndex;
-
-  VkCommandBuffer commandBuffer = commandBuffers.at(currentFrame);
 
   VkCommandBufferBeginInfo beginInfo {};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -169,31 +167,25 @@ void PhysicsSystem::createPipeline()
   dvmPipeline = std::make_unique<DvmPipeline>(
       dvmDevice, shaders, pipelineConfig, DvmPipeline::PipelineType::COMPUTE);
 }
-void PhysicsSystem::createCommandBuffers()
+void PhysicsSystem::createCommandBuffer()
 {
-  commandBuffers.resize(DvmSwapChain::MAX_FRAMES_IN_FLIGHT);
-
   VkCommandBufferAllocateInfo allocInfo {};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   allocInfo.commandPool = dvmDevice.getComputeCommandPool();
-  allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+  allocInfo.commandBufferCount = 1;
 
-  if (vkAllocateCommandBuffers(
-          dvmDevice.device(), &allocInfo, commandBuffers.data())
+  if (vkAllocateCommandBuffers(dvmDevice.device(), &allocInfo, &commandBuffer)
       != VK_SUCCESS)
   {
-    throw std::runtime_error("failed to allocate compute command buffers!");
+    throw std::runtime_error("failed to allocate compute command buffer!");
   }
 }
 
-void PhysicsSystem::freeCommandBuffers()
+void PhysicsSystem::freeCommandBuffer()
 {
-  vkFreeCommandBuffers(dvmDevice.device(),
-                       dvmDevice.getComputeCommandPool(),
-                       static_cast<uint32_t>(commandBuffers.size()),
-                       commandBuffers.data());
-  commandBuffers.clear();
+  vkFreeCommandBuffers(
+      dvmDevice.device(), dvmDevice.getComputeCommandPool(), 1, &commandBuffer);
 }
 
 void PhysicsSystem::createSyncObjects()

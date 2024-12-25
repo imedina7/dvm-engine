@@ -26,10 +26,10 @@ private:
   void createSyncObjects();
   void createDescriptorPool();
   void createDescriptorSets();
-  void createCommandBuffers();
+  void createCommandBuffer();
   void createStorageBuffers();
   void createUniformBuffers();
-  void freeCommandBuffers();
+  void freeCommandBuffer();
 
 private:
   std::unique_ptr<DvmDescriptorSetLayout> setLayout;
@@ -38,7 +38,7 @@ private:
   std::unique_ptr<DvmPipeline> dvmPipeline;
   PhysicsUbo physicsUbo;
   DvmDevice& dvmDevice;
-  std::vector<VkCommandBuffer> commandBuffers;
+  VkCommandBuffer commandBuffer;
   std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
       uniformBuffers;
   std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
