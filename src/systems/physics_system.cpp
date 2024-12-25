@@ -43,18 +43,18 @@ void PhysicsSystem::update(FrameInfo& frameInfo)
   physicsUbo.inverseView = camera.getInverseView();
   physicsUbo.deltaTime = frameInfo.frameTime;
 
-  auto view = frameInfo.registry.view<PhysicsMaterialComponent,
-                                      RigidBodyComponent,
-                                      TransformComponent>();
+  auto view =
+      frameInfo.registry
+          .view<PhysicsMaterial, RigidBodyComponent, TransformComponent>();
   PhysicsStorage storage {};
-  RigidBody bodies[MAX_PHYSICS_OBJECTS];
-  int numBodies = 0;
+  std::array<RigidBody, MAX_PHYSICS_OBJECTS> bodies;
+  uint32_t numBodies = 0;
 
   for (const auto&& [entity, material, rigidBody, transform] : view.each()) {
     if (numBodies == MAX_PHYSICS_OBJECTS)
       break;
     bodies[numBodies].velocity = glm::vec4(rigidBody.velocity, 0.f);
-    bodies[numBodies].mass = 1.f;
+    bodies[numBodies].mass = rigidBody.mass;
     bodies[numBodies].drag = rigidBody.drag;
     bodies[numBodies].useGravity = rigidBody.useGravity;
     bodies[numBodies].position = glm::vec4(transform.translation, 0.f);
@@ -89,7 +89,7 @@ void PhysicsSystem::createStorageBuffers()
         std::make_unique<DvmBuffer>(dvmDevice,
                                     sizeof(PhysicsStorage),
                                     1,
-                                    VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT_KHR,
+                                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
                                         | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     storageBuffers[i]->map();

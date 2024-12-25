@@ -36,6 +36,7 @@ struct RigidBody
   glm::vec4 velocity {0.f};
   float mass;
   float drag;
+  float bounciness;
   bool useGravity;
 };
 

@@ -103,7 +103,8 @@ void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
   int width, height;
   glfwGetFramebufferSize(glfwWindow, &width, &height);
 
-  io.DisplaySize = ImVec2(width, height);
+  io.DisplaySize =
+      ImVec2(static_cast<float>(width), static_cast<float>(height));
   io.DeltaTime = dt;
   ImGui_ImplGlfw_NewFrame();
   ImGui_ImplVulkan_NewFrame();

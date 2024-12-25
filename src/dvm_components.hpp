@@ -9,7 +9,7 @@
 
 namespace dvm
 {
-using glm::vec2, glm::vec3, glm::sin, glm::cos, glm::pi;
+using glm::vec2, glm::vec3, glm::pi, glm::half_pi, glm::length;
 
 struct RigidBodyComponent
 {
@@ -17,6 +17,7 @@ struct RigidBodyComponent
   vec3 velocity {0.f};
   float drag {0.001f};
   bool useGravity {false};
+  float mass {1.f};
 
   RigidBodyComponent() = default;
   RigidBodyComponent(const vec3 velocity, const vec3 acceleration)
@@ -26,12 +27,16 @@ struct RigidBodyComponent
   }
 };
 
-struct PhysicsMaterialComponent
+struct PhysicsMaterial
 {
   float friction {1.f};
-  float weightKg {10.f};
   // absorb collision by default
-  float spring {.2f};
+  float bounciness {.2f};
+
+  PhysicsMaterial() = default;
+  PhysicsMaterial(float friction, float bounciness)
+      : friction {friction}
+      , bounciness {bounciness} {};
 };
 struct Transform2dComponent
 {
@@ -41,8 +46,8 @@ struct Transform2dComponent
 
   glm::mat2 mat2()
   {
-    const float s = sin(rotation);
-    const float c = cos(rotation);
+    const float s = glm::sin(rotation);
+    const float c = glm::cos(rotation);
     glm::mat2 scaleMat {{scale.x, 0.f}, {0.0f, scale.y}};
     glm::mat2 rotationMat {{c, -s}, {s, c}};
     return rotationMat * scaleMat;
@@ -96,12 +101,82 @@ struct TransformComponent
   }
 };
 
-struct CollisionObject
+struct MeshCollider
 {
   std::unique_ptr<DvmModel> model;
   CollisionObject(std::unique_ptr<DvmModel> _model)
       : model {std::move(_model)}
   {
+  }
+};
+
+struct CapsuleCollider
+{
+  float radius {1.f};
+  float height {2.f};
+  vec3 offset {0.f};
+
+  CapsuleCollider() = default;
+  CapsuleCollider(float radius, float height, vec3 offset)
+      : radius {radius}
+      , height {height}
+      , offset {offset} {};
+
+  bool intersects(vec3 position)
+  {
+    float halfHeight = height / 2.0f;
+    if (position.y < offset.y - (halfHeight + radius)
+        || position.y > offset.y + (halfHeight + radius))
+      return false;
+    vec3 capsuleTop =
+        vec3(offset.x, offset.y - (halfHeight + radius), offset.z);
+
+    vec3 point = position - capsuleTop;
+
+    float angle = glm::acos(glm::dot(capsuleTop, point)
+                            / (capsuleTop.length * point.length));
+
+    float c = vec2(point.x, point.z).length * glm::cos(angle);
+    float closestRadius = glm::sin((point.y / radius) * half_pi<float>());
+    if (c > closestRadius)
+      return false;
+    return true;
+  }
+  bool intersects(BoxCollider box)
+  {
+    float halfHeight = height / 2.0f;
+    if (!box.intersects(
+            vec3(offset.x, offset.y - halfHeight + radius, offset.z))
+        && !box.intersects(
+            vec3(offset.x, offset.y + halfHeight + radius, offset.z)))
+      return false;
+    vec3 halfBoxSize = box.size / 2.0f;
+  }
+};
+
+struct BoxCollider
+{
+  vec3 size {2.f};
+  vec3 offset {0.f};
+
+  BoxCollider() = default;
+  BoxCollider(vec3 size, vec3 offset)
+      : size {size}
+      , offset {offset} {};
+
+  bool intersects(vec3 position)
+  {
+    vec3 halfSize = size / 2.0f;
+    if (position.x < offset.x - halfSize.x
+        || position.x > offset.x + halfSize.x)
+      return false;
+    if (position.y < offset.y - halfSize.y
+        || position.y > offset.y + halfSize.y)
+      return false;
+    if (position.z < offset.z - halfSize.z
+        || position.z > offset.z + halfSize.z)
+      return false;
+    return true;
   }
 };
 
