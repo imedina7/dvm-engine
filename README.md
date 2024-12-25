@@ -1,6 +1,6 @@
 # dvm-engine
 
-Dvm-engine is a free and open-source, lightweight, minimal 3D engine boilerplate. 
+Dvm-engine is a free and open-source, lightweight, minimal 3D engine boilerplate.
 It provides very little features but sets a starting point for anyone who would like to start building a game.
 
 ## Features
@@ -37,8 +37,6 @@ See the [CONTRIBUTING](CONTRIBUTING.md) document.
 
 # Licensing
 
-<!--
-Please go to https://choosealicense.com/licenses/ and choose a license that
-fits your needs. The recommended license for a project of this type is the
-GNU AGPLv3.
--->
+GNU LGPL v3 License.
+
+See the [LICENSE](LICENSE) document.
