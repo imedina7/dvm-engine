@@ -138,7 +138,7 @@ void DvmApp::run()
       ubo.projection = camera.getProjection();
       ubo.view = camera.getView();
       ubo.inverseView = camera.getInverseView();
-      physicsSystem.update(frameInfo, ubo);
+      physicsSystem.update(frameInfo);
       pointLightSystem.update(frameInfo, ubo);
 
       uboBuffers[frameIndex]->writeToBuffer(&ubo);

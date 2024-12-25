@@ -26,20 +26,31 @@ struct GlobalUbo
 };
 
 #define MAX_PHYSICS_OBJECTS 100
-static constexpr const float WORLD_GRAVITY = -9.8f;
+static constexpr const glm::vec4 WORLD_GRAVITY = {0.f, 1.0f, 0.f, 9.8f};
 
 struct RigidBody
 {
-  glm::vec4 direction {0.f};
+  glm::mat4 modelMatrix {1.0f};
+  glm::vec4 acceleration {0.f};
+  glm::vec4 position {0.f};
   glm::vec4 velocity {0.f};
-  float weight;
-  float friction;
-  float spring;
+  float mass;
+  float drag;
+  bool useGravity;
 };
 
 struct PhysicsUbo
 {
-  float gravity {WORLD_GRAVITY};
+  glm::mat4 projection {1.0f};
+  glm::mat4 view {1.0f};
+  glm::mat4 inverseView {1.0f};
+  glm::vec4 gravity {WORLD_GRAVITY};
+  int numBodies;
+  float deltaTime;
+};
+
+struct PhysicsStorage
+{
   RigidBody objects[MAX_PHYSICS_OBJECTS];
 };
 

@@ -156,9 +156,9 @@ void DvmPipeline::createComputePipeline(const std::string& shaderFilepath,
          "Cannot create compute pipeline: no pipelineLayout provided in "
          "configInfo");
 
-  auto vertCode = readFile(shaderFilepath);
+  auto computeCode = readFile(shaderFilepath);
 
-  createShaderModule(vertCode, &computeShaderModule);
+  createShaderModule(computeCode, &computeShaderModule);
 
   VkPipelineShaderStageCreateInfo shaderStage;
   shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

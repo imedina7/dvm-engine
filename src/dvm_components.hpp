@@ -13,19 +13,15 @@ using glm::vec2, glm::vec3, glm::sin, glm::cos, glm::pi;
 
 struct RigidBodyComponent
 {
+  vec3 acceleration {0.f};
   vec3 velocity {0.f};
-  vec3 direction {0.f};
-
-  glm::mat4 transform {1.f};
+  float drag {0.001f};
+  bool useGravity {false};
 
   RigidBodyComponent() = default;
-  RigidBodyComponent(const vec3 velocity, const vec3 direction)
+  RigidBodyComponent(const vec3 velocity, const vec3 acceleration)
       : velocity {velocity}
-      , direction {direction}
-  {
-  }
-  RigidBodyComponent(const glm::mat4& transform)
-      : transform {transform}
+      , acceleration {acceleration}
   {
   }
 };

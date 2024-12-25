@@ -65,8 +65,8 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass)
   DvmPipeline::defaultPipelineConfigInfo(pipelineConfig);
   pipelineConfig.renderPass = renderPass;
   pipelineConfig.pipelineLayout = pipelineLayout;
-  std::vector<std::string> shaders = {"shaders/simple_shader.vert.spv",
-                                      "shaders/simple_shader.frag.spv"};
+  const std::vector<std::string> shaders = {"shaders/simple_shader.vert.spv",
+                                            "shaders/simple_shader.frag.spv"};
 
   dvmPipeline = std::make_unique<DvmPipeline>(
       dvmDevice, shaders, pipelineConfig, DvmPipeline::PipelineType::GRAPHICS);
