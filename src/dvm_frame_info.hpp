@@ -25,7 +25,7 @@ struct GlobalUbo
   int numLights;
 };
 
-#define MAX_PHYSICS_OBJECTS 100
+#define MAX_PHYSICS_OBJECTS 1024
 static constexpr const glm::vec4 WORLD_GRAVITY = {0.f, 1.0f, 0.f, 9.8f};
 
 struct RigidBody
@@ -38,6 +38,7 @@ struct RigidBody
   float drag;
   float bounciness;
   bool useGravity;
+  int entityId;
 };
 
 struct PhysicsUbo
@@ -52,7 +53,7 @@ struct PhysicsUbo
 
 struct PhysicsStorage
 {
-  RigidBody objects[MAX_PHYSICS_OBJECTS];
+  std::array<RigidBody, MAX_PHYSICS_OBJECTS> objects;
 };
 
 struct FrameInfo

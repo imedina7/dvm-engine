@@ -25,6 +25,7 @@ void PhysicsSystem::update(FrameInfo& frameInfo)
 {
   const DvmCamera& camera = frameInfo.camera;
   int currentFrame = frameInfo.frameIndex;
+  int prevFrame = frameInfo.frameIndex - 1 % DvmSwapChain::MAX_FRAMES_IN_FLIGHT;
 
   VkCommandBufferBeginInfo beginInfo {};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -44,13 +45,14 @@ void PhysicsSystem::update(FrameInfo& frameInfo)
   auto view =
       frameInfo.registry
           .view<PhysicsMaterial, RigidBodyComponent, TransformComponent>();
-  PhysicsStorage storage {};
+
   std::array<RigidBody, MAX_PHYSICS_OBJECTS> bodies;
   uint32_t numBodies = 0;
 
   for (const auto&& [entity, material, rigidBody, transform] : view.each()) {
     if (numBodies == MAX_PHYSICS_OBJECTS)
       break;
+    bodies[numBodies].entityId = (int)entity;
     bodies[numBodies].velocity = glm::vec4(rigidBody.velocity, 0.f);
     bodies[numBodies].mass = rigidBody.mass;
     bodies[numBodies].drag = rigidBody.drag;
@@ -62,6 +64,14 @@ void PhysicsSystem::update(FrameInfo& frameInfo)
   }
 
   physicsUbo.numBodies = numBodies;
+  uniformBuffers[currentFrame]->writeToBuffer(&physicsUbo);
+  uniformBuffers[currentFrame]->flush();
+
+  PhysicsStorage storage {};
+  storage.objects = bodies;
+
+  storageBuffers[currentFrame]->writeToBuffer(&storage);
+  storageBuffers[currentFrame]->flush();
 
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
@@ -78,6 +88,21 @@ void PhysicsSystem::update(FrameInfo& frameInfo)
   {
     throw std::runtime_error("failed to submit compute command buffer!");
   };
+
+  PhysicsStorage prevStorage =
+      *(PhysicsStorage*)storageBuffers[prevFrame]->getMappedMemory();
+  entt::registry& registry = frameInfo.registry;
+
+  for (uint32_t i = 0; i < numBodies; i++) {
+    auto object = prevStorage.objects[i];
+    auto rigidBody =
+        registry.get<RigidBodyComponent>((entt::entity)object.entityId);
+    rigidBody.acceleration = object.acceleration;
+    rigidBody.velocity = object.velocity;
+    auto transform =
+        registry.get<TransformComponent>((entt::entity)object.entityId);
+    transform.translation = object.position;
+  }
 }
 
 void PhysicsSystem::createStorageBuffers()
@@ -112,10 +137,12 @@ void PhysicsSystem::createDescriptorSets()
 {
   for (int i = 0; i < descriptorSets.size(); i++) {
     auto uniformBufferInfo = uniformBuffers[i]->descriptorInfo();
-    auto storageBufferInfo = storageBuffers[i]->descriptorInfo();
+    auto storageBufferInInfo = storageBuffers[0]->descriptorInfo();
+    auto storageBufferOutInfo = storageBuffers[1]->descriptorInfo();
     DvmDescriptorWriter(*setLayout, *descriptorPool)
         .writeBuffer(0, &uniformBufferInfo)
-        .writeBuffer(1, &storageBufferInfo)
+        .writeBuffer(1, &storageBufferInInfo)
+        .writeBuffer(2, &storageBufferOutInfo)
         .build(descriptorSets[i]);
   }
 }
@@ -139,6 +166,8 @@ void PhysicsSystem::createPipelineLayout()
               0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
           .addBinding(
               1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+          .addBinding(
+              2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
           .build();
 
   std::vector<VkDescriptorSetLayout> descriptorSetLayouts {

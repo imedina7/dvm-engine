@@ -130,9 +130,7 @@ struct BoxCollider
   vec3 offset {0.f};
 
   BoxCollider() = default;
-  BoxCollider(vec3 size, vec3 offset)
-      : size {size}
-      , offset {offset} {};
+  BoxCollider(vec3 size, vec3 offset);
 
   bool intersects(vec3 position);
 };

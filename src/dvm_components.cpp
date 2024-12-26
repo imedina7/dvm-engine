@@ -74,16 +74,35 @@ bool CapsuleCollider::intersects(vec3 position)
 bool CapsuleCollider::intersects(BoxCollider box)
 {
   float halfHeight = height / 2.0f;
-  if (!box.intersects(vec3(offset.x, offset.y - halfHeight + radius, offset.z))
+  if (!box.intersects(
+          vec3(offset.x, offset.y - (halfHeight + radius), offset.z))
       && !box.intersects(
-          vec3(offset.x, offset.y + halfHeight + radius, offset.z)))
+          vec3(offset.x, offset.y + (halfHeight + radius), offset.z)))
     return false;
+
   vec3 halfBoxSize = box.size / 2.0f;
+  vec3 pos = offset - box.offset;
+
+  vec2 topPlane = vec2(pos.x, pos.z);
+
+  float planeLength = glm::length(topPlane);
+  float halfBoxLength = glm::length(vec2(halfBoxSize.x, halfBoxSize.z));
+
+  if (planeLength - (halfBoxLength + radius) > 0)
+    return false;
+
   return true;
 }
+
 CapsuleCollider::CapsuleCollider(float radius, float height, vec3 offset)
     : radius {radius}
     , height {height}
+    , offset {offset}
+{
+}
+
+BoxCollider::BoxCollider(vec3 size, vec3 offset)
+    : size {size}
     , offset {offset}
 {
 }
