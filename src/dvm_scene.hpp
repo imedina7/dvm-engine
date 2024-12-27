@@ -2,6 +2,7 @@
 #include "keyboard_movement_controller.hpp"
 #include "dvm_components.hpp"
 #include "dvm_camera.hpp"
+#include "dvm_entity.hpp"
 
 #include <entt.hpp>
 #include <string>
@@ -17,10 +18,11 @@ static std::string getFilePathExtension(const std::string& FileName)
 }
 
 class Entity;
+struct GlobalUbo;
 class Scene
 {
 public:
-  Scene() = default;
+  Scene();
   ~Scene() = default;
   Entity createEntity(const std::string& label);
   Entity createEntityWithUUID(const std::string& label);
@@ -32,15 +34,15 @@ public:
 #endif
 
   void load();
-  void update(float deltaTime, glm::vec2 mouseDelta, bool controlCamera);
+  GlobalUbo update(float frameTime, glm::vec2 mouseDelta, bool controlCamera, float aspectRatio);
+
   entt::registry& getRegistry() { return registry; };
-  DvmCamera& getCamera() { return camera; };
+  DvmCamera& getCamera() { return camera.getComponent<CameraComponent>().camera; };
 
 private:
   entt::registry registry;
-  entt::entity m_ViewerEntity;
   FPSMovementController cameraController {};
-  DvmCamera camera {};
+  Entity camera;
 
   friend class Entity;
 };

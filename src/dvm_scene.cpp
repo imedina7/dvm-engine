@@ -1,5 +1,4 @@
 #include "dvm_scene.hpp"
-#include "dvm_entity.hpp"
 #include "dvm_app.hpp"
 
 #ifdef GLTF_ENABLE
@@ -13,11 +12,14 @@
 
 namespace dvm
 {
+Scene::Scene() {camera = createEntityWithUUID("Camera");
+camera.addComponent<CameraComponent>();
+}
 
-  Entity Scene::createEntity(const std::string& label) {
-
-    return createEntityWithUUID(label);
-  }
+Entity Scene::createEntity(const std::string& label)
+{
+  return createEntityWithUUID(label);
+}
 
   Entity Scene::createEntityWithUUID(const std::string& label)
   {
@@ -31,13 +33,14 @@ namespace dvm
 void Scene::load()
 
 {
-  Entity viewerEntity = createEntity("Camera");
-  m_ViewerEntity = viewerEntity.getId();
 
-  viewerEntity
+  camera
       .updateComponent<TransformComponent>(glm::vec3(0.f, -1.f, -3.f));
 
-  camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f), glm::vec3(0.f, 0.f, 0.f));
+  auto& cameraComponent = camera.getComponent<CameraComponent>();
+
+  cameraComponent.camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f),
+                                   glm::vec3(0.f, 0.f, 0.f));
 
   auto box = createEntity("Cornell Box");
 
@@ -63,17 +66,21 @@ void Scene::load()
   }
 }
 
-void Scene::update(float frameTime, glm::vec2 mouseDelta, bool controlCamera)
+GlobalUbo Scene::update(float frameTime, glm::vec2 mouseDelta, bool controlCamera, float aspectRatio)
 {
   if (controlCamera) {
-  cameraController.moveInPlaneXZ(
-      camera, frameTime, registry, m_ViewerEntity, mouseDelta, 0.1f);
-
+    cameraController.moveInPlaneXZ(
+        camera, frameTime, mouseDelta, 0.1f);
   }
-  auto& renderer = DvmApp::getInstance().getRenderer();
 
-  float aspect = renderer.getAspectRatio();
-  camera.setPerspectiveProjection(glm::radians(50.f), aspect, .06f, 100.f);
+  auto& cameraComponent = camera.getComponent<CameraComponent>();
+  cameraComponent.camera.setPerspectiveProjection(glm::radians(50.f), aspectRatio, .06f, 100.f);
+  GlobalUbo ubo {};
+
+  ubo.projection = cameraComponent.camera.getProjection();
+  ubo.view = cameraComponent.camera.getView();
+  ubo.inverseView = cameraComponent.camera.getInverseView();
+  return ubo;
 }
 
 #ifdef GLTF_ENABLE

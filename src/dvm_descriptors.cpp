@@ -229,7 +229,7 @@ void DvmDescriptorWriter::overwrite(VkDescriptorSet& set)
     write.dstSet = set;
   }
   vkUpdateDescriptorSets(
-      pool.dvmDevice.device(), writes.size(), writes.data(), 0, nullptr);
+      pool.dvmDevice.device(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 }
 
 }  // namespace dvm

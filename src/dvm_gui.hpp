@@ -34,7 +34,7 @@ struct GlobalState
 class DvmGUI
 {
 public:
-  DvmGUI();
+  DvmGUI(DvmRenderer& dvmRenderer);
   ~DvmGUI()
   {
     ImGui_ImplVulkan_Shutdown();
@@ -63,6 +63,7 @@ private:
 private:
   GLFWwindow* glfwWindow;
   GlobalState uiState;
+  DvmRenderer& dvmRenderer;
   std::vector<gui::Panel*> panels;
   std::unique_ptr<DvmDescriptorPool> descriptorPool;
   bool uiVisible = false;

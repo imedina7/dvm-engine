@@ -3,6 +3,7 @@
 #include <entt.hpp>
 #include "dvm_components.hpp"
 #include "dvm_camera.hpp"
+#include "dvm_entity.hpp"
 
 namespace dvm
 {
@@ -26,10 +27,8 @@ public:
     int lookRight = GLFW_KEY_RIGHT;
   };
 
-  void moveInPlaneXZ(DvmCamera& camera,
+  void moveInPlaneXZ(Entity& cameraEntity,
                      float dt,
-                     entt::registry& registry,
-                     entt::entity entity,
                      glm::vec2 deltaCursor,
                      float mouseSensitivity);
 

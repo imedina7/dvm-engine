@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "dvm_camera.hpp"
 #include "dvm_model.hpp"
 #include "uuid.hpp"
 
@@ -49,6 +50,10 @@ struct TagComponent
       : tag {tagName} {};
 };
 
+struct CameraComponent
+{
+  DvmCamera camera;
+};
 struct TransformComponent
 {
   glm::vec3 translation {};

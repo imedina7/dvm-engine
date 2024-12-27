@@ -22,12 +22,19 @@ struct SimplePushConstantData
 
 SimpleRenderSystem::SimpleRenderSystem(
     DvmDevice& device,
-    VkRenderPass renderPass,
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
-    : dvmDevice {device}
+    DvmWindow& window)
+    : dvmDevice {device}, dvmWindow{window}
 {
-  createPipelineLayout(descriptorSetLayouts);
+  createDescriptorSetLayouts();
+  dvmRenderer = std::make_unique<DvmRenderer>(dvmWindow, dvmDevice);
+  VkRenderPass renderPass = dvmRenderer->getSwapChainRenderPass();
+  std::vector<VkDescriptorSetLayout> descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()};
+  createPipelineLayout(
+      descriptorSetLayouts);
   createPipeline(renderPass);
+  createBuffers();
+  createDescriptorPool();
+  createDescriptorSets();
 }
 SimpleRenderSystem::~SimpleRenderSystem()
 {
@@ -70,8 +77,63 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass)
                                               pipelineConfig);
 }
 
+void SimpleRenderSystem::createDescriptorPool() {
+   globalPool = DvmDescriptorPool::Builder(dvmDevice)
+                    .setMaxSets(DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                 DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                 DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
+                    .build();
+ }
+void SimpleRenderSystem::createDescriptorSetLayouts() {
+  globalSetLayout =
+      DvmDescriptorSetLayout::Builder(dvmDevice)
+          .addBinding(0,
+                      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                      VK_SHADER_STAGE_ALL_GRAPHICS)
+          .addBinding(1,
+                      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                      VK_SHADER_STAGE_ALL_GRAPHICS)
+          .build();
+}
+void SimpleRenderSystem::createDescriptorSets() {
+  VkDescriptorImageInfo imageInfo = texture.getDescriptorImageInfo();
+
+  for (int i = 0; i < globalDescriptorSets.size(); i++) {
+    auto bufferInfo = uboBuffers.at(i)->descriptorInfo();
+    DvmDescriptorWriter(*globalSetLayout, *globalPool)
+        .writeBuffer(0, &bufferInfo)
+        .writeImage(1, &imageInfo)
+        .build(globalDescriptorSets[i]);
+  }
+}
+void SimpleRenderSystem::createBuffers() {
+  for (int i = 0; i < uboBuffers.size(); i++) {
+    uboBuffers[i] = std::make_unique<DvmBuffer>(
+        dvmDevice,
+        sizeof(GlobalUbo),
+        1,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+        dvmDevice.properties.limits.minUniformBufferOffsetAlignment);
+    uboBuffers[i]->map();
+  }
+
+  for(int i = 0; i < materialBuffers.size(); i++) {
+    materialBuffers[i] = std::make_unique<DvmBuffer>(
+        dvmDevice,
+        sizeof(MaterialUbo),
+        1,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+        dvmDevice.properties.limits.minUniformBufferOffsetAlignment);
+    materialBuffers[i]->map();
+  }
+}
 void SimpleRenderSystem::render(FrameInfo& frameInfo)
 {
+  entt::registry& registry = frameInfo.scene.getRegistry();
   dvmPipeline->bind(frameInfo.commandBuffer);
 
   vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -83,7 +145,7 @@ void SimpleRenderSystem::render(FrameInfo& frameInfo)
                           0,
                           nullptr);
 
-  auto view = frameInfo.registry.view<ModelComponent, TransformComponent>();
+  auto view = registry.view<ModelComponent, TransformComponent>();
 
   for (auto&& [entity, model, transform] : view.each()) {
     SimplePushConstantData push {};
@@ -102,5 +164,11 @@ void SimpleRenderSystem::render(FrameInfo& frameInfo)
     model.model->bind(frameInfo.commandBuffer);
     model.model->draw(frameInfo.commandBuffer);
   }
+}
+
+void SimpleRenderSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo) {
+  frameInfo.globalDescriptorSet = globalDescriptorSets[frameInfo.frameIndex];
+  uboBuffers[frameInfo.frameIndex]->writeToBuffer(&ubo);
+  uboBuffers[frameInfo.frameIndex]->flush();
 }
 }  // namespace dvm

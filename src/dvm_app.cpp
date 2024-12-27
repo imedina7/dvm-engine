@@ -1,9 +1,6 @@
 #include "dvm_app.hpp"
-#include "dvm_buffer.hpp"
 #include "dvm_camera.hpp"
 #include "dvm_frame_info.hpp"
-#include "dvm_swap_chain.hpp"
-#include "keyboard_movement_controller.hpp"
 #include <iostream>
 #include <array>
 #include <cstdint>
@@ -14,8 +11,6 @@
 #include "systems/simple_render_system.hpp"
 #include "systems/point_light_system.hpp"
 
-#include "dvm_texture.hpp"
-
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -24,64 +19,11 @@ namespace dvm
 {
 void DvmApp::run()
 {
-  std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
-      uboBuffers;
-  std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
-      materialBuffers;
+  SimpleRenderSystem simpleRenderSystem {dvmDevice, dvmWindow};
+  DvmRenderer& dvmRenderer = simpleRenderSystem.getRenderer();
 
-  for (int i = 0; i < uboBuffers.size(); i++) {
-    uboBuffers[i] = std::make_unique<DvmBuffer>(
-        dvmDevice,
-        sizeof(GlobalUbo),
-        DvmSwapChain::MAX_FRAMES_IN_FLIGHT,
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-        dvmDevice.properties.limits.minUniformBufferOffsetAlignment);
-    uboBuffers[i]->map();
-
-    materialBuffers[i] = std::make_unique<DvmBuffer>(
-        dvmDevice,
-        sizeof(GlobalUbo),
-        DvmSwapChain::MAX_FRAMES_IN_FLIGHT,
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-        dvmDevice.properties.limits.minUniformBufferOffsetAlignment);
-    materialBuffers[i]->map();
-  }
-
-  auto globalSetLayout =
-      DvmDescriptorSetLayout::Builder(dvmDevice)
-          .addBinding(0,
-                      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                      VK_SHADER_STAGE_ALL_GRAPHICS)
-          .addBinding(1,
-                      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                      VK_SHADER_STAGE_ALL_GRAPHICS)
-          .build();
-
-  Texture texture = Texture(dvmDevice, "../assets/textures/diffuse_bake.png");
-  VkDescriptorImageInfo imageInfo = texture.getDescriptorImageInfo();
-
-  std::array<VkDescriptorSet, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
-      globalDescriptorSets {};
-
-  for (int i = 0; i < globalDescriptorSets.size(); i++) {
-    auto bufferInfo = uboBuffers[i]->descriptorInfo();
-    DvmDescriptorWriter(*globalSetLayout, *globalPool)
-        .writeBuffer(0, &bufferInfo)
-        .writeImage(1, &imageInfo)
-        .build(globalDescriptorSets[i]);
-  }
-
-  std::vector<VkDescriptorSetLayout> descriptorSets = {
-      globalSetLayout->getDescriptorSetLayout()};
-
-  SimpleRenderSystem simpleRenderSystem {
-      dvmDevice, dvmRenderer.getSwapChainRenderPass(), descriptorSets};
-
-  PointLightSystem pointLightSystem {dvmDevice,
-                                     dvmRenderer.getSwapChainRenderPass(),
-                                     globalSetLayout->getDescriptorSetLayout()};
+  PointLightSystem pointLightSystem {
+          dvmDevice, dvmRenderer, simpleRenderSystem.getGlobalSetLayout()};
 
   GLFWwindow* window = dvmWindow.getGLFWwindow();
 
@@ -99,10 +41,12 @@ void DvmApp::run()
 
   entt::registry& registry = m_Scene.getRegistry();
 
-  DvmGUI gui {};
+  DvmGUI gui {dvmRenderer};
+
 #ifdef AUDIO
   DvmAudio& audio = DvmAudio::Get();
 #endif
+
   while (!dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
@@ -115,6 +59,7 @@ void DvmApp::run()
       audio.playFromFile(AUDIO_FILE_PATH);
     }
 #endif
+
     glm::vec2 mouseDelta {mouseNewX - mouseInitX, mouseNewY - mouseInitY};
     mouseInitX = mouseNewX;
     mouseInitY = mouseNewY;
@@ -129,9 +74,7 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    DvmCamera& camera = m_Scene.getCamera();
-
-    m_Scene.update(frameTime, mouseDelta, !gui.getUIVisibility());
+    GlobalUbo ubo = m_Scene.update(frameTime, mouseDelta, !gui.getUIVisibility(), dvmRenderer.getAspectRatio());
 
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
       int frameIndex = dvmRenderer.getCurrentFrameIndex();
@@ -139,23 +82,17 @@ void DvmApp::run()
       FrameInfo frameInfo {frameIndex,
                            frameTime,
                            commandBuffer,
-                           camera,
-                           globalDescriptorSets[frameIndex],
-                           registry};
-      GlobalUbo ubo {};
+                           m_Scene};
 
-      ubo.projection = camera.getProjection();
-      ubo.view = camera.getView();
-      ubo.inverseView = camera.getInverseView();
+      simpleRenderSystem.update(frameInfo, ubo);
       pointLightSystem.update(frameInfo, ubo);
 
-      uboBuffers[frameIndex]->writeToBuffer(&ubo);
-      uboBuffers[frameIndex]->flush();
-
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
+
       simpleRenderSystem.render(frameInfo);
       pointLightSystem.render(frameInfo);
       gui.render(frameInfo);
+
       dvmRenderer.endSwapChainRenderPass(commandBuffer);
       dvmRenderer.endFrame();
     }

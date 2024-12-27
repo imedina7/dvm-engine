@@ -2,7 +2,7 @@
 
 namespace dvm
 {
-DvmGUI::DvmGUI()
+DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
 {
   DvmApp& app = DvmApp::getInstance();
   DvmDevice& dvmDevice = app.getDevice();
@@ -25,8 +25,6 @@ DvmGUI::DvmGUI()
           .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
           .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
           .build();
-
-  DvmRenderer& dvmRenderer = app.getRenderer();
 
   panels.emplace_back(new gui::Outliner(uiState.outlinerState));
 
@@ -131,7 +129,8 @@ void DvmGUI::beginFrame()
   int width, height;
   glfwGetFramebufferSize(glfwWindow, &width, &height);
 
-  io.DisplaySize = ImVec2(width, height);
+  io.DisplaySize =
+      ImVec2(static_cast<float>(width), static_cast<float>(height));
   io.DeltaTime = frameTime;
 
   ImGui_ImplGlfw_NewFrame();

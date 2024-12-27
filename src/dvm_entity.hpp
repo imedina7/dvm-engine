@@ -1,10 +1,10 @@
 #pragma once
-#include "dvm_scene.hpp"
 #include <string>
 #include <cassert>
 
 namespace dvm
 {
+class Scene;
 class Entity
 {
 public:
@@ -39,6 +39,11 @@ public:
   Component& updateComponent(Args&&... args) const {
     assert(hasComponent<Component>() && "Component does not exist in entity");
     return m_Scene->getRegistry().replace<Component>(m_Id, std::forward<Args>(args)...);
+  }
+  template<typename Component, typename... Args>
+  Component& patchComponent(Args&&... args) const {
+    assert(hasComponent<Component>() && "Component does not exist in entity");
+    return m_Scene->getRegistry().patch<Component>(m_Id, std::forward<Args>(args)...);
   }
 
 private:

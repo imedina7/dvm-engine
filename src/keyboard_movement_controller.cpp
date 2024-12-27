@@ -7,10 +7,8 @@
 #include <glm/gtc/constants.hpp>
 namespace dvm
 {
-void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
+void FPSMovementController::moveInPlaneXZ(Entity& cameraEntity,
                                           float dt,
-                                          entt::registry& registry,
-                                          entt::entity entity,
                                           glm::vec2 deltaCursor,
                                           float mouseSensitivity)
 {
@@ -27,8 +25,9 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
   if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS)
     rotate.x -= 1.f;
 
-  registry.patch<TransformComponent>(
-      entity,
+  auto& cameraComponent = cameraEntity.getComponent<CameraComponent>();
+
+  cameraEntity.patchComponent<TransformComponent>(
       [&](auto& transform)
       {
         if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
@@ -67,7 +66,8 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
         {
           transform.translation += moveSpeed * dt * glm::normalize(moveDir);
         }
-        camera.setViewYXZ(transform.translation, transform.rotation);
+        cameraComponent.camera.setViewYXZ(transform.translation,
+                                         transform.rotation);
       });
 }
 }  // namespace dvm
