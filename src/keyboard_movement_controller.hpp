@@ -4,6 +4,7 @@
 #include "dvm_components.hpp"
 #include "dvm_camera.hpp"
 #include "dvm_entity.hpp"
+#include "dvm_input.hpp"
 
 namespace dvm
 {
@@ -14,17 +15,28 @@ public:
   ~FPSMovementController() = default;
   struct KeyMappings
   {
-    int moveForward = GLFW_KEY_W;
-    int moveBackward = GLFW_KEY_S;
-    int moveLeft = GLFW_KEY_A;
-    int moveRight = GLFW_KEY_D;
-    int moveUp = GLFW_KEY_E;
-    int moveDown = GLFW_KEY_Q;
+    Input::KeyCode moveForward = Input::KeyCode::KEY_W;
+    Input::KeyCode moveBackward = Input::KeyCode::KEY_S;
+    Input::KeyCode moveLeft = Input::KeyCode::KEY_A;
+    Input::KeyCode moveRight = Input::KeyCode::KEY_D;
+    Input::KeyCode moveUp = Input::KeyCode::KEY_E;
+    Input::KeyCode moveDown = Input::KeyCode::KEY_Q;
 
-    int lookUp = GLFW_KEY_UP;
-    int lookDown = GLFW_KEY_DOWN;
-    int lookLeft = GLFW_KEY_LEFT;
-    int lookRight = GLFW_KEY_RIGHT;
+    Input::KeyCode lookUp = Input::KeyCode::KEY_UP;
+    Input::KeyCode lookDown = Input::KeyCode::KEY_DOWN;
+    Input::KeyCode lookLeft = Input::KeyCode::KEY_LEFT;
+    Input::KeyCode lookRight = Input::KeyCode::KEY_RIGHT;
+  };
+
+  struct GamepadMappings
+  {
+    Input::GamepadAxis moveZ = Input::GamepadAxis::LEFT_Y;
+    Input::GamepadAxis moveX = Input::GamepadAxis::LEFT_X;
+    Input::GamepadAxis moveUp = Input::GamepadAxis::RIGHT_TRIGGER;
+    Input::GamepadAxis moveDown = Input::GamepadAxis::LEFT_TRIGGER;
+
+    Input::GamepadAxis lookUpDown = Input::GamepadAxis::RIGHT_Y;
+    Input::GamepadAxis lookSides = Input::GamepadAxis::RIGHT_X;
   };
 
   void moveInPlaneXZ(Entity& cameraEntity,
@@ -32,7 +44,8 @@ public:
                      glm::vec2 deltaCursor,
                      float mouseSensitivity);
 
-  KeyMappings keys {};
+  KeyMappings keyboard {};
+  GamepadMappings gamepad {};
 
   float moveSpeed {3.f};
   float lookSpeed {1.5f};
