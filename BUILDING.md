@@ -1,4 +1,32 @@
+# Clone the repo
+
+```bash
+git clone --recursive https://github.com/imedina7/dvm-engine.git
+```
+
+# Dependencies
+Most dependencies are included as submodules,
+but there are some that are expected to be installed in the system.
+
+- Vulkan SDK
+- GLFW
+- GLM
+- libsndfile (optional)
+- Portaudio (optional)
+
 # Building with CMake
+
+## Environment
+
+Set up a `.env.cmake` file in the root of the project with the following:
+
+```CMake
+set(GLFW_PATH <path_to_glfw>)
+set(GLM_PATH <path_to_glm>)
+set(VULKAN_SDK_PATH <path_to_vulkan_sdk>)
+set(PORTAUDIO_ENABLE false) # set to true if you want audio support
+set(AUDIO_ENGINE false) # set to true if you want audio support
+```
 
 ## Build
 

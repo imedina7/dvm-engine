@@ -50,4 +50,73 @@ glm::mat3 TransformComponent::normalMatrix()
        invScale.y * (c1 * c3 * s2 + s1 * s3)},
       {invScale.z * (c2 * s1), invScale.z * (-s2), invScale.z * (c1 * c2)}};
 }
+
+bool CapsuleCollider::intersects(vec3 position)
+{
+  float halfHeight = height / 2.0f;
+  if (position.y < offset.y - (halfHeight + radius)
+      || position.y > offset.y + (halfHeight + radius))
+    return false;
+  vec3 capsuleTop = vec3(offset.x, offset.y - (halfHeight + radius), offset.z);
+
+  vec3 point = position - capsuleTop;
+
+  float angle = glm::acos(glm::dot(capsuleTop, point)
+                          / (glm::length(capsuleTop) * glm::length(point)));
+
+  float c = glm::length(vec2(point.x, point.z)) * glm::cos(angle);
+  float closestRadius = glm::sin((point.y / radius) * half_pi<float>());
+  if (c > closestRadius)
+    return false;
+  return true;
+}
+
+bool CapsuleCollider::intersects(BoxCollider box)
+{
+  float halfHeight = height / 2.0f;
+  if (!box.intersects(
+          vec3(offset.x, offset.y - (halfHeight + radius), offset.z))
+      && !box.intersects(
+          vec3(offset.x, offset.y + (halfHeight + radius), offset.z)))
+    return false;
+
+  vec3 halfBoxSize = box.size / 2.0f;
+  vec3 pos = offset - box.offset;
+
+  vec2 topPlane = vec2(pos.x, pos.z);
+
+  float planeLength = glm::length(topPlane);
+  float halfBoxLength = glm::length(vec2(halfBoxSize.x, halfBoxSize.z));
+
+  if (planeLength - (halfBoxLength + radius) > 0)
+    return false;
+
+  return true;
+}
+
+CapsuleCollider::CapsuleCollider(float radius, float height, vec3 offset)
+    : radius {radius}
+    , height {height}
+    , offset {offset}
+{
+}
+
+BoxCollider::BoxCollider(vec3 size, vec3 offset)
+    : size {size}
+    , offset {offset}
+{
+}
+
+bool BoxCollider::intersects(vec3 position)
+{
+  vec3 halfSize = size / 2.0f;
+  if (position.x < offset.x - halfSize.x || position.x > offset.x + halfSize.x)
+    return false;
+  if (position.y < offset.y - halfSize.y || position.y > offset.y + halfSize.y)
+    return false;
+  if (position.z < offset.z - halfSize.z || position.z > offset.z + halfSize.z)
+    return false;
+  return true;
+}
+
 }  // namespace dvm

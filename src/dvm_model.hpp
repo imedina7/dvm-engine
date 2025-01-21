@@ -71,13 +71,4 @@ private:
   std::unique_ptr<DvmBuffer> indexBuffer;
   uint32_t indexCount;
 };
-struct ModelComponent
-{
-  std::unique_ptr<DvmModel> model;
-  ModelComponent(std::unique_ptr<DvmModel> _model)
-      : model
-  {std::move(_model)}
-  {
-  }
-};
 }  // namespace dvm

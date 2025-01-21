@@ -1,0 +1,38 @@
+#version 430
+
+struct RigidBody
+{
+  mat4 modelMatrix;
+  vec4 acceleration;
+  vec4 position;
+  vec4 velocity;
+  float mass;
+  float drag;
+  float bounciness;
+  bool useGravity;
+};
+
+layout (binding = 0) uniform PhysicsUbo
+{
+  mat4 projection;
+  mat4 view;
+  mat4 inverseView;
+  vec4 gravity;
+  int numBodies;
+  float deltaTime;
+} physicsUbo;
+
+layout (std140, binding = 1) readonly buffer RigidBodySSBOIn {
+  RigidBody rigidBodiesIn[];
+} ;
+layout (std140, binding = 2) buffer RigidBodySSBOOut {
+  RigidBody rigidBodiesOut[];
+};
+
+void main () {
+  const uint id = gl_GlobalInvocationID.x;
+  vec3 gravity = physicsUbo.gravity.xyz * physicsUbo.gravity.w;
+  if (rigidBodiesIn[id].useGravity) {
+    rigidBodiesOut[id].position = rigidBodiesIn[id].position + vec4(gravity, 0.0) * physicsUbo.deltaTime;
+  }
+}

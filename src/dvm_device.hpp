@@ -20,9 +20,15 @@ struct QueueFamilyIndices
 {
   uint32_t graphicsFamily;
   uint32_t presentFamily;
+  uint32_t computeFamily;
   bool graphicsFamilyHasValue = false;
   bool presentFamilyHasValue = false;
-  bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
+  bool computeFamilyHasValue = false;
+  bool isComplete()
+  {
+    return graphicsFamilyHasValue && presentFamilyHasValue
+        && computeFamilyHasValue;
+  }
 };
 
 class DvmDevice
@@ -33,6 +39,12 @@ public:
 #else
   const bool enableValidationLayers = true;
 #endif
+
+  enum class CommandType
+  {
+    GRAPHICS = 0,
+    COMPUTE
+  };
 
   DvmDevice(DvmWindow& window);
   ~DvmDevice();
@@ -45,10 +57,12 @@ public:
 
   VkInstance getInstance() { return instance; }
   VkCommandPool getCommandPool() { return commandPool; }
+  VkCommandPool getComputeCommandPool() { return computeCommandPool; }
   VkDevice device() { return device_; }
   VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
   VkSurfaceKHR surface() { return surface_; }
   VkQueue graphicsQueue() { return graphicsQueue_; }
+  VkQueue computeQueue() { return computeQueue_; }
   VkQueue presentQueue() { return presentQueue_; }
 
   SwapChainSupportDetails getSwapChainSupport()
@@ -71,8 +85,10 @@ public:
                     VkMemoryPropertyFlags properties,
                     VkBuffer& buffer,
                     VkDeviceMemory& bufferMemory);
-  VkCommandBuffer beginSingleTimeCommands();
-  void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+  VkCommandBuffer beginSingleTimeCommands(
+      CommandType commandType = CommandType::GRAPHICS);
+  void endSingleTimeCommands(VkCommandBuffer commandBuffer,
+                             CommandType commandType = CommandType::GRAPHICS);
   void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
   void copyBufferToImage(VkBuffer buffer,
                          VkImage image,
@@ -111,11 +127,13 @@ private:
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   DvmWindow& window;
   VkCommandPool commandPool;
+  VkCommandPool computeCommandPool;
 
   VkDevice device_;
   VkSurfaceKHR surface_;
   VkQueue graphicsQueue_;
   VkQueue presentQueue_;
+  VkQueue computeQueue_;
 
   const std::vector<const char*> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};

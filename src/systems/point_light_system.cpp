@@ -70,10 +70,10 @@ void PointLightSystem::createPipeline(VkRenderPass renderPass)
   pipelineConfig.attributeDescriptions.clear();
   pipelineConfig.renderPass = renderPass;
   pipelineConfig.pipelineLayout = pipelineLayout;
-  dvmPipeline = std::make_unique<DvmPipeline>(dvmDevice,
-                                              "shaders/point_light.vert.spv",
-                                              "shaders/point_light.frag.spv",
-                                              pipelineConfig);
+  std::vector<std::string> shaders = {"shaders/point_light.vert.spv",
+                                      "shaders/point_light.frag.spv"};
+  dvmPipeline = std::make_unique<DvmPipeline>(
+      dvmDevice, shaders, pipelineConfig, DvmPipeline::PipelineType::GRAPHICS);
 }
 
 void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
@@ -81,11 +81,14 @@ void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
   auto rotateLight =
       glm::rotate(glm::mat4(1.f), frameInfo.frameTime, {0.f, -1.f, 0.f});
   int lightIndex = 0;
-  for (auto &&[entity, pointLight, transform] : frameInfo.registry.view<PointLightComponent, TransformComponent>().each()) {
-
+  for (auto&& [entity, pointLight, transform] :
+       frameInfo.registry.view<PointLightComponent, TransformComponent>()
+           .each())
+  {
     assert(lightIndex < MAX_LIGHTS && "Max point lights exceeded");
 
-    transform.translation = glm::vec3(rotateLight * glm::vec4(transform.translation, 1.f));
+    transform.translation =
+        glm::vec3(rotateLight * glm::vec4(transform.translation, 1.f));
 
     ubo.pointLights[lightIndex].position =
         glm::vec4(transform.translation, 1.f);
@@ -104,9 +107,7 @@ void PointLightSystem::render(FrameInfo& frameInfo)
        frameInfo.registry.view<PointLightComponent, TransformComponent>()
            .each())
   {
-
-    glm::vec3 offset =
-        frameInfo.camera.getPosition() - transform.translation;
+    glm::vec3 offset = frameInfo.camera.getPosition() - transform.translation;
 
     float disSquared = glm::dot(offset, offset);
 
@@ -125,7 +126,9 @@ void PointLightSystem::render(FrameInfo& frameInfo)
                           nullptr);
 
   for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
-    auto [pointLight, transform] = frameInfo.registry.get<PointLightComponent, TransformComponent>(it->second);
+    auto [pointLight, transform] =
+        frameInfo.registry.get<PointLightComponent, TransformComponent>(
+            it->second);
 
     PointLightPushConstants push {};
     push.position = glm::vec4(transform.translation, 1.f);

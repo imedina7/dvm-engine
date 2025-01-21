@@ -16,19 +16,36 @@ namespace dvm
 {
 
 DvmPipeline::DvmPipeline(DvmDevice& device,
-                         const std::string& vertFilepath,
-                         const std::string& fragFilepath,
-                         const PipelineConfigInfo& configInfo)
+                         const std::vector<std::string>& shaderFilepaths,
+                         const PipelineConfigInfo& configInfo,
+                         const PipelineType& pipelineType)
     : dvmDevice {device}
+    , pipelineType {pipelineType}
 {
-  createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
+  if (pipelineType == PipelineType::COMPUTE) {
+    createComputePipeline(shaderFilepaths.at(0), configInfo);
+    return;
+  }
+  if (pipelineType == PipelineType::GRAPHICS) {
+    assert(shaderFilepaths.size() == 2
+           && "Graphics pipelines should contain at least 2 shaders");
+    createGraphicsPipeline(
+        shaderFilepaths.at(0), shaderFilepaths.at(1), configInfo);
+    return;
+  }
 }
 
 DvmPipeline::~DvmPipeline()
 {
-  vkDestroyShaderModule(dvmDevice.device(), vertShaderModule, nullptr);
-  vkDestroyShaderModule(dvmDevice.device(), fragShaderModule, nullptr);
-  vkDestroyPipeline(dvmDevice.device(), graphicsPipeline, nullptr);
+  if (pipelineType == PipelineType::GRAPHICS) {
+    vkDestroyShaderModule(dvmDevice.device(), vertShaderModule, nullptr);
+    vkDestroyShaderModule(dvmDevice.device(), fragShaderModule, nullptr);
+    vkDestroyPipeline(dvmDevice.device(), graphicsPipeline, nullptr);
+  }
+  if (pipelineType == PipelineType::COMPUTE) {
+    vkDestroyShaderModule(dvmDevice.device(), computeShaderModule, nullptr);
+    vkDestroyPipeline(dvmDevice.device(), computePipeline, nullptr);
+  }
 }
 
 std::vector<char> DvmPipeline::readFile(const std::string& filepath)
@@ -132,6 +149,43 @@ void DvmPipeline::createGraphicsPipeline(const std::string& vertFilepath,
   }
 }
 
+void DvmPipeline::createComputePipeline(const std::string& shaderFilepath,
+                                        const PipelineConfigInfo& configInfo)
+{
+  assert(configInfo.pipelineLayout != VK_NULL_HANDLE &&
+         "Cannot create compute pipeline: no pipelineLayout provided in "
+         "configInfo");
+
+  auto computeCode = readFile(shaderFilepath);
+
+  createShaderModule(computeCode, &computeShaderModule);
+
+  VkPipelineShaderStageCreateInfo shaderStage;
+  shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  shaderStage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+  shaderStage.module = computeShaderModule;
+  shaderStage.pName = "main";
+  shaderStage.flags = 0;
+  shaderStage.pNext = nullptr;
+  shaderStage.pSpecializationInfo = nullptr;
+
+  VkComputePipelineCreateInfo pipelineInfo {};
+  pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+  pipelineInfo.stage = shaderStage;
+
+  pipelineInfo.layout = configInfo.pipelineLayout;
+
+  VkResult creationResult = vkCreateComputePipelines(dvmDevice.device(),
+                                                     VK_NULL_HANDLE,
+                                                     1,
+                                                     &pipelineInfo,
+                                                     nullptr,
+                                                     &computePipeline);
+  if (creationResult != VK_SUCCESS) {
+    throw std::runtime_error("failed to create compute pipeline");
+  }
+}
+
 void DvmPipeline::createShaderModule(const std::vector<char>& code,
                                      VkShaderModule* shaderModule)
 {
@@ -150,12 +204,20 @@ void DvmPipeline::createShaderModule(const std::vector<char>& code,
 
 void DvmPipeline::bind(VkCommandBuffer commandBuffer)
 {
-  vkCmdBindPipeline(
-      commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+  if (pipelineType == PipelineType::GRAPHICS)
+    vkCmdBindPipeline(
+        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+  if (pipelineType == PipelineType::COMPUTE)
+    vkCmdBindPipeline(
+        commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
 }
 
 void DvmPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 {
+  configInfo.bindingDescriptions = DvmModel::Vertex::getBindingDescriptions();
+  configInfo.attributeDescriptions =
+      DvmModel::Vertex::getAttributeDescriptions();
+
   configInfo.inputAssemblyInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -237,10 +299,6 @@ void DvmPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
   configInfo.dynamicStateInfo.dynamicStateCount =
       static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
   configInfo.dynamicStateInfo.flags = 0;
-
-  configInfo.bindingDescriptions = DvmModel::Vertex::getBindingDescriptions();
-  configInfo.attributeDescriptions =
-      DvmModel::Vertex::getAttributeDescriptions();
 }
 
 void DvmPipeline::enableAlphaBlending(PipelineConfigInfo& configInfo)
@@ -259,4 +317,5 @@ void DvmPipeline::enableAlphaBlending(PipelineConfigInfo& configInfo)
   configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
   configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 }
+
 }  // namespace dvm

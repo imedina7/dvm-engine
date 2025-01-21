@@ -33,10 +33,18 @@ struct PipelineConfigInfo
 class DvmPipeline
 {
 public:
+  enum class PipelineType
+  {
+    GRAPHICS = 0,
+    COMPUTE,
+    TOTAL_TYPES
+  };
+
+public:
   DvmPipeline(DvmDevice& device,
-              const std::string& vertFilepath,
-              const std::string& fragFilepath,
-              const PipelineConfigInfo& configInfo);
+              const std::vector<std::string>& shaderFilepaths,
+              const PipelineConfigInfo& configInfo,
+              const PipelineType& pipelineType);
   ~DvmPipeline();
 
   DvmPipeline(const DvmPipeline&) = delete;
@@ -45,6 +53,7 @@ public:
   void bind(VkCommandBuffer commandBuffer);
 
   static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+
   static void enableAlphaBlending(PipelineConfigInfo& configInfo);
 
 private:
@@ -54,12 +63,18 @@ private:
                               const std::string& fragFilepath,
                               const PipelineConfigInfo& configInfo);
 
+  void createComputePipeline(const std::string& shaderFilepath,
+                             const PipelineConfigInfo& configInfo);
+
   void createShaderModule(const std::vector<char>& code,
                           VkShaderModule* shaderModule);
 
   DvmDevice& dvmDevice;
   VkPipeline graphicsPipeline;
+  VkPipeline computePipeline;
   VkShaderModule vertShaderModule;
   VkShaderModule fragShaderModule;
+  VkShaderModule computeShaderModule;
+  PipelineType pipelineType;
 };
 }  // namespace dvm

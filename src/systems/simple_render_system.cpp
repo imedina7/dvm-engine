@@ -65,10 +65,11 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass)
   DvmPipeline::defaultPipelineConfigInfo(pipelineConfig);
   pipelineConfig.renderPass = renderPass;
   pipelineConfig.pipelineLayout = pipelineLayout;
-  dvmPipeline = std::make_unique<DvmPipeline>(dvmDevice,
-                                              "shaders/simple_shader.vert.spv",
-                                              "shaders/simple_shader.frag.spv",
-                                              pipelineConfig);
+  const std::vector<std::string> shaders = {"shaders/simple_shader.vert.spv",
+                                            "shaders/simple_shader.frag.spv"};
+
+  dvmPipeline = std::make_unique<DvmPipeline>(
+      dvmDevice, shaders, pipelineConfig, DvmPipeline::PipelineType::GRAPHICS);
 }
 
 void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo)
@@ -84,25 +85,24 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo)
                           0,
                           nullptr);
 
-  auto view = frameInfo.registry.view<ModelComponent, TransformComponent>();
+  auto view = frameInfo.registry.view<Renderable, TransformComponent>();
 
-  for(auto &&[entity, model, transform] : view.each())
-      {
-        SimplePushConstantData push {};
+  for (auto&& [entity, model, transform] : view.each()) {
+    SimplePushConstantData push {};
 
-        push.normalMatrix = transform.normalMatrix();
-        push.modelMatrix = transform.mat4();
+    push.normalMatrix = transform.normalMatrix();
+    push.modelMatrix = transform.mat4();
 
-        vkCmdPushConstants(
-            frameInfo.commandBuffer,
-            pipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(SimplePushConstantData),
-            &push);
+    vkCmdPushConstants(
+        frameInfo.commandBuffer,
+        pipelineLayout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,
+        sizeof(SimplePushConstantData),
+        &push);
 
-        model.model->bind(frameInfo.commandBuffer);
-        model.model->draw(frameInfo.commandBuffer);
-      }
+    model.model->bind(frameInfo.commandBuffer);
+    model.model->draw(frameInfo.commandBuffer);
+  }
 }
 }  // namespace dvm
