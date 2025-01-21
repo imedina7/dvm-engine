@@ -12,20 +12,40 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
                                           entt::registry& registry,
                                           entt::entity entity,
                                           glm::vec2 deltaCursor,
-                                          float mouseSensitivity)
+                                          float sensitivity)
 {
-  glm::vec3 rotate {0};
+  glm::vec2 lookDelta {0.f};
+  glm::vec2 moveDelta {0.f};
+  glm::vec3 rotate {0.f};
 
-  GLFWwindow* window = DvmApp::getInstance().getWindow().getGLFWwindow();
+  if (Input::isKeyPressed(keyboard.lookRight))
+    lookDelta.y += 1.f;
+  if (Input::isKeyPressed(keyboard.lookLeft))
+    lookDelta.y -= 1.f;
+  if (Input::isKeyPressed(keyboard.lookUp))
+    lookDelta.x += 1.f;
+  if (Input::isKeyPressed(keyboard.lookDown))
+    lookDelta.x -= 1.f;
 
-  if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS)
-    rotate.y += 1.f;
-  if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS)
-    rotate.y -= 1.f;
-  if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS)
-    rotate.x += 1.f;
-  if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS)
-    rotate.x -= 1.f;
+  std::vector<float> axes = Input::getGamepadAxes(Input::getDefaultJoystick());
+
+  float gamepadElevate = 0, gamepadDescend = 0;
+
+  if (axes.size() >= 6) {
+    lookDelta.x = axes.at(static_cast<size_t>(gamepad.lookSides));
+    lookDelta.y = axes.at(static_cast<size_t>(gamepad.lookUpDown));
+    moveDelta.y = axes.at(static_cast<size_t>(gamepad.moveZ));
+    moveDelta.x = axes.at(static_cast<size_t>(gamepad.moveX));
+    gamepadElevate = axes.at(static_cast<size_t>(gamepad.moveUp));
+    gamepadDescend = axes.at(static_cast<size_t>(gamepad.moveDown));
+  }
+
+  if (glm::abs(lookDelta.x) > 0.05f) {
+    rotate.y += lookDelta.x;
+  }
+  if (glm::abs(lookDelta.y) > 0.05f) {
+    rotate.x -= lookDelta.y;
+  }
 
   registry.patch<TransformComponent>(
       entity,
@@ -35,9 +55,9 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
           transform.rotation += lookSpeed * dt * glm::normalize(rotate);
         }
 
-        transform.rotation.x -= deltaCursor.y * dt * mouseSensitivity;
+        transform.rotation.x -= deltaCursor.y * dt * sensitivity;
 
-        transform.rotation.y += deltaCursor.x * dt * mouseSensitivity;
+        transform.rotation.y += deltaCursor.x * dt * sensitivity;
 
         transform.rotation.x = glm::clamp(transform.rotation.x, -1.5f, 1.5f);
         transform.rotation.y =
@@ -50,18 +70,30 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
 
         glm::vec3 moveDir {0.f};
 
-        if (glfwGetKey(window, keys.moveForward) == GLFW_PRESS)
+        if (Input::isKeyPressed(keyboard.moveForward))
           moveDir += forwardDir;
-        if (glfwGetKey(window, keys.moveBackward) == GLFW_PRESS)
+        if (Input::isKeyPressed(keyboard.moveBackward))
           moveDir -= forwardDir;
-        if (glfwGetKey(window, keys.moveRight) == GLFW_PRESS)
+        if (Input::isKeyPressed(keyboard.moveRight))
           moveDir += rightDir;
-        if (glfwGetKey(window, keys.moveLeft) == GLFW_PRESS)
+        if (Input::isKeyPressed(keyboard.moveLeft))
           moveDir -= rightDir;
-        if (glfwGetKey(window, keys.moveUp) == GLFW_PRESS)
+        if (Input::isKeyPressed(keyboard.moveUp))
           moveDir += upDir;
-        if (glfwGetKey(window, keys.moveDown) == GLFW_PRESS)
+        if (Input::isKeyPressed(keyboard.moveDown))
           moveDir -= upDir;
+
+        if (glm::abs(moveDelta.x) > 0.05f) {
+          moveDir += rightDir * moveDelta.x;
+        }
+        if (glm::abs(moveDelta.y) > 0.05f) {
+          moveDir -= forwardDir * moveDelta.y;
+        }
+
+        if (glm::abs(gamepadElevate) > 0.02f)
+          moveDir += upDir * gamepadElevate;
+        if (glm::abs(gamepadDescend) > 0.02f)
+          moveDir -= upDir * gamepadDescend;
 
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
