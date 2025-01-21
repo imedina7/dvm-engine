@@ -20,7 +20,7 @@ jobs:
     - name: Install Vulkan SDK
       uses: jakoch/install-vulkan-sdk-action@v1.0.5
       with:
-        vulkan_version: '1.3.231.1'  # Specify the version you need
+        vulkan_version: '1.4.304.0'  # Specify the version you need
         install_runtime: true
         cache: true
         stripdown: true
