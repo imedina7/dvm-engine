@@ -32,6 +32,7 @@ private:
   static void framebufferResizedCallback(GLFWwindow* window,
                                          int width,
                                          int height);
+  static void gamepadCallback(int joystickId, int event);
   void initWindow();
 
   bool framebufferResized;
