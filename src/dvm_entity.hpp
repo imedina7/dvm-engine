@@ -23,25 +23,25 @@ public:
   }
 
   template<typename Component>
-  Component& getComponent() const {
+  Component& getComponent() {
     assert(hasComponent<Component>() && "Component does not exist in entity");
 
     return m_Scene->registry.get<Component>(m_Id);
   }
 
   template<typename Component, typename... Args>
-  Component& addComponent(Args&&... args) const {
+  Component& addComponent(Args&&... args) {
     assert(!hasComponent<Component>() && "Component already exists in entity");
     return m_Scene->registry.emplace<Component>(m_Id, std::forward<Args>(args)...);
   }
 
   template<typename Component, typename... Args>
-  Component& updateComponent(Args&&... args) const {
+  Component& updateComponent(Args&&... args) {
     assert(hasComponent<Component>() && "Component does not exist in entity");
     return m_Scene->registry.replace<Component>(m_Id, std::forward<Args>(args)...);
   }
   template<typename Component, typename... Args>
-  Component& patchComponent(Args&&... args) const {
+  Component& patchComponent(Args&&... args) {
     assert(hasComponent<Component>() && "Component does not exist in entity");
     return m_Scene->registry.patch<Component>(m_Id, std::forward<Args>(args)...);
   }
