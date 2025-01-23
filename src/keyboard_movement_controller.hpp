@@ -3,6 +3,7 @@
 #include <entt.hpp>
 #include "dvm_components.hpp"
 #include "dvm_camera.hpp"
+#include "dvm_entity.hpp"
 #include "dvm_input.hpp"
 
 namespace dvm
@@ -38,10 +39,8 @@ public:
     Input::GamepadAxis lookSides = Input::GamepadAxis::RIGHT_X;
   };
 
-  void moveInPlaneXZ(DvmCamera& camera,
+  void moveInPlaneXZ(Entity& cameraEntity,
                      float dt,
-                     entt::registry& registry,
-                     entt::entity entity,
                      glm::vec2 deltaCursor,
                      float mouseSensitivity);
 

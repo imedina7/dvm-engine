@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dvm_camera.hpp"
+#include "dvm_scene.hpp"
 #include "dvm_components.hpp"
 #include <vulkan/vulkan.h>
 #include <entt.hpp>
@@ -15,6 +15,7 @@ struct PointLight
   glm::vec4 color {};
 };
 
+struct MaterialUbo{};
 struct GlobalUbo
 {
   glm::mat4 projection {1.0f};
@@ -24,13 +25,13 @@ struct GlobalUbo
   PointLight pointLights[MAX_LIGHTS];
   int numLights;
 };
+
 struct FrameInfo
 {
   int frameIndex;
   float frameTime;
   VkCommandBuffer commandBuffer;
-  DvmCamera& camera;
+  Scene& scene;
   VkDescriptorSet globalDescriptorSet;
-  entt::registry& registry;
 };
 }  // namespace dvm

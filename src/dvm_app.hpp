@@ -1,15 +1,15 @@
 #pragma once
+
 #include "dvm_device.hpp"
+
 #ifdef AUDIO
 #  include "dvm_audio.hpp"
 #endif
+
 #include "dvm_gui.hpp"
-#include "dvm_components.hpp"
 #include "dvm_scene.hpp"
-#include "dvm_renderer.hpp"
-#include "dvm_descriptors.hpp"
-#include "dvm_swap_chain.hpp"
 #include "dvm_window.hpp"
+
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <vector>
@@ -38,12 +38,6 @@ public:
 
   DvmDevice& getDevice() { return dvmDevice; }
   DvmWindow& getWindow() { return dvmWindow; }
-  DvmRenderer& getRenderer() { return dvmRenderer; }
-
-  const DvmDescriptorPool& getGlobalDescriptorPool() const
-  {
-    return *globalPool;
-  }
 
   static DvmApp& getInstance()
   {
@@ -56,25 +50,14 @@ public:
 
   void run();
 
-  Scene& getScene() { return scene; };
+  Scene& getScene() { return m_Scene; };
 
 private:
-  DvmApp()
-  {
-    globalPool = DvmDescriptorPool::Builder(dvmDevice)
-                     .setMaxSets(DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
-                     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                  DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
-                     .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                  DvmSwapChain::MAX_FRAMES_IN_FLIGHT)
-                     .build();
-  };
+  DvmApp() = default;
   ~DvmApp() {}
 
   DvmWindow dvmWindow {WIDTH, HEIGHT, WINDOW_TITLE};
   DvmDevice dvmDevice {dvmWindow};
-  DvmRenderer dvmRenderer {dvmWindow, dvmDevice};
-  std::unique_ptr<DvmDescriptorPool> globalPool {};
-  Scene scene {};
+  Scene m_Scene {};
 };
 }  // namespace dvm

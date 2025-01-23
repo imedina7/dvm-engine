@@ -3,6 +3,7 @@
 #include "dvm_components.hpp"
 #include "dvm_frame_info.hpp"
 #include "dvm_camera.hpp"
+#include "dvm_renderer.hpp"
 #include "dvm_pipeline.hpp"
 #include "dvm_swap_chain.hpp"
 #include <GLFW/glfw3.h>
@@ -17,7 +18,7 @@ class PointLightSystem
 {
 public:
   PointLightSystem(DvmDevice& dvmDevice,
-                   VkRenderPass renderPass,
+                   DvmRenderer& dvmRenderer,
                    VkDescriptorSetLayout globalSetLayout);
   ~PointLightSystem();
 
@@ -32,7 +33,7 @@ private:
   void createPipeline(VkRenderPass renderPass);
 
   DvmDevice& dvmDevice;
-
+  DvmRenderer& dvmRenderer;
   std::unique_ptr<DvmPipeline> dvmPipeline;
   VkPipelineLayout pipelineLayout;
 };

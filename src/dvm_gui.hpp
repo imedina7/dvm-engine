@@ -9,11 +9,12 @@
 
 #include <glm/glm.hpp>
 
+#include "dvm_app.hpp"
 #include "dvm_device.hpp"
 #include "dvm_descriptors.hpp"
-#include "dvm_app.hpp"
-#include "dvm_window.hpp"
+#include "dvm_frame_info.hpp"
 #include "dvm_renderer.hpp"
+#include "dvm_window.hpp"
 
 static void check_vk_result(VkResult err)
 {
@@ -33,7 +34,7 @@ struct GlobalState
 class DvmGUI
 {
 public:
-  DvmGUI();
+  DvmGUI(DvmRenderer& dvmRenderer);
   ~DvmGUI()
   {
     ImGui_ImplVulkan_Shutdown();
@@ -41,7 +42,7 @@ public:
     ImGui::DestroyContext();
   }
 
-  void update(float dt, VkCommandBuffer command_buffer);
+  void render(FrameInfo& frameInfo);
   const bool toggleUI()
   {
     uiVisible = !uiVisible;
@@ -51,13 +52,26 @@ public:
   const bool getUIVisibility() const { return uiVisible; };
   const GlobalState& getState() const { return uiState; };
 
-  void checkUIToggle(glm::vec2 mouseDelta);
+  void checkUIToggle();
+
+private:
+  void initStyle();
+  void beginFrame();
+  void renderPanels(VkCommandBuffer commandBuffer);
+  void endFrame();
 
 private:
   GLFWwindow* glfwWindow;
   GlobalState uiState;
-  std::vector<gui::Panel*> panelWindows;
+  DvmRenderer& dvmRenderer;
+  std::vector<gui::Panel*> panels;
   std::unique_ptr<DvmDescriptorPool> descriptorPool;
   bool uiVisible = false;
+  float frameTime = 1.f;
+  glm::vec2 monitorScale {1.f};
+
+private:  // FONTS
+  ImFont* robotoMedium;
+  ImFont* doppioOne;
 };
 }  // namespace dvm

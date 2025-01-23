@@ -52,10 +52,16 @@ public:
   DvmModel& operator=(const DvmModel&) = delete;
 
   static std::unique_ptr<DvmModel> createModelFromFile(
-      DvmDevice& device, const std::string& filepath);
+      const std::string& filepath);
 
   void bind(VkCommandBuffer commandBuffer);
   void draw(VkCommandBuffer commandBuffer);
+
+  static const std::string getModelsPath()
+  {
+    std::string modelsPath = "assets/models/";
+    return ENGINE_DIR + modelsPath;
+  }
 
 private:
   void createVertexBuffers(const std::vector<Vertex>& vertices);
@@ -75,8 +81,7 @@ struct ModelComponent
 {
   std::unique_ptr<DvmModel> model;
   ModelComponent(std::unique_ptr<DvmModel> _model)
-      : model
-  {std::move(_model)}
+      : model {std::move(_model)}
   {
   }
 };
