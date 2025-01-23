@@ -17,7 +17,7 @@ public:
   entt::entity getId() const { return m_Id; }
 
   template<typename Component>
-  bool hasComponent() const
+  bool hasComponent()
   {
     return m_Scene->registry.all_of<Component>(m_Id);
   }
