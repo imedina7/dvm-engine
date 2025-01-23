@@ -17,7 +17,6 @@ static std::string getFilePathExtension(const std::string& FileName)
   return "";
 }
 
-class Entity;
 struct GlobalUbo;
 class Scene
 {
