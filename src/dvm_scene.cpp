@@ -1,5 +1,7 @@
 #include "dvm_scene.hpp"
 #include "dvm_app.hpp"
+#include "dvm_entity.hpp"
+#include "dvm_components.hpp"
 
 #ifdef GLTF_ENABLE
 
@@ -12,8 +14,10 @@
 
 namespace dvm
 {
-Scene::Scene() {camera = createEntityWithUUID("Camera");
-camera.addComponent<CameraComponent>();
+Scene::Scene() {
+  Entity camera = createEntityWithUUID("Camera");
+  camera.addComponent<CameraComponent>();
+  cameraEntity = camera.getId();
 }
 
 Entity Scene::createEntity(const std::string& label)
@@ -21,18 +25,32 @@ Entity Scene::createEntity(const std::string& label)
   return createEntityWithUUID(label);
 }
 
-  Entity Scene::createEntityWithUUID(const std::string& label)
-  {
-    Entity entity = {registry.create(), this};
-    entity.addComponent<TransformComponent>();
-    entity.addComponent<TagComponent>(label);
-    entity.addComponent<IDComponent>();
-    return entity;
-  }
+Entity Scene::createEntityWithUUID(const std::string& label)
+{
+  Entity entity = {registry.create(), this};
+  entity.addComponent<TransformComponent>();
+  entity.addComponent<TagComponent>(label);
+  entity.addComponent<IDComponent>();
+  return entity;
+}
+
+void Scene::initSceneCamera() {
+  cameraEntity = registry.create();
+  Entity camera = { cameraEntity, this };
+  camera.addComponent<TransformComponent>();
+  camera.addComponent<IDComponent>();
+  camera.addComponent<TagComponent>("Camera");
+}
+
+DvmCamera& Scene::getCamera() {
+  Entity camera = { cameraEntity, this };
+  return camera.getComponent<CameraComponent>().camera;
+}
 
 void Scene::load()
 
 {
+  Entity camera = { cameraEntity, this };
 
   camera
       .updateComponent<TransformComponent>(glm::vec3(0.f, -1.f, -3.f));
@@ -68,6 +86,8 @@ void Scene::load()
 
 GlobalUbo Scene::update(float frameTime, glm::vec2 mouseDelta, bool controlCamera, float aspectRatio)
 {
+  Entity camera = { cameraEntity, this };
+
   if (controlCamera) {
     cameraController.moveInPlaneXZ(
         camera, frameTime, mouseDelta, 0.1f);

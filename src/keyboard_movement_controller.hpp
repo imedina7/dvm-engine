@@ -3,11 +3,11 @@
 #include <entt.hpp>
 #include "dvm_components.hpp"
 #include "dvm_camera.hpp"
-#include "dvm_entity.hpp"
 #include "dvm_input.hpp"
 
 namespace dvm
 {
+  class Entity;
 class FPSMovementController
 {
 public:

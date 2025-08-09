@@ -1,4 +1,5 @@
 #include "keyboard_movement_controller.hpp"
+#include "dvm_entity.hpp"
 #include "dvm_app.hpp"
 #include <limits>
 #include <iostream>
