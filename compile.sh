@@ -1,6 +1,6 @@
 #!/bin/bash
 mkdir -p build
-cd build
+pushd build
 cmake -S ../ -B .
 make && make Shaders && ./DvmEngine
-cd ..
+popd
