@@ -84,8 +84,8 @@ void DvmApp::run()
                            commandBuffer,
                            m_Scene};
 
-      simpleRenderSystem.update(frameInfo, ubo);
       pointLightSystem.update(frameInfo, ubo);
+      simpleRenderSystem.update(frameInfo, ubo);
 
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
 
