@@ -3,6 +3,7 @@
 #include "core.hpp"
 #include <functional>
 #include <string>
+#include <ostream>
 
 namespace dvm
 {

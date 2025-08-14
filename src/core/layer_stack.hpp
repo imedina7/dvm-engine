@@ -1,6 +1,5 @@
-#include <vector>
-
 #include "layer.hpp"
+#include <vector>
 
 namespace dvm
 {

@@ -1,4 +1,5 @@
 #include "event.hpp"
+#include <string>
 
 namespace dvm
 {
