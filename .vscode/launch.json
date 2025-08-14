@@ -1,32 +1,26 @@
 {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Linux Debug Launch",
-      "type": "cppdbg",
+      "name": "Windows Debug DvmEngine",
+      "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/build/DvmEngine",
+      "program": "${workspaceFolder}/build/Debug/DvmEngine.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build",
       "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "miDebuggerPath": "/usr/bin/gdb",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        }
-      ],
-      "preLaunchTask": "CMake: build DvmEngine"
+      "console": "externalTerminal",
+      "preLaunchTask": "Build Windows"
     },
     {
-      "name": "Windows Debug Launch",
+      "name": "Linux Debug Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/build/Debug/DvmEngine",
+      "program": "${workspaceFolder}/build/Debug/DvmEngine.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build",
