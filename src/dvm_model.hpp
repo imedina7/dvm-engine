@@ -78,6 +78,12 @@ public:
       glm::vec3 position = glm::vec3(0.f),
       glm::vec3 scale = glm::vec3(1.f),
       glm::vec3 rotation = glm::vec3(0.f));
+  static std::unique_ptr<DvmModel> createPlane(
+      DvmDevice& device,
+      int resolution,
+      float scale = 1.f,
+      glm::vec3 position = glm::vec3(0.f),
+      glm::vec3 rotation = glm::vec3(0.f));
 
   void bind(VkCommandBuffer commandBuffer);
   void draw(VkCommandBuffer commandBuffer);
@@ -100,8 +106,7 @@ struct ModelComponent
 {
   std::unique_ptr<DvmModel> model;
   ModelComponent(std::unique_ptr<DvmModel> _model)
-      : model
-  {std::move(_model)}
+      : model {std::move(_model)}
   {
   }
 };

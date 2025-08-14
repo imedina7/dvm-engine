@@ -40,8 +40,9 @@ DvmModel::DvmModel(DvmDevice& device, const DvmModel::Builder& builder)
 
 DvmModel::~DvmModel() {}
 
-void DvmModel::createMaterials(const std::vector<tinyobj::material_t>& materials){
-
+void DvmModel::createMaterials(
+    const std::vector<tinyobj::material_t>& materials)
+{
 }
 
 void DvmModel::createVertexBuffers(const std::vector<Vertex>& vertices)
@@ -186,14 +187,19 @@ void DvmModel::Builder::loadModel(const std::string& filepath)
 
   std::cout << "materials loaded from: " << dir << "\n";
 
-  if (!tinyobj::LoadObj(
-          &attrib, &shapes, &materials, &warn, &err, filepath.c_str(), dir.c_str()))
+  if (!tinyobj::LoadObj(&attrib,
+                        &shapes,
+                        &materials,
+                        &warn,
+                        &err,
+                        filepath.c_str(),
+                        dir.c_str()))
   {
     throw std::runtime_error(warn + err);
   }
 
-  if(materials.size() > 0) {
-    for(const auto& material: materials) {
+  if (materials.size() > 0) {
+    for (const auto& material : materials) {
       std::cout << "Loaded material: \"" << material.name << "\"\n";
     }
   } else {
@@ -248,14 +254,36 @@ void DvmModel::Builder::makePrimitive(PrimitiveType primitive,
 
   switch (primitive) {
     case PLANE:
-      loadModel("./models/quad.obj");
+      for (int i = 0; i < resolution.x; ++i) {
+        for (int j = 0; j < resolution.y; ++j) {
+          Vertex vertex {};
+          vertex.position = glm::vec3((i / (resolution.x - 1)) * 2.f - 1.f,
+                                      (j / (resolution.y - 1)) * 2.f - 1.f,
+                                      0.f);
+          vertex.color = glm::vec3(1.f, 1.f, 1.f);
+          vertex.normal = glm::vec3(0.f, 0.f, 1.f);
+          vertex.uv = glm::vec2(i / (resolution.x - 1), j / (resolution.y - 1));
+          vertices.push_back(vertex);
+        }
+      }
+      indices.reserve((resolution.x - 1) * (resolution.y - 1) * 6);
+      for (int i = 0; i < resolution.x - 1; ++i) {
+        for (int j = 0; j < resolution.y - 1; ++j) {
+          indices.push_back(i * resolution.y + j);
+          indices.push_back(i * resolution.y + j + 1);
+          indices.push_back((i + 1) * resolution.y + j);
+          indices.push_back(i * resolution.y + j + 1);
+          indices.push_back((i + 1) * resolution.y + j + 1);
+          indices.push_back((i + 1) * resolution.y + j);
+        }
+      }
       break;
     case CUBE:
       loadModel("./models/cube.obj");
       break;
     case SPHERE: {
-      incrementX = (scale.x * 2) / (twoPI / 2.0f) / resolution.x;
-      incrementY = (scale.y * 2) / twoPI / resolution.y;
+      incrementX = (twoPI / 2.0f) / resolution.x;
+      incrementY = twoPI / resolution.y;
       Vertex topVertex {};
       Vertex bottomVertex {};
       topVertex.position = {0.f, -scale.y, 0.f};
@@ -265,11 +293,10 @@ void DvmModel::Builder::makePrimitive(PrimitiveType primitive,
       for (float i = incrementX; i < glm::pi<float>() - incrementX;
            i += incrementX)
       {
-        for (float j = 0; j < twoPI; i += incrementY) {
+        for (float j = 0; j < twoPI; j += incrementY) {
           Vertex currentVertex {};
-          currentVertex.position =
-              glm::vec3(cos(j), cos(i / 2.0f), sin(j));
-          vertices.emplace_back(currentVertex);
+          currentVertex.position = glm::vec3(cos(j), i, sin(j));
+          vertices.push_back(currentVertex);
         }
       }
       vertices.emplace_back(topVertex);
@@ -302,4 +329,15 @@ std::unique_ptr<DvmModel> DvmModel::createSphere(DvmDevice& device,
   return std::make_unique<DvmModel>(device, builder);
 }
 
+std::unique_ptr<DvmModel> DvmModel::createPlane(DvmDevice& device,
+                                                int resolution,
+                                                float scale,
+                                                glm::vec3 position,
+                                                glm::vec3 rotation)
+{
+  DvmModel::Builder builder {};
+  builder.makePrimitive(
+      PLANE, glm::vec3(resolution), position, glm::vec3(scale), rotation);
+  return std::make_unique<DvmModel>(device, builder);
+}
 }  // namespace dvm

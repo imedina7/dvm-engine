@@ -11,8 +11,8 @@ public:
   virtual ~Panel() = default;
   virtual void draw() {};
   virtual bool isVisible() { return false; };
-  const std::string& getTitle() const { return title; };
-  //   const std::string getTitle() const { return title; };
+  const std::string& getTitle() const { return title; }
+
 protected:
   std::string title;
 };

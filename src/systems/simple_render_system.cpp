@@ -86,23 +86,22 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo)
 
   auto view = frameInfo.registry.view<ModelComponent, TransformComponent>();
 
-  for(auto &&[entity, model, transform] : view.each())
-      {
-        SimplePushConstantData push {};
+  for (auto&& [entity, model, transform] : view.each()) {
+    SimplePushConstantData push {};
 
-        push.normalMatrix = transform.normalMatrix();
-        push.modelMatrix = transform.mat4();
+    push.normalMatrix = transform.normalMatrix();
+    push.modelMatrix = transform.mat4();
 
-        vkCmdPushConstants(
-            frameInfo.commandBuffer,
-            pipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(SimplePushConstantData),
-            &push);
+    vkCmdPushConstants(
+        frameInfo.commandBuffer,
+        pipelineLayout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,
+        sizeof(SimplePushConstantData),
+        &push);
 
-        model.model->bind(frameInfo.commandBuffer);
-        model.model->draw(frameInfo.commandBuffer);
-      }
+    model.model->bind(frameInfo.commandBuffer);
+    model.model->draw(frameInfo.commandBuffer);
+  }
 }
 }  // namespace dvm
