@@ -4,7 +4,6 @@
 **/.DS_Store
 .idea/
 .vs/
-.vscode/
 build/
 cmake-build-*/
 prefix/
