@@ -1,5 +1,4 @@
 #include "dvm_gui.hpp"
-
 namespace dvm
 {
 DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
@@ -54,8 +53,8 @@ DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
   // Multi
   //     - Viewport
   // / Platform Windows
-  io.ConfigViewportsNoAutoMerge = true;
-  io.ConfigViewportsNoTaskBarIcon = true;
+  // io.ConfigViewportsNoAutoMerge = true;
+  // io.ConfigViewportsNoTaskBarIcon = true;
 #endif
 
   // Setup Dear ImGui style
@@ -92,12 +91,14 @@ DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
 
   ImGui_ImplVulkan_Init(&initInfo);
 
+  #ifndef GUI_DOCKING
   // Upload Fonts
   {
     ImGui_ImplVulkan_CreateFontsTexture();
 
     ImGui_ImplVulkan_DestroyFontsTexture();
   }
+  #endif
 }
 
 void DvmGUI::render(FrameInfo& frameInfo)
@@ -151,11 +152,17 @@ void DvmGUI::renderPanels(VkCommandBuffer commandBuffer)
 void DvmGUI::endFrame()
 {
 #ifdef GUI_DOCKING
+
+  ImGuiIO& io = ImGui::GetIO();
+
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     ImGui::UpdatePlatformWindows();
+
     ImGui::RenderPlatformWindowsDefault();
   }
+
 #endif
+
   ImGui::EndFrame();
 }
 

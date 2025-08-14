@@ -12,8 +12,6 @@ void Outliner::draw()
   Scene& scene = app.getScene();
   entt::registry& registry = scene.getRegistry();
 
-  std::cout << "Drawing " << getTitle() << "...\n";
-
   ImGui::Begin(getTitle().data());
 
   ImGui::SetNextWindowBgAlpha(0.7f);

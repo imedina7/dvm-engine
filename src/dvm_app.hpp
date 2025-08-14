@@ -9,6 +9,7 @@
 #include "dvm_gui.hpp"
 #include "dvm_scene.hpp"
 #include "dvm_window.hpp"
+#include "core/layer_stack.hpp"
 
 #include <GLFW/glfw3.h>
 #include <memory>
@@ -58,6 +59,7 @@ private:
 
   DvmWindow dvmWindow {WIDTH, HEIGHT, WINDOW_TITLE};
   DvmDevice dvmDevice {dvmWindow};
+  LayerStack layerStack;
   Scene m_Scene {};
 };
 }  // namespace dvm
