@@ -106,10 +106,6 @@ if(NOT PORTAUDIO_PATH)
   set(PORTAUDIO_PATH vendor/portaudio)
 endif()
 
-if(GUI_ENABLE_DOCKING)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGUI_DOCKING")
-endif()
-
 if(AUDIO_ENGINE AND PORTAUDIO_ENABLE)
 
   add_library(PortAudio STATIC ${PORTAUDIO_PATH}/src/common/pa_allocation.c

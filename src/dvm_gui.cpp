@@ -63,7 +63,6 @@ DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
 
   initStyle();
 
-#ifdef GUI_DOCKING
   // When viewports are enabled we tweak WindowRounding/WindowBg so platform
   // windows can look identical to regular ones.
   ImGuiStyle& style = ImGui::GetStyle();
@@ -71,7 +70,7 @@ DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
     style.WindowRounding = 0.0f;
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
   }
-#endif
+
   ImGui_ImplGlfw_InitForVulkan(dvmWindow.getGLFWwindow(), true);
 
   ImGui_ImplVulkan_InitInfo initInfo {};
@@ -90,15 +89,6 @@ DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
   initInfo.RenderPass = dvmRenderer.getSwapChainRenderPass();
 
   ImGui_ImplVulkan_Init(&initInfo);
-
-  #ifndef GUI_DOCKING
-  // Upload Fonts
-  {
-    ImGui_ImplVulkan_CreateFontsTexture();
-
-    ImGui_ImplVulkan_DestroyFontsTexture();
-  }
-  #endif
 }
 
 void DvmGUI::render(FrameInfo& frameInfo)
@@ -151,8 +141,6 @@ void DvmGUI::renderPanels(VkCommandBuffer commandBuffer)
 
 void DvmGUI::endFrame()
 {
-#ifdef GUI_DOCKING
-
   ImGuiIO& io = ImGui::GetIO();
 
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -160,8 +148,6 @@ void DvmGUI::endFrame()
 
     ImGui::RenderPlatformWindowsDefault();
   }
-
-#endif
 
   ImGui::EndFrame();
 }
