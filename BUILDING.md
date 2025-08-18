@@ -1,3 +1,33 @@
+# Fetching the repository
+
+First of all clone this repo with
+
+```shell
+git clone --recursive https://github.com/imedina7/dvm-engine.git
+```
+
+This will ensure all submodules are downloaded with the source code.
+
+If you already cloned the repo but without the `--recursive` option, you should be able to get the submodules by running the following:
+
+```shell
+git submodule init
+git submodule update
+```
+
+# Installing dependencies
+
+Some dependencies are required to be present in the system before building
+
+- [Vulkan SDK](https://vulkan.lunarg.com)
+- [GLFW](https://www.glfw.org/download)
+- GLM
+- entt (included in a git submodule within `./vendor/`)
+- imgui (included in a git submodule within `./vendor/`)
+- portaudio (optional, included in a git submodule within `./vendor/`)
+- stb_image (included in a git submodule within `./vendor/`)
+- tinyobjloader (included in a git submodule within `./vendor/`)
+
 # Building with CMake
 
 ## Build

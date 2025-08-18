@@ -18,13 +18,15 @@ void FPSMovementController::moveInPlaneXZ(Entity& cameraEntity,
   glm::vec3 rotate {0.f};
 
   if (Input::isKeyPressed(keyboard.lookRight))
-    lookDelta.y += 1.f;
-  if (Input::isKeyPressed(keyboard.lookLeft))
-    lookDelta.y -= 1.f;
-  if (Input::isKeyPressed(keyboard.lookUp))
     lookDelta.x += 1.f;
-  if (Input::isKeyPressed(keyboard.lookDown))
+  if (Input::isKeyPressed(keyboard.lookLeft))
     lookDelta.x -= 1.f;
+  if (Input::isKeyPressed(keyboard.lookUp))
+    lookDelta.y += 1.f;
+  if (Input::isKeyPressed(keyboard.lookDown))
+    lookDelta.y -= 1.f;
+
+#ifdef GAMEPAD_SUPPORT
 
   std::vector<float> axes = Input::getGamepadAxes(Input::getDefaultJoystick());
 
@@ -38,6 +40,8 @@ void FPSMovementController::moveInPlaneXZ(Entity& cameraEntity,
     gamepadElevate = axes.at(static_cast<size_t>(gamepad.moveUp));
     gamepadDescend = axes.at(static_cast<size_t>(gamepad.moveDown));
   }
+
+#endif
 
   if (glm::abs(lookDelta.x) > 0.05f) {
     rotate.y += lookDelta.x;
@@ -90,11 +94,13 @@ void FPSMovementController::moveInPlaneXZ(Entity& cameraEntity,
           moveDir -= forwardDir * moveDelta.y;
         }
 
+#ifdef GAMEPAD_SUPPORT
+
         if (glm::abs(gamepadElevate) > 0.02f)
           moveDir += upDir * gamepadElevate;
         if (glm::abs(gamepadDescend) > 0.02f)
           moveDir -= upDir * gamepadDescend;
-
+#endif
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
           transform.translation += moveSpeed * dt * glm::normalize(moveDir);
