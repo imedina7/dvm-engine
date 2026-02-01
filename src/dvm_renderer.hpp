@@ -1,5 +1,6 @@
 #pragma once
 #include "dvm_device.hpp"
+#include "dvm_frame_info.hpp"
 #include "dvm_swap_chain.hpp"
 #include "dvm_window.hpp"
 #include <GLFW/glfw3.h>
@@ -81,6 +82,8 @@ public:
   void endFrame();
   void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
   void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+  void beginShadowPass(VkCommandBuffer commandBuffer);
+  void endShadowPass(VkCommandBuffer commandBuffer);
 
 private:
   void createCommandBuffers();

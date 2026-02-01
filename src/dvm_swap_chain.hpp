@@ -62,7 +62,7 @@ private:
   void createSwapChain();
   void createImageViews();
   void createDepthResources();
-  void createRenderPass();
+  void createRenderPasses();
   void createFramebuffers();
   void createSyncObjects();
 
@@ -78,6 +78,7 @@ private:
   VkExtent2D swapChainExtent;
 
   std::vector<VkFramebuffer> swapChainFramebuffers;
+  std::vector<VkFramebuffer> offscreenFramebuffers;
   VkRenderPass renderPass;
 
   std::vector<VkImage> depthImages;
@@ -85,6 +86,10 @@ private:
   std::vector<VkImageView> depthImageViews;
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
+
+  std::vector<VkImage> shadowMapImages;
+  std::vector<VkDeviceMemory> shadowMapImagesMemorys;
+  std::vector<VkImageView> shadowMapImageViews;
 
   DvmDevice& device;
   VkExtent2D windowExtent;

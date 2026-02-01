@@ -34,7 +34,7 @@ void DvmSwapChain::init()
 {
   createSwapChain();
   createImageViews();
-  createRenderPass();
+  createRenderPasses();
   createDepthResources();
   createFramebuffers();
   createSyncObjects();
@@ -240,7 +240,7 @@ void DvmSwapChain::createImageViews()
   }
 }
 
-void DvmSwapChain::createRenderPass()
+void DvmSwapChain::createRenderPasses()
 {
   VkAttachmentDescription depthAttachment {};
   depthAttachment.format = findDepthFormat();

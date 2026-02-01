@@ -6,23 +6,20 @@
 #  include "dvm_audio.hpp"
 #endif
 
-#include "dvm_gui.hpp"
 #include "dvm_scene.hpp"
 #include "dvm_window.hpp"
 #include "core/layer_stack.hpp"
 
 #include <GLFW/glfw3.h>
-#include <memory>
-#include <vector>
 #include <vulkan/vulkan_core.h>
 #include <glm/gtc/constants.hpp>
 
 #ifndef WINDOW_WIDTH
-#  define WINDOW_WIDTH 800
+#  define WINDOW_WIDTH 1280
 #endif
 
 #ifndef WINDOW_HEIGHT
-#  define WINDOW_HEIGHT 600
+#  define WINDOW_HEIGHT 720
 #endif
 
 #ifndef WINDOW_TITLE
@@ -37,29 +34,29 @@ public:
   static constexpr int WIDTH = WINDOW_WIDTH;
   static constexpr int HEIGHT = WINDOW_HEIGHT;
 
-  DvmDevice& getDevice() { return dvmDevice; }
-  DvmWindow& getWindow() { return dvmWindow; }
+  DvmDevice& getDevice() { return m_dvmDevice; }
+  DvmWindow& getWindow() { return m_dvmWindow; }
 
   static DvmApp& getInstance()
   {
-    static DvmApp m_instance;
-    return m_instance;
+    static DvmApp s_instance;
+    return s_instance;
   }
 
   DvmApp(const DvmApp&) = delete;
-  DvmApp& operator=(const DvmApp&) = delete;
+  auto operator=(const DvmApp&) -> DvmApp& = delete;
 
   void run();
 
-  Scene& getScene() { return m_Scene; };
+  Scene& getScene() { return m_scene; };
 
 private:
   DvmApp() = default;
   ~DvmApp() {}
 
-  DvmWindow dvmWindow {WIDTH, HEIGHT, WINDOW_TITLE};
-  DvmDevice dvmDevice {dvmWindow};
-  LayerStack layerStack;
-  Scene m_Scene {};
+  DvmWindow m_dvmWindow {WIDTH, HEIGHT, WINDOW_TITLE};
+  DvmDevice m_dvmDevice {m_dvmWindow};
+  LayerStack m_layerStack;
+  Scene m_scene;
 };
 }  // namespace dvm

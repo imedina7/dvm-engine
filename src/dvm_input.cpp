@@ -1,5 +1,6 @@
 #include "dvm_app.hpp"
 #include "dvm_input.hpp"
+#include <iostream>
 
 namespace dvm
 {

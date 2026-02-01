@@ -1,4 +1,10 @@
 #include "dvm_gui.hpp"
+
+#include "dvm_app.hpp"
+#include "dvm_device.hpp"
+
+#include "dvm_window.hpp"
+
 namespace dvm
 {
 DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}

@@ -1,7 +1,7 @@
 #include "dvm_scene.hpp"
-#include "dvm_app.hpp"
 #include "dvm_entity.hpp"
 #include "dvm_components.hpp"
+#include "dvm_frame_info.hpp"
 
 #ifdef GLTF_ENABLE
 

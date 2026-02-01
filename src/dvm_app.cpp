@@ -1,45 +1,44 @@
 #include "dvm_app.hpp"
-#include "dvm_camera.hpp"
+#include "dvm_gui.hpp"
 #include "dvm_frame_info.hpp"
-#include <iostream>
-#include <array>
-#include <cstdint>
-#include <stdexcept>
 #include <chrono>
+#include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 
-#include "systems/simple_render_system.hpp"
+#include "systems/deferred_render_system.hpp"
 #include "systems/point_light_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <cmath>
 #include <glm/glm.hpp>
 
 namespace dvm
 {
 void DvmApp::run()
 {
-  SimpleRenderSystem simpleRenderSystem {dvmDevice, dvmWindow};
-  DvmRenderer& dvmRenderer = simpleRenderSystem.getRenderer();
+  DeferredRenderSystem deferredRenderSystem {m_dvmDevice, m_dvmWindow};
+  DvmRenderer& dvmRenderer = deferredRenderSystem.getRenderer();
 
   PointLightSystem pointLightSystem {
-          dvmDevice, dvmRenderer, simpleRenderSystem.getGlobalSetLayout()};
+          m_dvmDevice, dvmRenderer, deferredRenderSystem.getGlobalSetLayout()};
 
-  GLFWwindow* window = dvmWindow.getGLFWwindow();
+  GLFWwindow* window = m_dvmWindow.getGLFWwindow();
 
   auto currentTime = std::chrono::high_resolution_clock::now();
 
   double mouseInitX, mouseInitY;
   glfwGetCursorPos(window, &mouseInitX, &mouseInitY);
 
-  if (glfwRawMouseMotionSupported())
+  if (glfwRawMouseMotionSupported() == GLFW_TRUE) {
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+}
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  m_Scene.load();
+  m_scene.load();
 
-  entt::registry& registry = m_Scene.getRegistry();
+  entt::registry& registry = m_scene.getRegistry();
 
   DvmGUI gui {dvmRenderer};
 
@@ -47,11 +46,12 @@ void DvmApp::run()
   DvmAudio& audio = DvmAudio::Get();
 #endif
 
-  while (!dvmWindow.shouldClose()
+  while (!m_dvmWindow.shouldClose()
          && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
   {
     glfwPollEvents();
-    double mouseNewX, mouseNewY;
+    double mouseNewX = NAN;
+    double mouseNewY = NAN;
     glfwGetCursorPos(window, &mouseNewX, &mouseNewY);
 
 #ifdef AUDIO
@@ -74,7 +74,7 @@ void DvmApp::run()
             .count();
     currentTime = newTime;
 
-    GlobalUbo ubo = m_Scene.update(frameTime, mouseDelta, !gui.getUIVisibility(), dvmRenderer.getAspectRatio());
+    GlobalUbo ubo = m_scene.update(frameTime, mouseDelta, !gui.getUIVisibility(), dvmRenderer.getAspectRatio());
 
     if (auto commandBuffer = dvmRenderer.beginFrame()) {
       int frameIndex = dvmRenderer.getCurrentFrameIndex();
@@ -82,14 +82,15 @@ void DvmApp::run()
       FrameInfo frameInfo {frameIndex,
                            frameTime,
                            commandBuffer,
-                           m_Scene};
+                           m_scene};
 
       pointLightSystem.update(frameInfo, ubo);
-      simpleRenderSystem.update(frameInfo, ubo);
+      deferredRenderSystem.update(frameInfo, ubo);
+      deferredRenderSystem.renderShadowMaps(frameInfo, ubo);
 
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
 
-      simpleRenderSystem.render(frameInfo);
+      deferredRenderSystem.render(frameInfo);
       pointLightSystem.render(frameInfo);
       gui.render(frameInfo);
 
@@ -97,6 +98,6 @@ void DvmApp::run()
       dvmRenderer.endFrame();
     }
   }
-  vkDeviceWaitIdle(dvmDevice.device());
+  vkDeviceWaitIdle(m_dvmDevice.device());
 }
 }  // namespace dvm

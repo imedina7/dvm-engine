@@ -9,12 +9,9 @@
 
 #include <glm/glm.hpp>
 
-#include "dvm_app.hpp"
-#include "dvm_device.hpp"
 #include "dvm_descriptors.hpp"
 #include "dvm_frame_info.hpp"
 #include "dvm_renderer.hpp"
-#include "dvm_window.hpp"
 
 static void check_vk_result(VkResult err)
 {
