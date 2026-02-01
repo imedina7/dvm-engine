@@ -242,6 +242,26 @@ void DvmSwapChain::createImageViews()
 
 void DvmSwapChain::createRenderPasses()
 {
+  VkAttachmentDescription shadowMapAttachment {};
+  shadowMapAttachment.format = findDepthFormat();
+  shadowMapAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+  shadowMapAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  shadowMapAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  shadowMapAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  shadowMapAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  shadowMapAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  shadowMapAttachment.finalLayout =
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  VkAttachmentReference shadowMapAttachmentRef {};
+  shadowMapAttachmentRef.attachment = 1;
+  shadowMapAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  VkSubpassDescription shadowMapSubpass = {};
+  shadowMapSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  shadowMapSubpass.colorAttachmentCount = 1;
+  shadowMapSubpass.pDepthStencilAttachment = &shadowMapAttachmentRef;
+
   VkAttachmentDescription depthAttachment {};
   depthAttachment.format = findDepthFormat();
   depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -276,34 +296,71 @@ void DvmSwapChain::createRenderPasses()
   subpass.colorAttachmentCount = 1;
   subpass.pColorAttachments = &colorAttachmentRef;
   subpass.pDepthStencilAttachment = &depthAttachmentRef;
+  subpass.inputAttachmentCount = 1;
+  subpass.pInputAttachments = &shadowMapAttachmentRef;
 
-  VkSubpassDependency dependency = {};
-  dependency.dstSubpass = 0;
-  dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-      | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-  dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-      | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-  dependency.srcAccessMask = 0;
-  dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-      | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  VkRenderPassCreateInfo shadowPassInfo = {};
+  shadowPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  shadowPassInfo.attachmentCount = 1;
+  shadowPassInfo.pAttachments = &shadowMapAttachment;
+  shadowPassInfo.subpassCount = 1;
+  shadowPassInfo.pSubpasses = &shadowMapSubpass;
+  shadowPassInfo.dependencyCount = 0;
+  shadowPassInfo.pDependencies = nullptr;
 
-  std::array<VkAttachmentDescription, 2> attachments = {colorAttachment,
-                                                        depthAttachment};
+  if (vkCreateRenderPass(device.device(), &shadowPassInfo, nullptr, &shadowPass)
+      != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to create shadow pass!");
+  }
+
+  std::vector<VkSubpassDependency> dependencies = {{
+
+    .srcSubpass = VK_SUBPASS_EXTERNAL,
+    .dstSubpass = 0,
+    .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+    .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+    .srcAccessMask = 0,
+    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+  },
+{
+  .srcSubpass = 0,
+    .dstSubpass = VK_SUBPASS_EXTERNAL,
+    .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+    .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+    .srcAccessMask = 0,
+    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+}};
+if (vkCreateRenderPass(device.device(), &shadowPassInfo, nullptr, &shadowPass)
+    != VK_SUCCESS)
+{
+  throw std::runtime_error("failed to create shadow pass!");
+}
+
+  std::array<VkAttachmentDescription, 3> attachments = {colorAttachment,
+                                                        depthAttachment,
+                                                        shadowMapAttachment};
   VkRenderPassCreateInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
   renderPassInfo.pAttachments = attachments.data();
   renderPassInfo.subpassCount = 1;
   renderPassInfo.pSubpasses = &subpass;
-  renderPassInfo.dependencyCount = 1;
-  renderPassInfo.pDependencies = &dependency;
+  renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+  renderPassInfo.pDependencies = dependencies.data();
 
   if (vkCreateRenderPass(device.device(), &renderPassInfo, nullptr, &renderPass)
       != VK_SUCCESS)
   {
     throw std::runtime_error("failed to create render pass!");
   }
+
+
+
 }
 
 void DvmSwapChain::createFramebuffers()

@@ -1,5 +1,6 @@
 #include "deferred_render_system.hpp"
 #include "dvm_frame_info.hpp"
+
 #include "dvm_swap_chain.hpp"
 #include <array>
 #include <entt.hpp>
@@ -98,6 +99,13 @@ void DeferredRenderSystem::createDescriptorSetLayouts() {
                       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                       VK_SHADER_STAGE_ALL_GRAPHICS)
           .build();
+
+  shadowMapSetLayout = 
+    DvmDescriptorSetLayout::Builder(dvmDevice)
+      .addBinding(0,
+                  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                  VK_SHADER_STAGE_ALL_GRAPHICS)
+      .build();
 }
 void DeferredRenderSystem::createDescriptorSets() {
   VkDescriptorImageInfo imageInfo = texture.getDescriptorImageInfo();

@@ -68,21 +68,19 @@ void Scene::load()
       box.addComponent<ModelComponent>(
           DvmModel::createModelFromFile("shading_test_box.obj"));
 
-  std::vector<entt::entity> lights {registry.create(), registry.create(), registry.create(), registry.create(), registry.create(), registry.create(), registry.create(), registry.create()};
+  std::vector<entt::entity> lights {registry.create()};
 
   for (int i = 0; i < lights.size(); i++) {
     std::string lightName = "Light";
     registry.emplace<TagComponent>(lights.at(i),
                                    lightName.append(std::to_string(i)));
-    glm::vec3 color {};
-    ImGui::ColorConvertHSVtoRGB(i / static_cast<float>(lights.size()), 0.6f, 0.8f, color.r, color.g, color.b);
-
     registry.emplace<TransformComponent>(lights.at(i),
-                                         color,
+                                         glm::vec3(0.f, 0.f, -2.f),
                                          glm::vec3(.1f),
                                          glm::vec3(0.f));
 
-    registry.emplace<PointLightComponent>(lights.at(i), 0.2f, color);
+    registry.emplace<PointLightComponent>(
+        lights.at(i), 0.2f, glm::vec3(1.f, 1.f, 1.f));
   }
 }
 

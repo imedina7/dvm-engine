@@ -7,7 +7,7 @@
 #include <vector>
 
 #define SAMPLE_RATE 44100
-#define AUDIO_FILE_PATH "../assets/audio/test.wav"
+#define AUDIO_FILE_PATH "../audio/test.wav"
 #define MASTER_VOLUME 0.1f
 
 #define BUFFER_SIZE 1024

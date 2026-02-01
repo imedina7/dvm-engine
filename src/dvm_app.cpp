@@ -86,7 +86,6 @@ void DvmApp::run()
 
       pointLightSystem.update(frameInfo, ubo);
       deferredRenderSystem.update(frameInfo, ubo);
-      deferredRenderSystem.renderShadowMaps(frameInfo, ubo);
 
       dvmRenderer.beginSwapChainRenderPass(commandBuffer);
 

@@ -80,6 +80,7 @@ private:
   std::vector<VkFramebuffer> swapChainFramebuffers;
   std::vector<VkFramebuffer> offscreenFramebuffers;
   VkRenderPass renderPass;
+  VkRenderPass shadowPass;
 
   std::vector<VkImage> depthImages;
   std::vector<VkDeviceMemory> depthImageMemorys;

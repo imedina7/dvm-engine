@@ -36,17 +36,6 @@ public:
   glm::vec2 getMonitorDPI();
   glm::vec2 getMonitorDPI(GLFWmonitor* monitor);
 
-  struct WindowProps {
-    int width;
-    int height;
-    std::string name;
-  };
-
-  WindowProps getWindowProps() const
-  {
-    return {width, height, windowName};
-  }
-
 private:
   static void framebufferResizedCallback(GLFWwindow* window,
                                          int width,

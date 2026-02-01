@@ -54,10 +54,9 @@ private:
   std::unique_ptr<DvmPipeline> dvmPipeline;
   VkPipelineLayout pipelineLayout;
   std::unique_ptr<DvmRenderer> dvmRenderer;
-  std::unique_ptr<DvmDescriptorSetLayout> globalSetLayout {};
-  std::unique_ptr<DvmDescriptorPool> globalPool {};
+
+  std::unique_ptr<DvmDescriptorSetLayout> shadowMapSetLayout {};
   std::array<VkDescriptorSet, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
-      globalDescriptorSets {};
   std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>
       uboBuffers {};
   std::array<std::unique_ptr<DvmBuffer>, DvmSwapChain::MAX_FRAMES_IN_FLIGHT>

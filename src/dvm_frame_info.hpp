@@ -15,7 +15,7 @@ struct PointLight
   glm::vec4 color {};
 };
 
-struct MaterialUbo{};
+struct MaterialUbo {};
 struct GlobalUbo
 {
   glm::mat4 projection {1.0f};

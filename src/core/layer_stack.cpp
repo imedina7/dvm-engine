@@ -1,7 +1,6 @@
 #include "layer_stack.hpp"
 
 #include <algorithm>
-#include <iostream>
 
 namespace dvm
 {
