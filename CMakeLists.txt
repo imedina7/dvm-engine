@@ -378,7 +378,7 @@ file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(imgui PUBLIC )
 target_link_libraries(${PROJECT_NAME} imgui)
