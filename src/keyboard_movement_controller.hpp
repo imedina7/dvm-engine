@@ -7,6 +7,7 @@
 
 namespace dvm
 {
+  class Entity;
 class FPSMovementController
 {
 public:
@@ -38,10 +39,8 @@ public:
     Input::GamepadAxis lookSides = Input::GamepadAxis::RIGHT_X;
   };
 
-  void moveInPlaneXZ(DvmCamera& camera,
+  void moveInPlaneXZ(Entity& cameraEntity,
                      float dt,
-                     entt::registry& registry,
-                     entt::entity entity,
                      glm::vec2 deltaCursor,
                      float mouseSensitivity);
 

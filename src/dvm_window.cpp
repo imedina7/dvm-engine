@@ -31,10 +31,26 @@ void DvmWindow::initWindow()
   glfwSetWindowUserPointer(window, this);
   glfwSetFramebufferSizeCallback(window, framebufferResizedCallback);
 
+  monitors = glfwGetMonitors(&monitorCount);
+
   glfwSetJoystickCallback(gamepadCallback);
 }
 
-void DvmWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* _surface)
+glm::vec2 DvmWindow::getMonitorDPI()
+{
+  float xScale, yScale;
+  glfwGetMonitorContentScale(getPrimaryMonitor(), &xScale, &yScale);
+  return glm::vec2(xScale, yScale);
+}
+glm::vec2 DvmWindow::getMonitorDPI(GLFWmonitor* monitor)
+{
+  float xScale, yScale;
+  glfwGetMonitorContentScale(monitor, &xScale, &yScale);
+  return glm::vec2(xScale, yScale);
+}
+
+void DvmWindow::createWindowSurface(VkInstance instance,
+                                    VkSurfaceKHR * _surface)
 {
   if (glfwCreateWindowSurface(instance, window, nullptr, _surface)
       != VK_SUCCESS)
@@ -44,9 +60,8 @@ void DvmWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* _surface)
   surface = _surface;
 }
 
-void DvmWindow::framebufferResizedCallback(GLFWwindow* window,
-                                           int width,
-                                           int height)
+void DvmWindow::framebufferResizedCallback(
+    GLFWwindow * window, int width, int height)
 {
   auto dvmWindow =
       reinterpret_cast<DvmWindow*>(glfwGetWindowUserPointer(window));

@@ -1,13 +1,19 @@
 #include "dvm_gui.hpp"
 
+#include "dvm_app.hpp"
+#include "dvm_device.hpp"
+
+#include "dvm_window.hpp"
+
+#define GUI_DOCKING
 namespace dvm
 {
-DvmGUI::DvmGUI()
+DvmGUI::DvmGUI(DvmRenderer& renderer) : dvmRenderer{renderer}
 {
   DvmApp& app = DvmApp::getInstance();
-  glfwWindow = app.getWindow().getGLFWwindow();
   DvmDevice& dvmDevice = app.getDevice();
   DvmWindow& dvmWindow = app.getWindow();
+  glfwWindow = dvmWindow.getGLFWwindow();
 
   descriptorPool =
       DvmDescriptorPool::Builder(dvmDevice)
@@ -26,42 +32,48 @@ DvmGUI::DvmGUI()
           .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
           .build();
 
-  DvmRenderer& dvmRenderer = app.getRenderer();
-
-  uiState.outlinerState.isVisible = true;
-
-  panelWindows.emplace_back(new gui::Outliner(uiState.outlinerState));
+  panels.emplace_back(new gui::Outliner(uiState.outlinerState));
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
   (void)io;
+
+  monitorScale = dvmWindow.getMonitorDPI();
+
+  robotoMedium = io.Fonts->AddFontFromFileTTF(
+      "../assets/fonts/Roboto-Medium.ttf", 14.f * monitorScale.x);
+  doppioOne = io.Fonts->AddFontFromFileTTF(
+      "../assets/fonts/DoppioOne-Regular.ttf", 14.f * monitorScale.x);
+
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
   io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
   io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
-// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable
-// Gamepad
-// Controls
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
 #ifdef GUI_DOCKING
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
   io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable
   // Multi
   //     - Viewport
   // / Platform Windows
-  io.ConfigViewportsNoAutoMerge = true;
-  io.ConfigViewportsNoTaskBarIcon = true;
+  // io.ConfigViewportsNoAutoMerge = true;
+  // io.ConfigViewportsNoTaskBarIcon = true;
 #endif
 
   // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
+  // ImGui::StyleColorsDark();
   // ImGui::StyleColorsLight();
 
+  initStyle();
+
+#ifdef GUI_DOCKING
   // When viewports are enabled we tweak WindowRounding/WindowBg so platform
   // windows can look identical to regular ones.
   ImGuiStyle& style = ImGui::GetStyle();
-#ifdef GUI_DOCKING
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     style.WindowRounding = 0.0f;
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -86,56 +98,85 @@ DvmGUI::DvmGUI()
 
   ImGui_ImplVulkan_Init(&initInfo);
 
+  #ifndef GUI_DOCKING
   // Upload Fonts
   {
     ImGui_ImplVulkan_CreateFontsTexture();
 
     ImGui_ImplVulkan_DestroyFontsTexture();
   }
+  #endif
 }
 
-void DvmGUI::update(float dt, VkCommandBuffer command_buffer)
+void DvmGUI::render(FrameInfo& frameInfo)
 {
-  DvmApp& app = DvmApp::getInstance();
-  DvmDevice& dvmDevice = app.getDevice();
+  frameTime = frameInfo.frameTime;
 
-  ImGuiIO& io = ImGui::GetIO();
-  int width, height;
-  glfwGetFramebufferSize(glfwWindow, &width, &height);
+  beginFrame();
 
-  io.DisplaySize = ImVec2(width, height);
-  io.DeltaTime = dt;
-  ImGui_ImplGlfw_NewFrame();
-  ImGui_ImplVulkan_NewFrame();
-  ImGui::NewFrame();
+  if (uiVisible)
+    renderPanels(frameInfo.commandBuffer);
 
-  for (auto panel : panelWindows) {
-    if (panel->isVisible())
-      panel->draw();
-  }
-  ImGui::Render();
-
-  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
-
-#ifdef GUI_DOCKING
-  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
-  }
-#endif
-  ImGui::EndFrame();
+  endFrame();
 }
 
-void DvmGUI::checkUIToggle(glm::vec2 mouseDelta)
+void DvmGUI::checkUIToggle()
 {
   if (glfwGetKey(glfwWindow, GLFW_KEY_TAB) == GLFW_PRESS) {
-    if (glm::length(glm::normalize(mouseDelta)) > .7f)
-      return;
     if (toggleUI()) {
       glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     } else {
       glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
   }
+}
+
+void DvmGUI::beginFrame()
+{
+  ImGuiIO& io = ImGui::GetIO();
+  int width, height;
+  glfwGetFramebufferSize(glfwWindow, &width, &height);
+
+  io.DisplaySize =
+      ImVec2(static_cast<float>(width), static_cast<float>(height));
+  io.DeltaTime = frameTime;
+
+  ImGui_ImplGlfw_NewFrame();
+  ImGui_ImplVulkan_NewFrame();
+  ImGui::NewFrame();
+}
+
+void DvmGUI::renderPanels(VkCommandBuffer commandBuffer)
+{
+  for (auto panel : panels) {
+    if (panel->isVisible())
+      panel->draw();
+  }
+  ImGui::Render();
+  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+}
+
+void DvmGUI::endFrame()
+{
+#ifdef GUI_DOCKING
+
+  ImGuiIO& io = ImGui::GetIO();
+
+  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    ImGui::UpdatePlatformWindows();
+
+    ImGui::RenderPlatformWindowsDefault();
+  }
+
+#endif
+
+  ImGui::EndFrame();
+}
+
+void DvmGUI::initStyle()
+{
+  ImGuiStyle& style = ImGui::GetStyle();
+  style.WindowRounding = 2.f * monitorScale.x;
+  style.Colors[ImGuiCol_FrameBg] = ImVec4(0, 0, 0, 1.f);
 }
 }  // namespace dvm

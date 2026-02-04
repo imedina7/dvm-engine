@@ -1,4 +1,5 @@
 #include "keyboard_movement_controller.hpp"
+#include "dvm_entity.hpp"
 #include "dvm_app.hpp"
 #include <limits>
 #include <iostream>
@@ -7,10 +8,8 @@
 #include <glm/gtc/constants.hpp>
 namespace dvm
 {
-void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
+void FPSMovementController::moveInPlaneXZ(Entity& cameraEntity,
                                           float dt,
-                                          entt::registry& registry,
-                                          entt::entity entity,
                                           glm::vec2 deltaCursor,
                                           float sensitivity)
 {
@@ -19,13 +18,15 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
   glm::vec3 rotate {0.f};
 
   if (Input::isKeyPressed(keyboard.lookRight))
-    lookDelta.y += 1.f;
-  if (Input::isKeyPressed(keyboard.lookLeft))
-    lookDelta.y -= 1.f;
-  if (Input::isKeyPressed(keyboard.lookUp))
     lookDelta.x += 1.f;
-  if (Input::isKeyPressed(keyboard.lookDown))
+  if (Input::isKeyPressed(keyboard.lookLeft))
     lookDelta.x -= 1.f;
+  if (Input::isKeyPressed(keyboard.lookUp))
+    lookDelta.y += 1.f;
+  if (Input::isKeyPressed(keyboard.lookDown))
+    lookDelta.y -= 1.f;
+
+#ifdef GAMEPAD_SUPPORT
 
   std::vector<float> axes = Input::getGamepadAxes(Input::getDefaultJoystick());
 
@@ -40,6 +41,8 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
     gamepadDescend = axes.at(static_cast<size_t>(gamepad.moveDown));
   }
 
+#endif
+
   if (glm::abs(lookDelta.x) > 0.05f) {
     rotate.y += lookDelta.x;
   }
@@ -47,8 +50,9 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
     rotate.x -= lookDelta.y;
   }
 
-  registry.patch<TransformComponent>(
-      entity,
+  auto& cameraComponent = cameraEntity.getComponent<CameraComponent>();
+
+  cameraEntity.patchComponent<TransformComponent>(
       [&](auto& transform)
       {
         if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
@@ -90,16 +94,19 @@ void FPSMovementController::moveInPlaneXZ(DvmCamera& camera,
           moveDir -= forwardDir * moveDelta.y;
         }
 
+#ifdef GAMEPAD_SUPPORT
+
         if (glm::abs(gamepadElevate) > 0.02f)
           moveDir += upDir * gamepadElevate;
         if (glm::abs(gamepadDescend) > 0.02f)
           moveDir -= upDir * gamepadDescend;
-
+#endif
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
           transform.translation += moveSpeed * dt * glm::normalize(moveDir);
         }
-        camera.setViewYXZ(transform.translation, transform.rotation);
+        cameraComponent.camera.setViewYXZ(transform.translation,
+                                         transform.rotation);
       });
 }
 }  // namespace dvm

@@ -5,11 +5,26 @@
 #include <memory>
 #include <unordered_map>
 
+#include "dvm_camera.hpp"
 #include "dvm_model.hpp"
+#include "uuid.hpp"
 
 namespace dvm
 {
 using id_t = unsigned int;
+
+struct IDComponent
+{
+  UUID id;
+
+  IDComponent() {
+    id = UUID();
+  };
+  IDComponent(const IDComponent&) = default;
+  IDComponent(const UUID& uuid)
+      : id {uuid} {};
+
+};
 struct Transform2dComponent
 {
   glm::vec2 translation {};
@@ -26,6 +41,19 @@ struct Transform2dComponent
   }
 };
 
+struct TagComponent
+{
+  std::string tag;
+  TagComponent() = default;
+  TagComponent(const TagComponent&) = default;
+  TagComponent(const std::string& tagName)
+      : tag {tagName} {};
+};
+
+struct CameraComponent
+{
+  DvmCamera camera;
+};
 struct TransformComponent
 {
   glm::vec3 translation {};
@@ -37,7 +65,8 @@ struct TransformComponent
 
   TransformComponent() { translation = glm::vec3(0.f); }
 
-  TransformComponent(const TransformComponent& transform) {
+  TransformComponent(const TransformComponent& transform)
+  {
     translation = transform.translation;
     scale = transform.scale;
     rotation = transform.rotation;
@@ -46,10 +75,15 @@ struct TransformComponent
   ~TransformComponent() = default;
 
   TransformComponent(const glm::vec3 _translation)
-      : translation {_translation} {}
+      : translation {_translation}
+  {
+  }
 
   TransformComponent(const glm::vec3 _translation, const glm::vec3 _scale)
-      : translation {_translation}, scale {_scale} {}
+      : translation {_translation}
+      , scale {_scale}
+  {
+  }
 
   TransformComponent(const glm::vec3 _translation,
                      const glm::vec3 _scale,
@@ -60,10 +94,10 @@ struct TransformComponent
   {
   }
 
-  bool operator==(const TransformComponent& other) {
-    return other.rotation == this->rotation
-      && other.scale == this->scale
-      && other.translation == this->translation;
+  bool operator==(const TransformComponent& other)
+  {
+    return other.rotation == this->rotation && other.scale == this->scale
+        && other.translation == this->translation;
   }
 };
 
@@ -71,10 +105,14 @@ struct PointLightComponent
 {
   float lightIntensity = 1.0f;
   glm::vec3 lightColor = glm::vec3(1.0f);
-  PointLightComponent(float intensity, glm::vec3 color) : lightIntensity{intensity}, lightColor{color} {};
+  PointLightComponent(float intensity, glm::vec3 color)
+      : lightIntensity {intensity}
+      , lightColor {color} {};
 
-  bool operator==(const PointLightComponent& other) {
-    return other.lightColor == this->lightColor && other.lightIntensity == this->lightIntensity;
+  bool operator==(const PointLightComponent& other)
+  {
+    return other.lightColor == this->lightColor
+        && other.lightIntensity == this->lightIntensity;
   }
 };
 }  // namespace dvm
