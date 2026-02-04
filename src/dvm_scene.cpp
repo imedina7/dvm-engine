@@ -60,13 +60,13 @@ void Scene::load()
   cameraComponent.camera.setViewDirection(glm::vec3(0.f, 10.f, 2.5f),
                                    glm::vec3(0.f, 0.f, 0.f));
 
-  auto box = createEntity("Cornell Box");
+  // auto box = createEntity("Cornell Box");
 
-  box.updateComponent<TransformComponent>(glm::vec3(0.f, 0.f, 0.f),
-                                          glm::vec3(1.f),
-                                          glm::vec3(0.f, glm::pi<float>(), 0.f));
-      box.addComponent<ModelComponent>(
-          DvmModel::createModelFromFile("shading_test_box.obj"));
+  // box.updateComponent<TransformComponent>(glm::vec3(0.f, 0.f, 0.f),
+  //                                         glm::vec3(1.f),
+  //                                         glm::vec3(0.f, glm::pi<float>(), 0.f));
+  //     box.addComponent<ModelComponent>(
+  //         DvmModel::createModelFromFile("shading_test_box.obj"));
 
   std::vector<entt::entity> lights {registry.create()};
 

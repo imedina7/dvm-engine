@@ -88,9 +88,10 @@ private:
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 
-  std::vector<VkImage> shadowMapImages;
-  std::vector<VkDeviceMemory> shadowMapImagesMemorys;
-  std::vector<VkImageView> shadowMapImageViews;
+  VkImage shadowMapImage;
+  VkDeviceMemory shadowMapImageMemory;
+  VkImageView shadowMapImageView;
+  VkSampler offscreenDepthSampler;
 
   DvmDevice& device;
   VkExtent2D windowExtent;

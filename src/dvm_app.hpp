@@ -1,18 +1,12 @@
 #pragma once
 
 #include "dvm_device.hpp"
-
-#ifdef AUDIO
-#  include "dvm_audio.hpp"
-#endif
-
-#include "dvm_scene.hpp"
 #include "dvm_window.hpp"
 #include "core/layer_stack.hpp"
+#include "core/application_context.hpp"
 
 #include <GLFW/glfw3.h>
-#include <vulkan/vulkan_core.h>
-#include <glm/gtc/constants.hpp>
+#include <glm/glm.hpp>
 
 #ifndef WINDOW_WIDTH
 #  define WINDOW_WIDTH 1280
@@ -28,14 +22,15 @@
 
 namespace dvm
 {
+// Forward declarations
+class Event;
+class Layer;
+
 class DvmApp
 {
 public:
   static constexpr int WIDTH = WINDOW_WIDTH;
   static constexpr int HEIGHT = WINDOW_HEIGHT;
-
-  DvmDevice& getDevice() { return m_dvmDevice; }
-  DvmWindow& getWindow() { return m_dvmWindow; }
 
   static DvmApp& getInstance()
   {
@@ -48,15 +43,29 @@ public:
 
   void run();
 
-  Scene& getScene() { return m_scene; };
+  // Layer management
+  void pushLayer(Layer* layer);
+  void pushOverlay(Layer* overlay);
+
+  // Accessors
+  DvmDevice& getDevice() { return m_dvmDevice; }
+  DvmWindow& getWindow() { return m_dvmWindow; }
+  ApplicationContext& getContext() { return m_context; }
 
 private:
-  DvmApp() = default;
-  ~DvmApp() {}
+  DvmApp();
+  ~DvmApp();
+
+  void initializeLayers();
+  void setupEventCallbacks();
+  void onEvent(Event& e);
 
   DvmWindow m_dvmWindow {WIDTH, HEIGHT, WINDOW_TITLE};
   DvmDevice m_dvmDevice {m_dvmWindow};
+  ApplicationContext m_context;
   LayerStack m_layerStack;
-  Scene m_scene;
+
+  // For mouse tracking
+  glm::vec2 m_lastMousePos {0.0f};
 };
 }  // namespace dvm

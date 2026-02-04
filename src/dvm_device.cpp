@@ -1,4 +1,5 @@
 #include "dvm_device.hpp"
+#include <vulkan/vulkan_core.h>
 #include "dvm_window.hpp"
 
 // std headers
@@ -531,5 +532,48 @@ void DvmDevice::createImageWithInfo(
     throw std::runtime_error("failed to bind image memory!");
   }
 }
+
+VkResult DvmDevice::createSampler(
+  VkSampler* newSampler,
+  VkFilter filter,
+  float mipLodBias,
+  float minLod,
+  float maxLod,
+  VkSamplerAddressMode addressModeU,
+  VkSamplerAddressMode addressModeV,
+  VkSamplerAddressMode addressModeW,
+  float maxAnisotropy,
+  VkSamplerMipmapMode mipMapMode
+) {
+    VkSamplerCreateInfo samplerCreateInfo {};
+    samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerCreateInfo.maxAnisotropy = maxAnisotropy;
+		samplerCreateInfo.magFilter = filter;
+		samplerCreateInfo.minFilter = filter;
+		samplerCreateInfo.mipmapMode = mipMapMode;
+		samplerCreateInfo.addressModeU = addressModeU;
+		samplerCreateInfo.addressModeV = addressModeV;
+		samplerCreateInfo.addressModeW = addressModeW;
+		samplerCreateInfo.mipLodBias = mipLodBias;
+		samplerCreateInfo.maxAnisotropy = maxAnisotropy;
+		samplerCreateInfo.minLod = minLod;
+		samplerCreateInfo.maxLod = maxLod;
+		samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		return vkCreateSampler(device_, &samplerCreateInfo, nullptr, newSampler);
+}
+
+VkBool32 DvmDevice::formatIsFilterable(VkFormat format, VkImageTiling tiling)
+  {
+    VkFormatProperties formatProps;
+    vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
+
+    if (tiling == VK_IMAGE_TILING_OPTIMAL)
+      return formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+    if (tiling == VK_IMAGE_TILING_LINEAR)
+      return formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+    return false;
+  }
 
 }  // namespace lve

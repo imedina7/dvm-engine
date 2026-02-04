@@ -50,7 +50,7 @@ public:
   VkSurfaceKHR surface() { return surface_; }
   VkQueue graphicsQueue() { return graphicsQueue_; }
   VkQueue presentQueue() { return presentQueue_; }
-
+  VkBool32 formatIsFilterable(VkFormat format, VkImageTiling tiling);
   SwapChainSupportDetails getSwapChainSupport()
   {
     return querySwapChainSupport(physicalDevice);
@@ -84,6 +84,19 @@ public:
                            VkMemoryPropertyFlags properties,
                            VkImage& image,
                            VkDeviceMemory& imageMemory);
+
+  VkResult createSampler(
+  VkSampler* newSampler,
+  VkFilter filter,
+  float mipLodBias = 0.0F,
+  float minLod = 0.0F,
+  float maxLod = 1.0F,
+  VkSamplerAddressMode addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+  VkSamplerAddressMode addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+  VkSamplerAddressMode addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+  float maxAnisotropy = 1.0F,
+  VkSamplerMipmapMode mipMapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR
+);
 
   VkPhysicalDeviceProperties properties;
 
