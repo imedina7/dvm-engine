@@ -9,8 +9,9 @@ namespace dvm::gui
 void Outliner::draw()
 {
   DvmApp& app = DvmApp::getInstance();
-  Scene& scene = app.getScene();
-  entt::registry& registry = scene.getRegistry();
+  Scene* scene = app.getContext().activeScene;
+  if (!scene) return;
+  entt::registry& registry = scene->getRegistry();
 
   ImGui::Begin(getTitle().data());
 

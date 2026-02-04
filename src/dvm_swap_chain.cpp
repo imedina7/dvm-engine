@@ -1,5 +1,7 @@
 #include "dvm_swap_chain.hpp"
 
+#include <vulkan/vulkan_core.h>
+
 // std
 #include <array>
 #include <cstdlib>
@@ -47,6 +49,12 @@ DvmSwapChain::~DvmSwapChain()
   }
   swapChainImageViews.clear();
 
+  vkDestroySampler(device.device(), offscreenDepthSampler, nullptr);
+
+  vkDestroyImage(device.device(), shadowMapImage, nullptr);
+  vkDestroyImageView(device.device(), shadowMapImageView, nullptr);
+  vkFreeMemory(device.device(), shadowMapImageMemory, nullptr);
+
   if (swapChain != nullptr) {
     vkDestroySwapchainKHR(device.device(), swapChain, nullptr);
     swapChain = nullptr;
@@ -61,6 +69,8 @@ DvmSwapChain::~DvmSwapChain()
   for (auto framebuffer : swapChainFramebuffers) {
     vkDestroyFramebuffer(device.device(), framebuffer, nullptr);
   }
+
+  vkDestroyRenderPass(device.device(), shadowPass, nullptr);
 
   vkDestroyRenderPass(device.device(), renderPass, nullptr);
 
@@ -245,21 +255,21 @@ void DvmSwapChain::createRenderPasses()
   VkAttachmentDescription shadowMapAttachment {};
   shadowMapAttachment.format = findDepthFormat();
   shadowMapAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-  shadowMapAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  shadowMapAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   shadowMapAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
   shadowMapAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   shadowMapAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   shadowMapAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  shadowMapAttachment.finalLayout =
-      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  shadowMapAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 
   VkAttachmentReference shadowMapAttachmentRef {};
-  shadowMapAttachmentRef.attachment = 1;
-  shadowMapAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  shadowMapAttachmentRef.attachment = 0;
+  shadowMapAttachmentRef.layout =
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
   VkSubpassDescription shadowMapSubpass = {};
   shadowMapSubpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  shadowMapSubpass.colorAttachmentCount = 1;
+  shadowMapSubpass.colorAttachmentCount = 0;
   shadowMapSubpass.pDepthStencilAttachment = &shadowMapAttachmentRef;
 
   VkAttachmentDescription depthAttachment {};
@@ -314,36 +324,30 @@ void DvmSwapChain::createRenderPasses()
     throw std::runtime_error("failed to create shadow pass!");
   }
 
-  std::vector<VkSubpassDependency> dependencies = {{
+  std::vector<VkSubpassDependency> dependencies = {
+      {
 
-    .srcSubpass = VK_SUBPASS_EXTERNAL,
-    .dstSubpass = 0,
-    .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-    .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-    .srcAccessMask = 0,
-    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
-  },
-{
-  .srcSubpass = 0,
-    .dstSubpass = VK_SUBPASS_EXTERNAL,
-    .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-    .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-    .srcAccessMask = 0,
-    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
-}};
-if (vkCreateRenderPass(device.device(), &shadowPassInfo, nullptr, &shadowPass)
-    != VK_SUCCESS)
-{
-  throw std::runtime_error("failed to create shadow pass!");
-}
+          .srcSubpass = VK_SUBPASS_EXTERNAL,
+          .dstSubpass = 0,
+          .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+              | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+          .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+              | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+          .srcAccessMask = 0,
+          .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+              | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT},
+      {.srcSubpass = 0,
+       .dstSubpass = VK_SUBPASS_EXTERNAL,
+       .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+           | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+       .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+           | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+       .srcAccessMask = 0,
+       .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+           | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT}};
 
-  std::array<VkAttachmentDescription, 3> attachments = {colorAttachment,
-                                                        depthAttachment,
-                                                        shadowMapAttachment};
+  std::array<VkAttachmentDescription, 3> attachments = {
+      colorAttachment, depthAttachment, shadowMapAttachment};
   VkRenderPassCreateInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -358,17 +362,14 @@ if (vkCreateRenderPass(device.device(), &shadowPassInfo, nullptr, &shadowPass)
   {
     throw std::runtime_error("failed to create render pass!");
   }
-
-
-
 }
 
 void DvmSwapChain::createFramebuffers()
 {
   swapChainFramebuffers.resize(imageCount());
   for (size_t i = 0; i < imageCount(); i++) {
-    std::array<VkImageView, 2> attachments = {swapChainImageViews[i],
-                                              depthImageViews[i]};
+    std::array<VkImageView, 3> attachments = {
+        swapChainImageViews[i], depthImageViews[i], swapChainImageViews[i]};
 
     VkExtent2D swapChainExtent = getSwapChainExtent();
     VkFramebufferCreateInfo framebufferInfo = {};
@@ -400,6 +401,37 @@ void DvmSwapChain::createDepthResources()
   depthImages.resize(imageCount());
   depthImageMemorys.resize(imageCount());
   depthImageViews.resize(imageCount());
+  VkImageCreateInfo shadowImageCreateInfo {};
+
+  shadowImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+  shadowImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  shadowImageCreateInfo.format = depthFormat;
+  shadowImageCreateInfo.arrayLayers = 1;
+  shadowImageCreateInfo.extent.width = 1024;
+  shadowImageCreateInfo.extent.height = 1024;
+  shadowImageCreateInfo.extent.depth = 1;
+  shadowImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+  shadowImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  shadowImageCreateInfo.usage =
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  shadowImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+  shadowImageCreateInfo.flags = 0;
+  shadowImageCreateInfo.mipLevels = 1;
+
+  device.createImageWithInfo(shadowImageCreateInfo,
+                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                             shadowMapImage,
+                             shadowMapImageMemory);
+
+  VkFilter shadowmapFilter =
+      device.formatIsFilterable(depthFormat, VK_IMAGE_TILING_OPTIMAL)
+      ? VK_FILTER_LINEAR
+      : VK_FILTER_NEAREST;
+  VkResult result =
+      device.createSampler(&offscreenDepthSampler, shadowmapFilter);
+  if (result != 0) {
+    throw std::runtime_error("Failed to create sampler\n");
+  }
 
   for (int i = 0; i < depthImages.size(); i++) {
     VkImageCreateInfo imageInfo {};
